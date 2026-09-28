@@ -8,7 +8,7 @@ import type { ClientPost } from "@/lib/client-types";
 
 const TRENDS = [
   { tag: "#solana", count: "12.4k posts" },
-  { tag: "#pump", count: "8.9k posts" },
+  { tag: "#zap", count: "8.9k posts" },
   { tag: "#nft", count: "5.1k posts" },
   { tag: "#build", count: "3.3k posts" },
   { tag: "#privacy", count: "2.0k posts" },

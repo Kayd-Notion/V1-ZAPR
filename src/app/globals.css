@@ -1,15 +1,19 @@
 /* =========================================================================
-   pump.social — design system (ported verbatim from MVP.html, extended for
-   real media + Next.js). Dark theme by default, single emerald accent, Inter.
+   ZAPR — design system (ported from MVP.html, extended for real media +
+   Next.js). Dark theme by default, single electric-yellow accent, Inter.
    ========================================================================= */
 
 /* -------- 1. Variables de thème ---------------------------------------- */
 :root {
-  --accent: #10b981;
-  --accent-strong: #059669;
-  --accent-soft: rgba(16, 185, 129, 0.14);
+  /* Jaune électrique ZAPR (mesuré sur le logo). Toujours du texte sombre
+     dessus : --on-accent. Pour du TEXTE jaune, utiliser --accent-text, qui
+     passe en jaune foncé en thème clair (le jaune sur crème est illisible). */
+  --accent: #fed202;
+  --accent-strong: #e8bf00;
+  --on-accent: #111111;
   --danger: #ef4444;
-  --warn: #f59e0b;
+  /* Orange (et non ambre) pour ne pas se confondre avec l'accent jaune. */
+  --warn: #f97316;
   --radius: 16px;
   --radius-sm: 10px;
   --maxw: 480px;
@@ -30,20 +34,26 @@
   --text-faint: #71717a;
   --overlay: rgba(0, 0, 0, 0.6);
   --shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  --accent-soft: rgba(254, 210, 2, 0.14);
+  --accent-text: #fed202;
 }
 
 :root[data-theme="light"] {
-  --bg: #f4f4f5;
+  /* Fond crème du logo, cartes blanches. */
+  --bg: #fdfbf4;
   --bg-elev: #ffffff;
-  --bg-elev-2: #fafafa;
-  --bg-hover: #f0f0f1;
-  --border: #e4e4e7;
-  --border-soft: #ececee;
+  --bg-elev-2: #f8f5ea;
+  --bg-hover: #f2eee0;
+  --border: #e7e2d1;
+  --border-soft: #efebdd;
   --text: #18181b;
   --text-dim: #52525b;
   --text-faint: #a1a1aa;
   --overlay: rgba(0, 0, 0, 0.35);
   --shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+  --accent-soft: rgba(254, 210, 2, 0.24);
+  /* Contraste 4,75:1 sur le fond crème (AA). */
+  --accent-text: #8a6d00;
 }
 
 /* -------- 2. Reset & base --------------------------------------------- */
@@ -59,7 +69,7 @@ body {
 }
 button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
 input, textarea, select { font-family: inherit; }
-a { color: var(--accent); text-decoration: none; }
+a { color: var(--accent-text); text-decoration: none; }
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }
 
@@ -99,11 +109,11 @@ a { color: var(--accent); text-decoration: none; }
 }
 .nav-item:hover { background: var(--bg-hover); color: var(--text); }
 .nav-item.active { color: var(--text); font-weight: 700; }
-.nav-item.active .ni-icon { color: var(--accent); }
+.nav-item.active .ni-icon { color: var(--accent-text); }
 .ni-icon { font-size: 20px; width: 24px; text-align: center; }
 .nav-item .badge-dot {
   position: absolute; left: 30px; top: 8px;
-  background: var(--accent); color: #04120c;
+  background: var(--accent); color: var(--on-accent);
   font-size: 10px; font-weight: 700;
   min-width: 16px; height: 16px; border-radius: 8px;
   display: flex; align-items: center; justify-content: center; padding: 0 4px;
@@ -111,7 +121,7 @@ a { color: var(--accent); text-decoration: none; }
 .sidebar .post-cta {
   margin-top: 12px;
   background: var(--accent);
-  color: #04120c;
+  color: var(--on-accent);
   font-weight: 700;
   padding: 13px;
   border-radius: var(--radius);
@@ -145,12 +155,11 @@ a { color: var(--accent); text-decoration: none; }
 
 .brand { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 18px; }
 .brand .logo-mark {
-  width: 28px; height: 28px; border-radius: 8px;
-  background: var(--accent); color: #04120c;
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 800; font-size: 16px;
+  width: 30px; height: 30px; border-radius: 8px; display: block; flex-shrink: 0;
+  /* Liseré discret : l'icône crème se fond sinon dans le fond crème du thème clair. */
+  box-shadow: 0 0 0 1px var(--border);
 }
-.brand .logo-text b { color: var(--accent); }
+.brand .logo-text { letter-spacing: 0.02em; }
 
 .bottom-nav {
   display: none;
@@ -169,10 +178,10 @@ a { color: var(--accent); text-decoration: none; }
   padding: 6px 8px; border-radius: 10px; flex: 1; position: relative;
 }
 .bn-item .ni-icon { font-size: 22px; }
-.bn-item.active { color: var(--accent); }
+.bn-item.active { color: var(--accent-text); }
 .bn-item .badge-dot {
   position: absolute; top: 2px; right: 50%; transform: translateX(16px);
-  background: var(--accent); color: #04120c; font-size: 9px; font-weight: 700;
+  background: var(--accent); color: var(--on-accent); font-size: 9px; font-weight: 700;
   min-width: 14px; height: 14px; border-radius: 7px;
   display: flex; align-items: center; justify-content: center;
 }
@@ -189,9 +198,9 @@ a { color: var(--accent); text-decoration: none; }
 .btn:hover { background: var(--bg-hover); }
 .btn:active { transform: scale(0.97); }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-primary { background: var(--accent); color: #04120c; border-color: transparent; }
+.btn-primary { background: var(--accent); color: var(--on-accent); border-color: transparent; }
 .btn-primary:hover { background: var(--accent-strong); }
-.btn-accent-soft { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+.btn-accent-soft { background: var(--accent-soft); color: var(--accent-text); border-color: transparent; }
 .btn-ghost { background: transparent; border-color: transparent; }
 .btn-ghost:hover { background: var(--bg-hover); }
 .btn-sm { padding: 6px 12px; font-size: 13px; }
@@ -216,7 +225,7 @@ a { color: var(--accent); text-decoration: none; }
 
 .pill {
   display: inline-flex; align-items: center; gap: 5px;
-  background: var(--accent-soft); color: var(--accent);
+  background: var(--accent-soft); color: var(--accent-text);
   font-weight: 700; font-size: 12px;
   padding: 4px 10px; border-radius: 999px;
 }
@@ -225,14 +234,14 @@ a { color: var(--accent); text-decoration: none; }
   background: var(--bg-elev-2); border: 1px solid var(--border);
   font-size: 13px; font-weight: 600; color: var(--text-dim);
 }
-.chip.active { background: var(--accent); color: #04120c; border-color: transparent; }
+.chip.active { background: var(--accent); color: var(--on-accent); border-color: transparent; }
 
 .field {
   width: 100%; background: var(--bg-elev-2);
   border: 1px solid var(--border); border-radius: var(--radius-sm);
   padding: 12px 14px; color: var(--text); font-size: 15px;
 }
-.field:focus { outline: none; border-color: var(--accent); }
+.field:focus { outline: none; border-color: var(--accent-text); }
 .field-label { display: block; font-size: 13px; color: var(--text-dim); margin-bottom: 6px; font-weight: 600; }
 
 .muted { color: var(--text-dim); }
@@ -265,7 +274,7 @@ a { color: var(--accent); text-decoration: none; }
   display: flex; align-items: center; gap: 12px;
   margin: 12px; padding: 14px 16px;
   background: linear-gradient(135deg, var(--accent-soft), transparent);
-  border: 1px solid var(--accent);
+  border: 1px solid var(--accent-text);
   border-radius: var(--radius);
 }
 .visitor-banner .vb-text { flex: 1; font-size: 13.5px; }
@@ -337,7 +346,7 @@ a { color: var(--accent); text-decoration: none; }
 .tg-fill.critical { background: var(--danger); }
 
 .pumped-badge { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; }
-.pumped-badge .pb-amount { font-size: 17px; font-weight: 800; color: var(--accent); }
+.pumped-badge .pb-amount { font-size: 17px; font-weight: 800; color: var(--accent-text); }
 .pumped-badge .pb-label { font-size: 11px; color: var(--text-faint); }
 
 .post-actions { display: flex; align-items: center; justify-content: space-between; max-width: 340px; }
@@ -348,14 +357,17 @@ a { color: var(--accent); text-decoration: none; }
 }
 .pa-btn:hover { color: var(--text); background: var(--bg-hover); }
 .pa-btn.liked { color: var(--danger); }
-.pa-btn.reposted { color: var(--accent); }
+.pa-btn.reposted { color: var(--accent-text); }
 .pa-btn .pa-ico { font-size: 16px; }
 .pump-btn {
-  background: var(--accent); color: #04120c;
+  display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+  background: var(--accent); color: var(--on-accent);
   font-weight: 700; font-size: 13px;
   padding: 7px 16px; border-radius: 999px;
 }
 .pump-btn:hover { background: var(--accent-strong); }
+/* Bolt drawn in the text color (ZapIcon), for yellow buttons. */
+.zap-ico { width: 0.72em; height: 1.1em; vertical-align: -0.2em; fill: currentColor; flex-shrink: 0; }
 
 /* -------- 6. Modales -------------------------------------------------- */
 .modal-overlay {
@@ -393,12 +405,12 @@ a { color: var(--accent); text-decoration: none; }
   background: var(--bg-elev-2); border: 1px solid var(--border);
   font-weight: 700; font-size: 14px; text-align: center;
 }
-.qa-btn.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.qa-btn.active { background: var(--accent-soft); border-color: var(--accent-text); color: var(--accent-text); }
 .qa-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 /* Pump rules: expired-post notice, amount validation, self-pump badge */
 .pump-notice {
   display: flex; flex-direction: column; align-items: flex-start;
-  background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.45);
+  background: rgba(249, 115, 22, 0.12); border: 1px solid rgba(249, 115, 22, 0.45);
   color: var(--text); border-radius: var(--radius-sm);
   padding: 12px 14px; margin-bottom: 16px; font-size: 13.5px; line-height: 1.5;
 }
@@ -415,7 +427,7 @@ a { color: var(--accent); text-decoration: none; }
 }
 .split-row { display: flex; justify-content: space-between; font-size: 14px; padding: 4px 0; }
 .split-row b { font-weight: 700; }
-.split-row.creator b { color: var(--accent); }
+.split-row.creator b { color: var(--accent-text); }
 .split-bar { display: flex; height: 8px; border-radius: 6px; overflow: hidden; margin: 10px 0 4px; }
 .split-bar .s-creator { background: var(--accent); }
 .split-bar .s-pool { background: var(--text-faint); }
@@ -423,7 +435,7 @@ a { color: var(--accent); text-decoration: none; }
 .pump-success { text-align: center; padding: 30px 10px; }
 .pump-success .ps-ico {
   width: 72px; height: 72px; border-radius: 50%;
-  background: var(--accent-soft); color: var(--accent);
+  background: var(--accent-soft); color: var(--accent-text);
   font-size: 38px; display: flex; align-items: center; justify-content: center;
   margin: 0 auto 16px; animation: pop 0.3s ease;
 }
@@ -465,7 +477,7 @@ a { color: var(--accent); text-decoration: none; }
 .lb-info { flex: 1; min-width: 0; }
 .lb-info .lb-name { font-weight: 700; font-size: 14.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lb-info .lb-sub { font-size: 12.5px; color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.lb-amount { font-weight: 800; color: var(--accent); font-size: 15px; text-align: right; flex-shrink: 0; }
+.lb-amount { font-weight: 800; color: var(--accent-text); font-size: 15px; text-align: right; flex-shrink: 0; }
 .lb-amount small { display: block; color: var(--text-faint); font-weight: 500; font-size: 11px; }
 
 /* -------- 8. Explorer ------------------------------------------------- */
@@ -495,7 +507,7 @@ a { color: var(--accent); text-decoration: none; }
 .toggle.on .tg-switch { background: var(--accent); }
 .toggle.on .tg-switch::after { transform: translateX(16px); }
 .pumper-row { display: flex; align-items: center; gap: 12px; padding: 10px 16px; }
-.pumper-row .pr-amount { margin-left: auto; font-weight: 700; color: var(--accent); }
+.pumper-row .pr-amount { margin-left: auto; font-weight: 700; color: var(--accent-text); }
 .comment { display: flex; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--border-soft); }
 .comment .c-body { flex: 1; }
 .comment .c-head { display: flex; gap: 6px; align-items: center; font-size: 13.5px; }
@@ -518,7 +530,7 @@ a { color: var(--accent); text-decoration: none; }
 .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 4px 16px 12px; }
 .stat-box { background: var(--bg-elev-2); border: 1px solid var(--border-soft); border-radius: var(--radius-sm); padding: 12px; text-align: center; }
 .stat-box .sb-val { font-size: 18px; font-weight: 800; }
-.stat-box .sb-val.accent { color: var(--accent); }
+.stat-box .sb-val.accent { color: var(--accent-text); }
 .stat-box .sb-label { font-size: 11.5px; color: var(--text-faint); margin-top: 2px; }
 .post.expired { opacity: 0.62; }
 .post.expired .pumped-badge .pb-amount { color: var(--text-faint); }
@@ -533,30 +545,30 @@ a { color: var(--accent); text-decoration: none; }
 /* -------- 11. Wallet ------------------------------------------------- */
 .balance-card {
   margin: 16px; padding: 22px;
-  background: linear-gradient(135deg, var(--accent-strong), #064e3b);
-  border-radius: 20px; color: #fff;
+  background: linear-gradient(135deg, var(--accent), #e0a800);
+  border-radius: 20px; color: var(--on-accent);
 }
 .balance-card .bc-label { font-size: 13px; opacity: 0.85; }
 .balance-card .bc-value { font-size: 34px; font-weight: 800; margin: 4px 0; }
 .balance-card .bc-fiat { font-size: 13px; opacity: 0.85; }
 .balance-card .bc-actions { display: flex; gap: 10px; margin-top: 16px; }
-.balance-card .bc-actions .btn { flex: 1; background: rgba(255,255,255,0.16); color: #fff; border: none; }
+.balance-card .bc-actions .btn { flex: 1; background: rgba(0,0,0,0.1); color: var(--on-accent); border: none; }
 .tx-row { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--border-soft); }
 .tx-ico { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-.tx-ico.in { background: var(--accent-soft); color: var(--accent); }
+.tx-ico.in { background: var(--accent-soft); color: var(--accent-text); }
 .tx-ico.out { background: var(--bg-hover); color: var(--text-dim); }
 .tx-info { flex: 1; min-width: 0; }
 .tx-info .tx-title { font-weight: 600; font-size: 14.5px; }
 .tx-info .tx-time { font-size: 12.5px; color: var(--text-faint); }
 .tx-amount { font-weight: 700; font-size: 14.5px; }
-.tx-amount.in { color: var(--accent); }
+.tx-amount.in { color: var(--accent-text); }
 .tx-amount.out { color: var(--text-dim); }
 .net-badge {
   display: inline-flex; align-items: center; gap: 6px;
   font-size: 11px; font-weight: 700; letter-spacing: 0.03em;
   padding: 3px 9px; border-radius: 999px; text-transform: uppercase;
 }
-.net-badge.safe { background: var(--accent-soft); color: var(--accent); }
+.net-badge.safe { background: var(--accent-soft); color: var(--accent-text); }
 .net-badge.danger { background: rgba(239,68,68,0.16); color: var(--danger); }
 
 /* -------- 12. Notifications ------------------------------------------ */
@@ -564,7 +576,7 @@ a { color: var(--accent); text-decoration: none; }
 .notif-row.unread { background: var(--accent-soft); }
 .notif-row:hover { background: var(--bg-elev); }
 .notif-ico { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; background: var(--bg-hover); }
-.notif-ico.pump { background: var(--accent-soft); color: var(--accent); }
+.notif-ico.pump { background: var(--accent-soft); color: var(--accent-text); }
 .notif-body { flex: 1; }
 .notif-body .nb-text { font-size: 14.5px; }
 .notif-body .nb-text b { font-weight: 700; }
@@ -578,7 +590,7 @@ a { color: var(--accent); text-decoration: none; }
   padding: 30px; text-align: center;
 }
 .onboard .ob-inner { width: 100%; max-width: 380px; }
-.onboard .ob-logo { width: 64px; height: 64px; border-radius: 18px; background: var(--accent); color: #04120c; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 800; margin: 0 auto 20px; }
+.onboard .ob-logo { width: 72px; height: 72px; border-radius: 18px; display: block; margin: 0 auto 20px; box-shadow: 0 0 0 1px var(--border); }
 .onboard h2 { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
 .onboard p { color: var(--text-dim); margin-bottom: 24px; }
 .onboard .ob-avatar-preview { width: 72px; height: 72px; margin: 0 auto 16px; }

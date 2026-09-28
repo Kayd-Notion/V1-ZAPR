@@ -168,7 +168,7 @@ export default function LeaderboardPage() {
       ) : empty ? (
         <div className="empty-state">
           <div className="ico">🏆</div>
-          {period === "all" ? "Aucune entrée pour ce filtre." : "Aucun pump sur cette période."}
+          {period === "all" ? "Aucune entrée pour ce filtre." : "Aucun zap sur cette période."}
         </div>
       ) : kind === "posts" ? (
         posts.map((it, i) => {

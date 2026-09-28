@@ -14,7 +14,7 @@ import { AppShell } from "@/components/AppShell";
 // first-time visitors are never prompted by their wallet extension.
 async function shouldAutoConnect(): Promise<boolean> {
   try {
-    return localStorage.getItem("ps_logged_in") === "1";
+    return localStorage.getItem("zapr_logged_in") === "1";
   } catch {
     return false;
   }

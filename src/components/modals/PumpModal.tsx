@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { Modal } from "../Modal";
 import { Avatar } from "../Avatar";
+import { ZapIcon } from "../ZaprMark";
 import { useUI } from "@/context/UIContext";
 import { useSession } from "@/context/SessionContext";
 import { usePump } from "@/hooks/usePump";
@@ -111,7 +112,7 @@ export function PumpModal() {
       if (!postPurged) {
         setTimeout(() => {
           closeModal();
-          toast(`⚡ +${fmtSol(safeAmount)} SOL pumpés`);
+          toast(`⚡ Zap de ${fmtSol(safeAmount)} SOL envoyé`);
         }, 1200);
       }
     } catch (e) {
@@ -128,19 +129,19 @@ export function PumpModal() {
           setAmount(min);
         }
       }
-      toast(e instanceof Error ? e.message : "Le pump a échoué.");
+      toast(e instanceof Error ? e.message : "Le zap a échoué.");
     }
   };
 
   // --- Post purged: no pump possible ------------------------------------
   if (q?.status === "deleted") {
     return (
-      <Modal title="⚡ Pump un post" onClose={closeModal}>
+      <Modal title="⚡ Envoyer un zap" onClose={closeModal}>
         <div className="empty-state" style={{ padding: "30px 10px" }}>
           <div className="ico">🗑️</div>
           <b style={{ color: "var(--text)" }}>Post supprimé</b>
           <p className="muted" style={{ marginTop: 6 }}>
-            Ce post a expiré et a été supprimé : il ne peut plus être pumpé. Aucun SOL n&apos;a été envoyé.
+            Ce post a expiré et a été supprimé : il ne peut plus recevoir de zaps. Aucun SOL n&apos;a été envoyé.
           </p>
         </div>
         <button className="btn btn-block" onClick={closeModal}>
@@ -151,19 +152,19 @@ export function PumpModal() {
   }
 
   return (
-    <Modal title="⚡ Pump un post" onClose={closeModal}>
+    <Modal title="⚡ Envoyer un zap" onClose={closeModal}>
       {phase === "success" ? (
         <div className="pump-success">
           <div className="ps-ico">✓</div>
-          <h3 style={{ fontSize: 19, marginBottom: 6 }}>Pump confirmé !</h3>
+          <h3 style={{ fontSize: 19, marginBottom: 6 }}>Zap envoyé !</h3>
           {purgedAfterPump ? (
             <p className="muted">
-              Ton pump de <b>{fmtSol(safeAmount)} SOL</b> est bien enregistré, mais le post venait d&apos;être
+              Ton zap de <b>{fmtSol(safeAmount)} SOL</b> est bien enregistré, mais le post venait d&apos;être
               supprimé. Ce cas est signalé pour un remboursement manuel.
             </p>
           ) : (
             <p className="muted">
-              Tu as pumpé <b>{fmtSol(safeAmount)} SOL</b>.<br />
+              Tu as envoyé un zap de <b>{fmtSol(safeAmount)} SOL</b>.<br />
               Le post gagne en durée de vie. 🚀
             </p>
           )}
@@ -178,7 +179,7 @@ export function PumpModal() {
           <div className="pump-target">
             <Avatar id={post.author.id} handle={post.author.handle} size="sm" />
             <div className="pt-text">
-              Tu pumps le post de <b>{post.author.handle}</b>
+              Zap pour le post de <b>{post.author.handle}</b>
               <br />« {post.text.slice(0, 60)}
               {post.text.length > 60 ? "…" : ""} »
             </div>
@@ -186,7 +187,7 @@ export function PumpModal() {
 
           {IS_MAINNET && (
             <p className="muted" style={{ color: "var(--danger)", marginBottom: 12 }}>
-              ⚠️ Les pumps sont désactivés sur mainnet (programme non audité).
+              ⚠️ Les zaps sont désactivés sur mainnet (programme non audité).
             </p>
           )}
 
@@ -269,7 +270,9 @@ export function PumpModal() {
                 <span className="spinner" /> Signature en cours…
               </>
             ) : (
-              `⚡ Confirmer le pump de ${formatSolFr(safeAmount)} SOL`
+              <>
+                <ZapIcon /> Confirmer le zap de {formatSolFr(safeAmount)} SOL
+              </>
             )}
           </button>
           <button

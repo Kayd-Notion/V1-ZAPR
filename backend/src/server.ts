@@ -13,7 +13,7 @@ await migrate(sql, log);
 await initGeo(log);
 await initStorage(log);
 await app.listen({ host: config.host, port: config.port });
-log(`pump.social API on ${config.host}:${config.port} — Solana ${config.solana.cluster} (${config.solana.rpcUrl})`);
+log(`ZAPR API on ${config.host}:${config.port} — Solana ${config.solana.cluster} (${config.solana.rpcUrl})`);
 
 // Scheduled expiry/purge. Runs in-process; the advisory lock inside runPurge
 // makes it safe if several API replicas run later.

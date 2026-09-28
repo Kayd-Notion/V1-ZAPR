@@ -4,8 +4,8 @@ import nacl from "tweetnacl";
 import { SignJWT, jwtVerify } from "jose";
 import { config } from "../config.js";
 
-const JWT_ISSUER = "pump.social-api";
-const JWT_AUDIENCE = "pump.social";
+const JWT_ISSUER = "zapr-api";
+const JWT_AUDIENCE = "zapr";
 const secret = new TextEncoder().encode(config.auth.jwtSecret);
 
 /** A Solana address is base58 of a 32-byte ed25519 public key. */

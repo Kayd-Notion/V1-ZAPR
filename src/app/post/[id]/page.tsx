@@ -3,6 +3,7 @@ import { use, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Avatar } from "@/components/Avatar";
 import { TimeGauge } from "@/components/TimeGauge";
+import { ZapIcon } from "@/components/ZaprMark";
 import { useSession } from "@/context/SessionContext";
 import { useUI } from "@/context/UIContext";
 import { api } from "@/lib/api";
@@ -72,7 +73,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   };
 
   const doPump = () => {
-    if (!requireAuth("Connecte ton wallet pour pumper ce post.")) return;
+    if (!requireAuth("Connecte ton wallet pour envoyer un zap.")) return;
     openPump(post);
   };
 
@@ -129,7 +130,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
           <TimeGauge createdAt={post.createdAt} pumped={post.pumped} expiresAt={post.expiresAt} />
           <div className="pumped-badge">
             <span className="pb-amount">⚡ {fmtSol(post.pumped)}</span>
-            <span className="pb-label">SOL pumpés</span>
+            <span className="pb-label">SOL en zaps</span>
           </div>
         </div>
 
@@ -149,12 +150,12 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
           // Rule 2.1: a purged post can't be pumped — no Pump button at all.
           <div className="pump-notice" style={{ marginBottom: 0 }}>
             <b>🗑️ Post supprimé</b>
-            Il a expiré et son contenu a été supprimé : il ne peut plus être pumpé.
+            Il a expiré et son contenu a été supprimé : il ne peut plus recevoir de zaps.
           </div>
         ) : (
           <div style={{ display: "flex", gap: 8 }}>
             <button className="pump-btn" style={{ flex: 1, padding: 11 }} onClick={doPump}>
-              ⚡ Pump ce post
+              <ZapIcon /> Envoyer un zap
             </button>
             <button className="btn" onClick={() => toast("🚩 Signalé (modération — hors scope MVP)")}>
               🚩
@@ -165,19 +166,19 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
 
       {/* Pumpers */}
       <div className="pumpers-head">
-        <h4>⚡ Pumpers ({pumpers.length})</h4>
+        <h4>⚡ Zappeurs ({pumpers.length})</h4>
         <div className={`toggle${anon ? " on" : ""}`} onClick={() => setAnon((v) => !v)}>
           <span className="tg-switch" /> Anonymiser
         </div>
       </div>
       {pumpers.length === 0 && (
         <p className="faint" style={{ padding: "4px 16px 12px", fontSize: 13 }}>
-          Aucun pump pour l&apos;instant — sois le premier ⚡
+          Aucun zap pour l&apos;instant — sois le premier ⚡
         </p>
       )}
       {pumpers.map((pp, i) => {
         const masked = anon || pp.anonymous || !pp.author;
-        const name = masked ? `Pumper #${i + 1}` : pp.author!.handle;
+        const name = masked ? `Zappeur #${i + 1}` : pp.author!.handle;
         const sub = masked ? "•••••••" : `${pp.author!.wallet} · ${timeAgo(pp.createdAt)}`;
         return (
           <div className="pumper-row" key={pp.id}>
@@ -190,8 +191,8 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
               <div style={{ fontWeight: 600, fontSize: 14 }}>
                 {name}
                 {pp.isSelfPump && (
-                  <span className="self-pump-tag" title="Le créateur a pumpé son propre post">
-                    auto-pump
+                  <span className="self-pump-tag" title="Le créateur s'est envoyé un zap sur son propre post">
+                    auto-zap
                   </span>
                 )}
               </div>

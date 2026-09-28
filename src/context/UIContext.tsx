@@ -47,7 +47,7 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
   // Load persisted theme.
   useEffect(() => {
     try {
-      const t = localStorage.getItem("ps_theme");
+      const t = localStorage.getItem("zapr_theme");
       if (t === "light" || t === "dark") setTheme(t);
     } catch {
       /* localStorage unavailable */
@@ -63,7 +63,7 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
     setTheme((prev) => {
       const next = prev === "dark" ? "light" : "dark";
       try {
-        localStorage.setItem("ps_theme", next);
+        localStorage.setItem("zapr_theme", next);
       } catch {
         /* ignore */
       }

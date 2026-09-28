@@ -1,4 +1,4 @@
--- pump.social — Postgres schema (Supabase / Neon).
+-- ZAPR — Postgres schema (Supabase / Neon).
 -- Timestamps are stored as bigint (ms epoch) to match the domain model exactly.
 
 create extension if not exists "pgcrypto";

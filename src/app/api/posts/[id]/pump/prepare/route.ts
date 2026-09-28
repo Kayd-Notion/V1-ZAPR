@@ -21,14 +21,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (!(amount > 0)) return NextResponse.json({ error: "Montant invalide.", code: "invalid_amount" }, { status: 400 });
   if (amount < MIN_PUMP_SOL) {
     return NextResponse.json(
-      { error: `Minimum ${formatSolFr(MIN_PUMP_SOL)} SOL par pump.`, code: "below_min_pump", minPumpSol: MIN_PUMP_SOL },
+      { error: `Minimum ${formatSolFr(MIN_PUMP_SOL)} SOL par zap.`, code: "below_min_pump", minPumpSol: MIN_PUMP_SOL },
       { status: 400 },
     );
   }
 
   const post = await getStore().getPost(id);
   if (!post) {
-    return NextResponse.json({ error: "Ce post a été supprimé : il ne peut plus être pumpé.", code: "post_deleted" }, { status: 409 });
+    return NextResponse.json({ error: "Ce post a été supprimé : il ne peut plus recevoir de zaps.", code: "post_deleted" }, { status: 409 });
   }
   const r = pumpRequirements(
     { createdAt: post.createdAt, pumped: post.pumped, expiresAt: expiresAt(post.createdAt, post.pumped) },

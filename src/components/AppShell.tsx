@@ -9,6 +9,7 @@ import { ConnectModal } from "./modals/ConnectModal";
 import { ComposerModal } from "./modals/ComposerModal";
 import { PumpModal } from "./modals/PumpModal";
 import { OnboardModal } from "./modals/OnboardModal";
+import { ZaprMark } from "./ZaprMark";
 
 const NAV = [
   { key: "feed", href: "/", icon: "🏠", label: "Accueil" },
@@ -49,7 +50,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const onWalletBtn = () => {
     if (user) logout();
-    else openConnect("Connecte ton wallet Solana pour rejoindre pump.social.");
+    else openConnect("Connecte ton wallet Solana pour rejoindre ZAPR.");
   };
 
   const onPost = () => {
@@ -63,10 +64,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {/* Sidebar (desktop) */}
         <aside className="sidebar">
           <div className="brand">
-            <div className="logo-mark">P</div>
-            <span className="logo-text">
-              pump<b>.social</b>
-            </span>
+            <ZaprMark className="logo-mark" />
+            <span className="logo-text">ZAPR</span>
           </div>
           {NAV.map((n) => (
             <button
@@ -86,10 +85,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <main className="main">
           <header className="header">
             <div className="brand">
-              <div className="logo-mark">P</div>
-              <span className="logo-text">
-                pump<b>.social</b>
-              </span>
+              <ZaprMark className="logo-mark" />
+              <span className="logo-text">ZAPR</span>
             </div>
             <div className="page-title">{titleFor(pathname)}</div>
             <div className="header-actions">

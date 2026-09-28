@@ -20,7 +20,7 @@ import { shortWallet } from "./format";
 
 export const BACKEND_URL = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
 
-const TOKEN_KEY = "ps_token";
+const TOKEN_KEY = "zapr_token";
 const store = {
   get: () => {
     try {

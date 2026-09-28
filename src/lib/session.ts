@@ -6,8 +6,8 @@ import { SignJWT, jwtVerify } from "jose";
  * Session = a signed JWT in an httpOnly cookie. Payload holds the verified
  * wallet and (once onboarded) the user id.
  */
-const COOKIE = "ps_session";
-const NONCE_COOKIE = "ps_nonce";
+const COOKIE = "zapr_session";
+const NONCE_COOKIE = "zapr_nonce";
 const MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 const NONCE_MAX_AGE = 60 * 5; // 5 minutes
 

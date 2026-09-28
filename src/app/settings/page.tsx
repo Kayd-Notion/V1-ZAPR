@@ -99,8 +99,8 @@ export default function SettingsPage() {
         <div className="sg-title">Confidentialité</div>
         <div className="settings-row">
           <div className="sr-text">
-            Masquer mon historique de pump
-            <small>Cache le total « pumps donnés » sur ton profil public</small>
+            Masquer mon historique de zaps
+            <small>Cache le total « zaps donnés » sur ton profil public</small>
           </div>
           <div
             className={`toggle${user.hidePumpHistory ? " on" : ""}`}
@@ -111,8 +111,8 @@ export default function SettingsPage() {
         </div>
         <div className="settings-row">
           <div className="sr-text">
-            Anonymiser mes pumps par défaut
-            <small>Apparaître comme « Pumper anonyme » dans les historiques</small>
+            Anonymiser mes zaps par défaut
+            <small>Apparaître comme « Zappeur anonyme » dans les historiques</small>
           </div>
           <div
             className={`toggle${user.anonymizePumps ? " on" : ""}`}

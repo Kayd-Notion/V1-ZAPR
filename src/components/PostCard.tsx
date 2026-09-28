@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Avatar } from "./Avatar";
 import { TimeGauge } from "./TimeGauge";
+import { ZapIcon } from "./ZaprMark";
 import { useUI } from "@/context/UIContext";
 import { useSession } from "@/context/SessionContext";
 import { fmtSol, timeAgo } from "@/lib/format";
@@ -31,7 +32,7 @@ export function PostCard({ post }: { post: ClientPost }) {
     toast(reposted ? "Repost annulé" : "🔁 Reposté");
   };
   const doPump = () => {
-    if (!requireAuth("Connecte ton wallet pour pumper ce post.")) return;
+    if (!requireAuth("Connecte ton wallet pour envoyer un zap.")) return;
     openPump(post);
   };
 
@@ -68,7 +69,7 @@ export function PostCard({ post }: { post: ClientPost }) {
           <TimeGauge createdAt={post.createdAt} pumped={post.pumped} expiresAt={post.expiresAt} />
           <div className="pumped-badge">
             <span className="pb-amount">⚡ {fmtSol(post.pumped)}</span>
-            <span className="pb-label">SOL pumpés</span>
+            <span className="pb-label">SOL en zaps</span>
           </div>
         </div>
 
@@ -90,7 +91,7 @@ export function PostCard({ post }: { post: ClientPost }) {
           </button>
           {!post.deleted && (
             <button className="pump-btn" onClick={doPump}>
-              ⚡ Pump
+              <ZapIcon /> Zap
             </button>
           )}
         </div>

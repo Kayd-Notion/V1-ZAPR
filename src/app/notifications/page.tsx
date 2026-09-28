@@ -7,11 +7,11 @@ const now = Date.now();
 // Illustrative notifications (real-time notifications are a later phase — the
 // backend event stream isn't part of the Phase 1 scope).
 const NOTIFS = [
-  { id: "n1", type: "pump", icon: "⚡", text: "**@ghostwhale** a pumpé ton post de **2.5 SOL**", at: now - 0.5 * H },
+  { id: "n1", type: "pump", icon: "⚡", text: "**@ghostwhale** t'a envoyé un zap de **2.5 SOL**", at: now - 0.5 * H },
   { id: "n2", type: "rank", icon: "📈", text: "Ton post est entré dans le **top mondial** 🎉", at: now - 1 * H },
   { id: "n3", type: "follow", icon: "👤", text: "**@crypto_lea** a commencé à te suivre", at: now - 2 * H },
   { id: "n4", type: "expire", icon: "⏳", text: "Ton post **« Mon premier post… »** expire dans **2h**", at: now - 3 * H },
-  { id: "n5", type: "pump", icon: "⚡", text: "**@devSol** a pumpé ton post de **0.5 SOL**", at: now - 5 * H },
+  { id: "n5", type: "pump", icon: "⚡", text: "**@devSol** t'a envoyé un zap de **0.5 SOL**", at: now - 5 * H },
   { id: "n6", type: "comment", icon: "💬", text: "**@moon_hana** a commenté : « Bien joué ! »", at: now - 8 * H },
 ];
 

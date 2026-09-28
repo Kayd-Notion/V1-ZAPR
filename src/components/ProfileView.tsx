@@ -93,11 +93,11 @@ export function ProfileView({ handle }: { handle: string }) {
       <div className="stats-grid">
         <div className="stat-box">
           <div className="sb-val accent">⚡ {fmtSol(u.received)}</div>
-          <div className="sb-label">Pumps reçus</div>
+          <div className="sb-label">Zaps reçus</div>
         </div>
         <div className="stat-box">
           <div className="sb-val">{showGiven ? `⚡ ${fmtSol(u.given)}` : "—"}</div>
-          <div className="sb-label">Pumps donnés</div>
+          <div className="sb-label">Zaps donnés</div>
         </div>
         <div className="stat-box">
           <div className="sb-val">{data.postsCount}</div>
@@ -108,7 +108,7 @@ export function ProfileView({ handle }: { handle: string }) {
       </div>
       {!showGiven && (
         <p className="faint" style={{ padding: "0 16px 8px", fontSize: 12 }}>
-          🔒 L&apos;historique de pump est masqué (confidentialité).
+          🔒 L&apos;historique de zaps est masqué (confidentialité).
         </p>
       )}
 

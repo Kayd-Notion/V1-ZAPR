@@ -37,9 +37,9 @@ interface DbShape {
 // writable — fall back to the OS temp dir so previews don't crash on writes.
 // Data there is ephemeral (per warm instance); use Postgres for durability.
 function resolveDataDir(): string {
-  if (process.env.PS_DATA_DIR) return process.env.PS_DATA_DIR;
+  if (process.env.ZAPR_DATA_DIR) return process.env.ZAPR_DATA_DIR;
   if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
-    return path.join(os.tmpdir(), "pump-social");
+    return path.join(os.tmpdir(), "zapr");
   }
   return path.join(process.cwd(), ".data");
 }
@@ -137,7 +137,7 @@ export function createMemoryStore(): Store {
         id: randomUUID(),
         handle,
         wallet,
-        bio: bio || "Nouveau sur pump.social 👋",
+        bio: bio || "Nouveau sur ZAPR 👋",
         country,
         createdAt: Date.now(),
         received: 0,

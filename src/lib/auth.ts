@@ -21,7 +21,7 @@ export function buildSignInMessage(params: {
   issuedAt: number;
   domain?: string;
 }): string {
-  const { wallet, nonce, issuedAt, domain = "pump.social" } = params;
+  const { wallet, nonce, issuedAt, domain = "ZAPR" } = params;
   return [
     `${domain} veut que tu te connectes avec ton wallet Solana.`,
     "",

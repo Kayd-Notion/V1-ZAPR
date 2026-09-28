@@ -115,7 +115,7 @@ check("a nonce is single-use (replay → 401)", replay.status === 401, JSON.stri
   const forged = bs58.encode(nacl.sign.detached(new TextEncoder().encode(n.message), outsider.secretKey));
   const r = await api("POST", "/auth/verify", { body: { wallet, message: n.message, signature: forged } });
   check("signature by another key → 401", r.status === 401 && r.body.error === "invalid_signature", JSON.stringify(r.body));
-  const tampered = n.message.replace("pump.social", "evil.example");
+  const tampered = n.message.replace("ZAPR", "evil.example");
   const { body: n2 } = await api("POST", "/auth/nonce", { body: { wallet } });
   const sig2 = bs58.encode(nacl.sign.detached(new TextEncoder().encode(tampered.replace(n.message.match(/Nonce : (\S+)/)[1], n2.nonce)), pumper.secretKey));
   const r2 = await api("POST", "/auth/verify", { body: { wallet, message: tampered.replace(n.message.match(/Nonce : (\S+)/)[1], n2.nonce), signature: sig2 } });

@@ -89,7 +89,7 @@ export function requirementsJson(r: PumpRequirements) {
 export function assertAboveMinPump(amountLamports: bigint): void {
   if (amountLamports < config.pump.minPumpLamports) {
     const min = lamportsToSol(config.pump.minPumpLamports);
-    throw new HttpError(400, "below_min_pump", `Minimum ${formatSolFr(min)} SOL par pump.`, { min_pump_sol: min });
+    throw new HttpError(400, "below_min_pump", `Minimum ${formatSolFr(min)} SOL par zap.`, { min_pump_sol: min });
   }
 }
 
@@ -98,7 +98,7 @@ export function assertPumpAllowed(post: PumpablePost, amountLamports: bigint, no
   assertAboveMinPump(amountLamports);
   const r = pumpRequirements(post, now);
   if (r.status === "deleted") {
-    throw new HttpError(409, "post_deleted", "Ce post a été supprimé : il ne peut plus être pumpé.", requirementsJson(r));
+    throw new HttpError(409, "post_deleted", "Ce post a été supprimé : il ne peut plus recevoir de zaps.", requirementsJson(r));
   }
   if (r.status === "expired" && amountLamports < r.requiredMinLamports) {
     const min = lamportsToSol(r.requiredMinLamports);

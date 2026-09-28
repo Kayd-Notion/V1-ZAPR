@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# pump.social API — same image locally (Docker Desktop) and on the VPS.
+# ZAPR API — same image locally (Docker Desktop) and on the VPS.
 
 # ---- build: compile TypeScript -------------------------------------------
 FROM node:22-alpine AS build

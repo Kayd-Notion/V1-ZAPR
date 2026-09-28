@@ -37,8 +37,8 @@ const Ctx = createContext<SessionContextValue | null>(null);
 // whether the wallet may silently auto-reconnect on page load.
 function setLoggedInHint(on: boolean) {
   try {
-    if (on) localStorage.setItem("ps_logged_in", "1");
-    else localStorage.removeItem("ps_logged_in");
+    if (on) localStorage.setItem("zapr_logged_in", "1");
+    else localStorage.removeItem("zapr_logged_in");
   } catch {
     /* ignore */
   }

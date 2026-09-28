@@ -41,7 +41,7 @@ export async function POST(
   // Rule 3, server-side even if the client skipped the pre-check.
   if (amount < MIN_PUMP_SOL) {
     return NextResponse.json(
-      { error: `Minimum ${formatSolFr(MIN_PUMP_SOL)} SOL par pump.`, code: "below_min_pump" },
+      { error: `Minimum ${formatSolFr(MIN_PUMP_SOL)} SOL par zap.`, code: "below_min_pump" },
       { status: 400 },
     );
   }
@@ -52,7 +52,7 @@ export async function POST(
 
   // Idempotency: never record the same on-chain tx twice.
   if (await store.getPumpBySignature(signature)) {
-    return NextResponse.json({ error: "Ce pump a déjà été enregistré." }, { status: 409 });
+    return NextResponse.json({ error: "Ce zap a déjà été enregistré." }, { status: 409 });
   }
 
   // Integrity: re-check the transaction on-chain (prod). Skipped in dev.

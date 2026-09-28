@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useSession } from "@/context/SessionContext";
 import { useUI } from "@/context/UIContext";
 import { initials } from "@/lib/format";
+import { ZaprMark } from "../ZaprMark";
 
 /** First-connection pseudo picker (guide §Phase 1: création de pseudo). */
 export function OnboardModal() {
@@ -30,12 +31,12 @@ export function OnboardModal() {
   return (
     <div className="onboard">
       <div className="ob-inner">
-        <div className="ob-logo">P</div>
-        <h2>Bienvenue sur pump.social</h2>
-        <p>Ton wallet est connecté. Choisis un pseudo pour commencer à pumper.</p>
+        <ZaprMark className="ob-logo" />
+        <h2>Bienvenue sur ZAPR</h2>
+        <p>Ton wallet est connecté. Choisis un pseudo pour commencer à poster et envoyer des zaps.</p>
         <div
           className="avatar lg ob-avatar-preview"
-          style={{ background: "var(--accent)", color: "#04120c" }}
+          style={{ background: "var(--accent)", color: "var(--on-accent)" }}
         >
           {pseudo.trim() ? initials(pseudo) : "?"}
         </div>

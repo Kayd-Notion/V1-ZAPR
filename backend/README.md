@@ -1,4 +1,4 @@
-# pump.social — API (backend)
+# ZAPR — API (backend)
 
 Node.js 22 · TypeScript · **Fastify** · Postgres (postgres.js, SQL brut) · MinIO/S3 ·
 Solana devnet. Lancement : voir le [README racine](../README.md#backend-local-docker-desktop--windows-10).
@@ -166,7 +166,7 @@ Le compose est prêt tel quel. À ajouter ou changer :
 - **Caddy** devant `api` (ex. `api.<domaine>`) et `minio` (`media.<domaine>`) ;
 - dans `.env` :
   - `TRUST_PROXY=true` ;
-  - `CORS_ORIGINS=https://pump-social.vercel.app` ;
+  - `CORS_ORIGINS=https://<adresse du site ZAPR>` ;
   - `S3_PUBLIC_URL=https://media.<domaine>` ;
   - `AUTH_DOMAIN=<domaine>` ;
   - `DEV_DEFAULT_COUNTRY=` vide ;

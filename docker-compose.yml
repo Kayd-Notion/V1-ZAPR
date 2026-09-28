@@ -1,4 +1,4 @@
-# pump.social backend stack: Postgres + MinIO (S3) + API.
+# ZAPR backend stack: Postgres + MinIO (S3) + API.
 #
 #   cp .env.example .env      # then edit secrets
 #   docker compose up -d --build
@@ -8,7 +8,7 @@
 # to 127.0.0.1, so nothing is reachable from the network except through that
 # proxy (locally: only from your own PC).
 
-name: pump-social
+name: zapr
 
 services:
   postgres:
@@ -70,7 +70,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
       JWT_TTL_SECONDS: ${JWT_TTL_SECONDS:-604800}
       NONCE_TTL_SECONDS: ${NONCE_TTL_SECONDS:-300}
-      AUTH_DOMAIN: ${AUTH_DOMAIN:-pump.social}
+      AUTH_DOMAIN: ${AUTH_DOMAIN:-ZAPR}
       # Solana
       SOLANA_CLUSTER: ${SOLANA_CLUSTER:-devnet}
       SOLANA_RPC_URL: ${SOLANA_RPC_URL:-https://api.devnet.solana.com}

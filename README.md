@@ -1,10 +1,13 @@
-# pump.social
+# ZAPR
+
+> Anciennement « pump.social » (prototype : dépôt `Kayd-Notion/MVP-pump.social`).
+> Brief complet du projet : [`docs/ZAPR-V1-BRIEF.md`](docs/ZAPR-V1-BRIEF.md).
 
 Frontend web **Next.js** (racine du dépôt) + backend **Node.js/Fastify**
 (`backend/`, lancé avec Docker Compose avec Postgres et MinIO).
 
-Réseau social crypto sur **Solana** où l'on « pump » les posts en SOL pour
-prolonger leur durée de vie et grimper dans deux classements (posts /
+Réseau social crypto sur **Solana** où l'on envoie des **zaps** (en SOL) aux
+posts pour prolonger leur durée de vie et grimper dans deux classements (posts /
 créateurs). Ce dépôt porte le prototype `MVP.html` vers un vrai projet
 **Next.js (App Router) + TypeScript** et implémente le parcours complet de la
 **Phase 1** du roadmap.
@@ -14,14 +17,25 @@ créateurs). Ce dépôt porte le prototype `MVP.html` vers un vrai projet
 > que le programme on-chain n'est pas audité (cf. guide, Phases 2‑3). Basculer
 > plus tard = une variable d'env.
 
+**Vocabulaire.** L'interface parle de **zap** (« Envoyer un zap », « SOL en
+zaps », « Zappeurs »). Le code, l'API (`/api/posts/:id/pump`), la base (table
+`pumps`) et les variables d'environnement (`NEXT_PUBLIC_PUMP_*`) gardent le mot
+**pump** : un zap = un pump.
+
+**Identité visuelle.** Jaune électrique `#FED202` (texte noir dessus), crème
+`#FDFBF4`, jaune foncé `#8A6D00` pour le texte jaune en thème clair. Variables
+dans `src/app/globals.css`. Logo : `public/brand/zapr-icon.svg` (icône) et
+`zapr-bolt.svg` (éclair seul) ; favicon, icônes d'app et image de partage dans
+`src/app/` (`icon.svg`, `favicon.ico`, `apple-icon.png`, `opengraph-image.png`).
+
 ## Le plus simple : en ligne, sans rien installer
 
-Le site est déployé par Vercel à chaque mise à jour de `main`
-(https://pump-social.vercel.app). Sans base de données, il tourne avec des
-données de démo qui **s'effacent** régulièrement. Pour garder tes posts et tes
-pumps, ajoute une base Postgres gratuite depuis le tableau de bord Vercel :
+Le site est déployé par Vercel à chaque mise à jour de `main` (projet Vercel
+relié à ce dépôt ; l'ancien prototype reste sur https://pump-social.vercel.app).
+Sans base de données, il tourne avec des données de démo qui **s'effacent**
+régulièrement. Pour garder tes posts et tes zaps, ajoute une base Postgres gratuite depuis le tableau de bord Vercel :
 
-1. [vercel.com](https://vercel.com) → projet **pump-social** → onglet **Storage**.
+1. [vercel.com](https://vercel.com) → projet **ZAPR** → onglet **Storage**.
 2. **Create Database** → **Neon** (Serverless Postgres) → plan gratuit → région
    Europe (Frankfurt) → **Create**, puis **Connect** au projet (tous les
    environnements).
@@ -66,7 +80,7 @@ Tous les ports sont liés à `127.0.0.1` : rien n'est visible depuis ton réseau
 Pré-requis : Docker Desktop démarré (moteur WSL2).
 
 ```powershell
-cd C:\chemin\vers\pump.social
+cd C:\chemin\vers\V1-ZAPR
 git pull
 
 # Config du stack : copier le modèle puis le compléter

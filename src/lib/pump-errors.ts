@@ -7,12 +7,12 @@ export function humanizePumpError(err: unknown): string {
   const raw = err instanceof Error ? `${err.message} ${String((err as { logs?: unknown }).logs ?? "")}` : String(err);
   if (/InsufficientFundsForRent|insufficient funds for rent/i.test(raw)) {
     return (
-      "Le réseau Solana a refusé ce pump : un des wallets qui le reçoit est vide, et la part qu'il recevrait " +
+      "Le réseau Solana a refusé ce zap : un des wallets qui le reçoit est vide, et la part qu'il recevrait " +
       "est trop faible pour l'activer. Essaie avec un montant plus élevé."
     );
   }
   if (/insufficient lamports|no record of a prior credit|insufficient funds|AccountNotFound/i.test(raw)) {
-    return "Solde insuffisant sur ton wallet pour ce pump (montant + frais réseau).";
+    return "Solde insuffisant sur ton wallet pour ce zap (montant + frais réseau).";
   }
   if (/user rejected|rejected the request|declined|cancell?ed/i.test(raw)) {
     return "Transaction annulée dans le wallet : rien n'a été envoyé.";
@@ -29,5 +29,5 @@ export function humanizePumpError(err: unknown): string {
       "puis réessaie."
     );
   }
-  return err instanceof Error ? err.message : "Le pump a échoué.";
+  return err instanceof Error ? err.message : "Le zap a échoué.";
 }

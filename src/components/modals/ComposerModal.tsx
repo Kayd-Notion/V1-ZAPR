@@ -51,7 +51,7 @@ export function ComposerModal() {
     if (wanted > 0) {
       const { minPumpSol } = await api.pumpConfig().catch(() => ({ minPumpSol: MIN_PUMP_SOL }));
       if (wanted + 1e-9 < minPumpSol) {
-        toast(`Pump initial : minimum ${formatSolFr(minPumpSol)} SOL`);
+        toast(`Zap initial : minimum ${formatSolFr(minPumpSol)} SOL`);
         return;
       }
     }
@@ -75,13 +75,13 @@ export function ComposerModal() {
       const initial = withPump ? parseFloat(pumpAmount) || 0 : 0;
       if (initial > 0) {
         if (!canSign) {
-          toast("Post publié — reconnecte ton wallet pour le pump initial.");
+          toast("Post publié — reconnecte ton wallet pour le zap initial.");
         } else {
           setPhase("pumping");
           try {
             await runPump(post, initial, user.anonymizePumps);
           } catch (e) {
-            toast(e instanceof Error ? e.message : "Pump initial échoué (post publié).");
+            toast(e instanceof Error ? e.message : "Zap initial échoué (post publié).");
           }
         }
       }
@@ -107,7 +107,7 @@ export function ComposerModal() {
       : phase === "posting"
         ? "Publication…"
         : phase === "pumping"
-          ? "Pump initial…"
+          ? "Zap initial…"
           : "Publier";
 
   return (
@@ -119,7 +119,7 @@ export function ComposerModal() {
           rows={4}
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Quoi de neuf à pumper ?"
+          placeholder="Quoi de neuf ?"
           maxLength={500}
           style={{ resize: "none", border: "none", background: "transparent", fontSize: 17, padding: "8px 0" }}
           autoFocus
@@ -165,7 +165,7 @@ export function ComposerModal() {
       </div>
 
       <label className={`toggle${withPump ? " on" : ""}`} onClick={() => setWithPump((v) => !v)}>
-        <span className="tg-switch" /> Ajouter un pump initial pour booster mon post
+        <span className="tg-switch" /> Ajouter un zap initial pour booster mon post
       </label>
       {withPump && (
         <div style={{ marginTop: 12 }}>

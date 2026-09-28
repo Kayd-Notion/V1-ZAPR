@@ -32,7 +32,7 @@ export async function GET(
         createdAt: p.createdAt,
         anonymous: true,
         isSelfPump,
-        label: `Pumper #${i + 1}`,
+        label: `Zappeur #${i + 1}`,
         author: null as null,
       };
     }

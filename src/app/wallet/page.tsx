@@ -78,15 +78,15 @@ export default function WalletPage() {
         </div>
       </div>
 
-      <div className="section-title">Statistiques pump</div>
+      <div className="section-title">Statistiques zaps</div>
       <div className="stats-grid">
         <div className="stat-box">
           <div className="sb-val accent">⚡ {fmtSol(user.received)}</div>
-          <div className="sb-label">Pumps reçus</div>
+          <div className="sb-label">Zaps reçus</div>
         </div>
         <div className="stat-box">
           <div className="sb-val">⚡ {fmtSol(user.given)}</div>
-          <div className="sb-label">Pumps donnés</div>
+          <div className="sb-label">Zaps donnés</div>
         </div>
         <div className="stat-box">
           <div className="sb-val">{publicKey ? "✓" : "—"}</div>

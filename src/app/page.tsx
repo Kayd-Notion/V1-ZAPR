@@ -91,7 +91,7 @@ export default function FeedPage() {
           <span style={{ fontSize: 26 }}>👋</span>
           <div className="vb-text">
             <b>Mode visiteur</b>
-            Connecte ton wallet pour pumper, poster et suivre des créateurs.
+            Connecte ton wallet pour poster, envoyer des zaps et suivre des créateurs.
           </div>
           <VisitorConnect />
         </div>
@@ -106,7 +106,7 @@ export default function FeedPage() {
           </div>
         )}
         <button className="ct-fake" onClick={onComposer}>
-          Quoi de neuf à pumper ?
+          Quoi de neuf ?
         </button>
       </div>
 
@@ -139,7 +139,7 @@ function VisitorConnect() {
   return (
     <button
       className="btn btn-primary btn-sm"
-      onClick={() => openConnect("Connecte ton wallet Solana pour rejoindre pump.social.")}
+      onClick={() => openConnect("Connecte ton wallet Solana pour rejoindre ZAPR.")}
     >
       Connecter
     </button>

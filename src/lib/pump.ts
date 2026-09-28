@@ -71,7 +71,7 @@ export async function buildPumpTransaction({
   amountSol,
   target,
 }: BuildPumpArgs): Promise<{ transaction: Transaction; quote: PumpQuote }> {
-  if (!(amountSol > 0)) throw new Error("Le montant du pump doit être positif.");
+  if (!(amountSol > 0)) throw new Error("Le montant du zap doit être positif.");
   const platformWallet = target?.platformWallet ?? FOUNDER_WALLET;
   if (!platformWallet) {
     throw new Error("Wallet fondateur non configuré (NEXT_PUBLIC_FOUNDER_WALLET).");
@@ -146,7 +146,7 @@ export interface SendPumpResult extends PumpQuote {
 export async function sendPump(args: SendPumpArgs): Promise<SendPumpResult> {
   if (IS_MAINNET) {
     throw new Error(
-      "Les pumps sont désactivés sur mainnet tant que le programme on-chain n'est pas audité.",
+      "Les zaps sont désactivés sur mainnet tant que le programme on-chain n'est pas audité.",
     );
   }
   const { connection, sendTransaction, signTransaction } = args;
@@ -174,7 +174,7 @@ export async function sendPump(args: SendPumpArgs): Promise<SendPumpResult> {
     "confirmed",
   );
   if (confirmation.value.err) {
-    throw new Error("La transaction de pump a échoué on-chain.");
+    throw new Error("La transaction du zap a échoué on-chain.");
   }
 
   return { ...quote, signature };

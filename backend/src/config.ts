@@ -78,7 +78,7 @@ export const config = {
     jwtTtlSeconds: int("JWT_TTL_SECONDS", 7 * 24 * 3600),
     nonceTtlSeconds: int("NONCE_TTL_SECONDS", 300),
     // Shown in the sign-in message; set to the real domain in production.
-    domain: str("AUTH_DOMAIN", "pump.social"),
+    domain: str("AUTH_DOMAIN", "ZAPR"),
   },
 
   solana: {

@@ -9,7 +9,7 @@ import type { LeaderboardCreatorItem } from "@/lib/client-types";
 
 const TRENDS = [
   { tag: "#solana", count: "12.4k posts" },
-  { tag: "#pump", count: "8.9k posts" },
+  { tag: "#zap", count: "8.9k posts" },
   { tag: "#nft", count: "5.1k posts" },
   { tag: "#build", count: "3.3k posts" },
 ];
@@ -75,7 +75,7 @@ export function RightRail() {
         ))}
       </div>
       <p className="faint" style={{ fontSize: 12, padding: "0 4px" }}>
-        Réseau : devnet (aucune transaction sur mainnet). © pump.social
+        Réseau : devnet (aucune transaction sur mainnet). © ZAPR
       </p>
     </aside>
   );

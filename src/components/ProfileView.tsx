@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, EyeOff, Wallet } from "lucide-react";
 import { PostCard } from "./PostCard";
 import { Avatar } from "./Avatar";
-import { ZapIcon, ZaprEmpty, ZaprLoader, ZaprMark } from "./ZaprMark";
+import { ZapIcon, ZaprEmpty, ZaprLoader } from "./ZaprMark";
 import { api } from "@/lib/api";
 import { useSession } from "@/context/SessionContext";
 import { useUI } from "@/context/UIContext";
@@ -62,7 +62,7 @@ export function ProfileView({ handle }: { handle: string }) {
       </div>
 
       <div className="profile-cover">
-        <ZaprMark className="cover-mark" />
+        <ZapIcon className="cover-mark" />
       </div>
       <div className="profile-head">
         <div className="profile-top-row">

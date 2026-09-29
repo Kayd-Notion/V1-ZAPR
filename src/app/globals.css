@@ -42,6 +42,9 @@
   --shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
   --accent-soft: rgba(254, 210, 2, 0.14);
   --accent-text: #fed202;
+  /* Logo : pas de contour en sombre, un halo jaune à la place. */
+  --logo-outline: #fed202;
+  --logo-glow: drop-shadow(0 0 10px rgba(254, 210, 2, 0.45));
 }
 
 :root[data-theme="light"] {
@@ -60,6 +63,9 @@
   --accent-soft: rgba(254, 210, 2, 0.24);
   /* Contraste 4,75:1 sur le fond crème (AA). */
   --accent-text: #8a6d00;
+  /* Logo : contour sombre, sinon le jaune disparaît sur le crème. */
+  --logo-outline: #111111;
+  --logo-glow: none;
 }
 
 /* -------- 2. Reset & base --------------------------------------------- */
@@ -82,6 +88,8 @@ a { color: var(--accent-text); text-decoration: none; }
 /* -------- 3. Layout applicatif (plein écran, style pump.fun) ---------- */
 /* Icônes lucide : taille du texte par défaut, trait 2px. */
 svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em; }
+/* Logo ZAPR : l'éclair seul (ratio 2:3), posé directement sur la page. */
+.zmark { display: block; flex-shrink: 0; aspect-ratio: 2 / 3; height: 1em; width: auto; filter: var(--logo-glow); overflow: visible; }
 
 .topbar {
   position: sticky; top: 0; z-index: 50;
@@ -93,11 +101,7 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
   border-bottom: 1px solid var(--border-soft);
 }
 .brand { display: flex; align-items: center; gap: 9px; font-weight: 900; font-size: 20px; color: var(--text); flex-shrink: 0; }
-.brand .logo-mark {
-  width: 34px; height: 34px; border-radius: 9px; display: block; flex-shrink: 0;
-  /* Liseré discret : l'icône crème se fond sinon dans le fond crème du thème clair. */
-  box-shadow: 0 0 0 1px var(--border);
-}
+.brand .logo-mark { height: 34px; }
 .brand .logo-text { letter-spacing: 0.06em; }
 .tb-search {
   flex: 1; max-width: 560px; margin: 0 auto;
@@ -267,12 +271,12 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
 
 /* Chargement et états vides avec le logo */
 .zloader { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 48px 20px; color: var(--text-faint); font-size: 13.5px; }
-.zloader-mark { width: 44px; height: 44px; border-radius: 12px; animation: zpulse 1s ease-in-out infinite; box-shadow: 0 0 0 1px var(--border); }
+.zloader-mark { height: 48px; animation: zpulse 1s ease-in-out infinite; }
 @keyframes zpulse { 0%, 100% { transform: scale(0.92); opacity: 0.7; } 50% { transform: scale(1.04); opacity: 1; } }
 .zempty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 56px 24px; text-align: center; color: var(--text-dim); font-size: 14px; }
 .zempty b { color: var(--text); font-size: 17px; font-weight: 900; }
 .zempty .btn { margin-top: 8px; }
-.zempty-mark { width: 64px; height: 64px; border-radius: 16px; margin-bottom: 6px; box-shadow: 0 0 0 1px var(--border); transform: rotate(-6deg); }
+.zempty-mark { height: 72px; margin-bottom: 8px; transform: rotate(-8deg); }
 .zempty-ico { width: 40px; height: 40px; color: var(--text-faint); margin-bottom: 6px; }
 
 /* Mobile : bouton flottant + barre du bas */
@@ -397,7 +401,7 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
 }
 .visitor-banner .vb-text { flex: 1; font-size: 13.5px; }
 .visitor-banner .vb-text b { display: block; margin-bottom: 2px; font-size: 15px; font-weight: 900; }
-.vb-mark { width: 40px; height: 40px; border-radius: 11px; flex-shrink: 0; transform: rotate(-6deg); box-shadow: 0 0 0 1px var(--border); }
+.vb-mark { height: 42px; margin: 0 4px; transform: rotate(-8deg); }
 
 .composer-trigger {
   display: flex; align-items: center; gap: 12px;
@@ -565,12 +569,12 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
 .pump-success { text-align: center; padding: 26px 10px; }
 .pump-success h3 { font-size: 21px; font-weight: 900; margin-bottom: 6px; }
 .ps-mark {
-  width: 84px; height: 84px; border-radius: 22px; display: block; margin: 0 auto 16px;
-  box-shadow: 0 0 0 1px var(--border), 0 0 40px rgba(254, 210, 2, 0.45);
+  height: 96px; margin: 0 auto 16px;
+  filter: drop-shadow(0 0 24px rgba(254, 210, 2, 0.6));
   animation: zap-hit 0.6s cubic-bezier(0.2, 1.6, 0.4, 1);
 }
-@keyframes zap-hit { from { transform: scale(0.3) rotate(-25deg); opacity: 0; } to { transform: scale(1) rotate(-6deg); opacity: 1; } }
-.connect-mark { width: 60px; height: 60px; border-radius: 16px; display: block; margin: 0 auto 12px; transform: rotate(-6deg); box-shadow: 0 0 0 1px var(--border); }
+@keyframes zap-hit { from { transform: scale(0.3) rotate(-25deg); opacity: 0; } to { transform: scale(1) rotate(-8deg); opacity: 1; } }
+.connect-mark { height: 64px; margin: 0 auto 12px; transform: rotate(-8deg); }
 .spinner {
   width: 20px; height: 20px; border-radius: 50%;
   border: 2px solid rgba(255,255,255,0.35); border-top-color: currentColor;
@@ -649,7 +653,7 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
   height: 140px; position: relative; overflow: hidden;
   background: linear-gradient(120deg, var(--accent), #e0a800 55%, var(--bg-elev-2));
 }
-.cover-mark { position: absolute; right: 6%; top: -30px; width: 200px; height: 200px; opacity: 0.35; transform: rotate(-12deg); }
+.cover-mark { position: absolute; right: 8%; top: -24px; height: 200px; width: auto; color: #111; opacity: 0.18; transform: rotate(-12deg); }
 .profile-head { padding: 0 20px 16px; position: relative; }
 .profile-head .avatar { margin-top: -42px; border: 4px solid var(--bg); }
 .profile-top-row { display: flex; justify-content: space-between; align-items: flex-start; }
@@ -680,7 +684,7 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
   background: linear-gradient(135deg, var(--accent), #e0a800);
   border-radius: 20px; color: var(--on-accent);
 }
-.bc-mark { position: absolute; right: -20px; bottom: -40px; width: 180px; height: 180px; opacity: 0.3; transform: rotate(-12deg); }
+.bc-mark { position: absolute; right: 24px; bottom: -36px; height: 190px; width: auto; color: #111; opacity: 0.16; transform: rotate(-12deg); }
 .balance-card > *:not(.bc-mark) { position: relative; }
 .balance-card .bc-label { font-size: 13px; opacity: 0.85; }
 .balance-card .bc-value { font-size: 38px; font-weight: 900; margin: 4px 0; }
@@ -702,7 +706,7 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
   padding: 30px; text-align: center;
 }
 .onboard .ob-inner { width: 100%; max-width: 380px; }
-.onboard .ob-logo { width: 72px; height: 72px; border-radius: 18px; display: block; margin: 0 auto 20px; box-shadow: 0 0 0 1px var(--border); }
+.onboard .ob-logo { height: 84px; margin: 0 auto 20px; }
 .onboard h2 { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
 .onboard p { color: var(--text-dim); margin-bottom: 24px; }
 .onboard .ob-avatar-preview { width: 72px; height: 72px; margin: 0 auto 16px; }
@@ -735,7 +739,7 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
 @media (max-width: 760px) {
   :root { --topbar-h: 56px; --ticker-h: 32px; }
   .topbar { gap: 10px; padding: 0 12px; }
-  .brand .logo-mark { width: 30px; height: 30px; }
+  .brand .logo-mark { height: 30px; }
   .tb-search, .tb-post, .tb-theme { display: none; }
   .tb-search-btn { display: flex; }
   .tb-actions { margin-left: auto; }

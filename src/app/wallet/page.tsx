@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { Droplet, ExternalLink } from "lucide-react";
-import { ZapIcon, ZaprEmpty, ZaprMark } from "@/components/ZaprMark";
+import { ZapIcon, ZaprEmpty } from "@/components/ZaprMark";
 import { useSession } from "@/context/SessionContext";
 import { useUI } from "@/context/UIContext";
 import { fmtSol, lamportsToSol } from "@/lib/format";
@@ -54,7 +54,7 @@ export default function WalletPage() {
         <div className="page-title">Wallet</div>
       </div>
       <div className="balance-card">
-        <ZaprMark className="bc-mark" />
+        <ZapIcon className="bc-mark" />
         <div className="bc-label">Ton solde ({CLUSTER})</div>
         <div className="bc-value">
           {loading || balance === null ? "…" : `${fmtSol(balance)} SOL`}

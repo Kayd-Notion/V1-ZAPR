@@ -105,7 +105,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
           setStatus("authed");
           authedFor.current = address;
           closeModal();
-          toast(`✅ Connecté — gm ${res.user.handle}`);
+          toast(`gm ${res.user.handle}`);
         } else if (res.needsOnboarding) {
           setStatus("needs-onboarding");
           authedFor.current = address;
@@ -147,7 +147,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       setUser(res.user);
       setStatus("authed");
       closeModal();
-      toast(`🎉 Bienvenue, ${res.user.handle} !`);
+      toast(`Bienvenue ${res.user.handle}. LFG.`);
     },
     [closeModal, toast],
   );
@@ -166,7 +166,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     setStatus("anonymous");
     authedFor.current = null;
-    toast("Wallet déconnecté");
+    toast("Wallet déconnecté. À plus.");
   }, [disconnect, toast]);
 
   const refreshUser = useCallback(async () => {

@@ -33,3 +33,24 @@ export function ZapIcon() {
     </svg>
   );
 }
+
+/** Loading indicator: the ZAPR bolt, pulsing. */
+export function ZaprLoader({ label }: { label?: string }) {
+  return (
+    <div className="zloader" role="status">
+      <ZaprMark className="zloader-mark" />
+      {label && <span>{label}</span>}
+    </div>
+  );
+}
+
+/** Empty / error state with the logo, a punchline and an optional action. */
+export function ZaprEmpty({ title, children }: { title: string; children?: React.ReactNode }) {
+  return (
+    <div className="zempty">
+      <ZaprMark className="zempty-mark" />
+      <b>{title}</b>
+      {children}
+    </div>
+  );
+}

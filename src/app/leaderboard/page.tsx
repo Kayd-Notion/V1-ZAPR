@@ -1,7 +1,9 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Globe, MapPin } from "lucide-react";
 import { Avatar } from "@/components/Avatar";
+import { ZapIcon, ZaprEmpty, ZaprLoader } from "@/components/ZaprMark";
 import { api } from "@/lib/api";
 import { useUI } from "@/context/UIContext";
 import { KNOWN_COUNTRIES } from "@/lib/geo-client";
@@ -119,12 +121,15 @@ export default function LeaderboardPage() {
 
   return (
     <section>
+      <div className="subbar">
+        <div className="page-title">Top</div>
+      </div>
       <div className="tabs">
         <div className={`tab${kind === "posts" ? " active" : ""}`} onClick={() => setKind("posts")}>
           Posts
         </div>
         <div className={`tab${kind === "creators" ? " active" : ""}`} onClick={() => setKind("creators")}>
-          Créateurs
+          Degens
         </div>
       </div>
 
@@ -132,10 +137,10 @@ export default function LeaderboardPage() {
         <div className="lb-filters">
           <div className="seg">
             <button className={`chip${scope === "world" ? " active" : ""}`} onClick={() => setScope("world")}>
-              🌍 Mondial
+              <Globe /> Monde
             </button>
             <button className={`chip${scope === "country" ? " active" : ""}`} onClick={() => setScope("country")}>
-              📍 Par pays
+              <MapPin /> Par pays
             </button>
           </div>
           <div className="seg" role="group" aria-label="Période">
@@ -162,14 +167,11 @@ export default function LeaderboardPage() {
       </div>
 
       {loading ? (
-        <div className="loading-state">
-          <span className="spinner" style={{ color: "var(--accent-text)" }} /> Chargement…
-        </div>
+        <ZaprLoader />
       ) : empty ? (
-        <div className="empty-state">
-          <div className="ico">🏆</div>
-          {period === "all" ? "Aucune entrée pour ce filtre." : "Aucun zap sur cette période."}
-        </div>
+        <ZaprEmpty title="Personne sur le podium.">
+          <span>{period === "all" ? "Rien pour ce filtre. Pour l'instant." : "Aucun zap sur cette période."}</span>
+        </ZaprEmpty>
       ) : kind === "posts" ? (
         posts.map((it, i) => {
           const author = it.post?.author ?? it.creator;
@@ -191,13 +193,10 @@ export default function LeaderboardPage() {
               )}
               <div className="lb-info">
                 {it.post ? (
-                  <div className="lb-name">
-                    {it.post.text.slice(0, 42)}
-                    {it.post.text.length > 42 ? "…" : ""}
-                  </div>
+                  <div className="lb-name">{it.post.text}</div>
                 ) : (
                   <div className="lb-name faint" style={{ fontStyle: "italic", fontWeight: 600 }}>
-                    Post supprimé
+                    Post RIP (supprimé)
                   </div>
                 )}
                 <div className="lb-sub">
@@ -205,7 +204,10 @@ export default function LeaderboardPage() {
                 </div>
               </div>
               <div className="lb-amount">
-                ⚡ {fmtSol(it.total)}
+                <span>
+                  <ZapIcon />
+                  {fmtSol(it.total)}
+                </span>
                 <small>{short ? `SOL · ${short}` : "SOL"}</small>
               </div>
             </div>
@@ -225,8 +227,11 @@ export default function LeaderboardPage() {
               <div className="lb-sub">@{u.handle}</div>
             </div>
             <div className="lb-amount">
-              ⚡ {fmtSol(total)}
-              <small>{short ? `reçus · ${short}` : "reçus"}</small>
+              <span>
+                <ZapIcon />
+                {fmtSol(total)}
+              </span>
+              <small>{short ? `SOL reçus · ${short}` : "SOL reçus"}</small>
             </div>
           </div>
         ))

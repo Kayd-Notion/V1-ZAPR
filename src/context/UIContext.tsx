@@ -79,7 +79,7 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const openConnect = useCallback((msg?: string) => {
-    setConnectMessage(msg || "Connecte ton wallet Solana pour effectuer cette action.");
+    setConnectMessage(msg || "Connecte ton wallet Solana pour continuer.");
     setActiveModal("connect");
   }, []);
   const openComposer = useCallback(() => setActiveModal("composer"), []);

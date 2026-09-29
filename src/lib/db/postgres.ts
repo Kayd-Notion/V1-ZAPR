@@ -150,7 +150,7 @@ export function createPostgresStore(): Store {
       const id = randomUUID();
       const rows = await db`
         insert into users (id, handle, wallet, bio, country, created_at)
-        values (${id}, ${handle}, ${wallet}, ${bio || "Nouveau sur ZAPR 👋"}, ${country}, ${Date.now()})
+        values (${id}, ${handle}, ${wallet}, ${bio || "gm, nouveau sur ZAPR."}, ${country}, ${Date.now()})
         returning *`;
       return rowToUser(rows[0]);
     },

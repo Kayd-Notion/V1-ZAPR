@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { Droplet, ExternalLink } from "lucide-react";
+import { ZapIcon, ZaprEmpty, ZaprMark } from "@/components/ZaprMark";
 import { useSession } from "@/context/SessionContext";
 import { useUI } from "@/context/UIContext";
 import { fmtSol, lamportsToSol } from "@/lib/format";
@@ -34,25 +36,26 @@ export default function WalletPage() {
   if (!user) {
     return (
       <section>
-        <div className="empty-state">
-          <div className="ico">💳</div>
-          <p>Connecte ton wallet pour voir ton solde et ton activité.</p>
+        <ZaprEmpty title="Pas de wallet, pas de zaps.">
           <button
             className="btn btn-primary"
-            style={{ marginTop: 14 }}
-            onClick={() => openConnect("Connecte ton wallet pour accéder à ton wallet.")}
+            onClick={() => openConnect("Connecte ton wallet pour voir ton solde.")}
           >
             Connecter
           </button>
-        </div>
+        </ZaprEmpty>
       </section>
     );
   }
 
   return (
     <section>
+      <div className="subbar">
+        <div className="page-title">Wallet</div>
+      </div>
       <div className="balance-card">
-        <div className="bc-label">Solde disponible ({CLUSTER})</div>
+        <ZaprMark className="bc-mark" />
+        <div className="bc-label">Ton solde ({CLUSTER})</div>
         <div className="bc-value">
           {loading || balance === null ? "…" : `${fmtSol(balance)} SOL`}
         </div>
@@ -63,38 +66,44 @@ export default function WalletPage() {
               publicKey &&
               connection
                 .requestAirdrop(publicKey, 1_000_000_000)
-                .then(() => toast("💧 Airdrop devnet demandé (1 SOL)"))
-                .catch(() => toast("Airdrop indisponible (limite RPC)."))
+                .then(() => toast("1 SOL devnet en route."))
+                .catch(() => toast("Faucet à sec (limite RPC). Réessaie plus tard ou passe par faucet.solana.com."))
             }
           >
-            💧 Airdrop devnet
+            <Droplet /> Faucet devnet +1 SOL
           </button>
         </div>
       </div>
 
-      <div className="section-title">Statistiques zaps</div>
+      <div className="section-title">Tes stats</div>
       <div className="stats-grid">
         <div className="stat-box">
-          <div className="sb-val accent">⚡ {fmtSol(user.received)}</div>
-          <div className="sb-label">Zaps reçus</div>
+          <div className="sb-val accent">
+            <ZapIcon />
+            {fmtSol(user.received)}
+          </div>
+          <div className="sb-label">SOL reçus</div>
         </div>
         <div className="stat-box">
-          <div className="sb-val">⚡ {fmtSol(user.given)}</div>
-          <div className="sb-label">Zaps donnés</div>
+          <div className="sb-val">
+            <ZapIcon />
+            {fmtSol(user.given)}
+          </div>
+          <div className="sb-label">SOL envoyés</div>
         </div>
         <div className="stat-box">
-          <div className="sb-val">{publicKey ? "✓" : "—"}</div>
+          <div className="sb-val">{publicKey ? "Oui" : "Non"}</div>
           <div className="sb-label">Wallet lié</div>
         </div>
       </div>
 
-      <p className="faint" style={{ padding: "0 16px 20px", fontSize: 12.5 }}>
-        Le solde est lu en direct sur la blockchain ({CLUSTER}).
+      <p className="faint hint-line">
+        Solde lu en direct sur la blockchain ({CLUSTER}).
         {publicKey && (
           <>
             {" "}
             <a href={explorerAddressUrl(publicKey.toBase58())} target="_blank" rel="noreferrer">
-              Voir sur l&apos;explorer
+              Voir sur l&apos;explorer <ExternalLink />
             </a>
           </>
         )}

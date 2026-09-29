@@ -1,5 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
+import { Link2, MessageCircle } from "lucide-react";
 import { Avatar } from "./Avatar";
 import { TimeGauge } from "./TimeGauge";
 import { ZapIcon } from "./ZaprMark";
@@ -9,9 +10,9 @@ import { fmtSol, timeAgo } from "@/lib/format";
 import { lifespanInfo } from "@/lib/lifespan";
 import type { ClientPost } from "@/lib/client-types";
 
-export function PostCard({ post }: { post: ClientPost }) {
+export function PostCard({ post, fresh = false }: { post: ClientPost; fresh?: boolean }) {
   const router = useRouter();
-  const { openPump } = useUI();
+  const { openPump, toast } = useUI();
   const { requireAuth } = useSession();
 
   const expired = lifespanInfo(post.createdAt, post.pumped).expired;
@@ -23,21 +24,26 @@ export function PostCard({ post }: { post: ClientPost }) {
     if (!requireAuth("Connecte ton wallet pour envoyer un zap.")) return;
     openPump(post);
   };
+  const copyLink = () => {
+    const url = `${window.location.origin}/post/${post.id}`;
+    navigator.clipboard?.writeText(url).then(
+      () => toast("Lien copié. Va shiller."),
+      () => toast(url),
+    );
+  };
 
   return (
-    <article className={`post${expired ? " expired" : ""}`} onClick={go}>
-      <Avatar id={post.author.id} handle={post.author.handle} />
+    <article className={`post${expired ? " expired" : ""}${fresh ? " fresh" : ""}`} onClick={go}>
+      <div onClick={stop}>
+        <button className="avatar-link" onClick={() => router.push(`/profile/${post.author.handle}`)}>
+          <Avatar id={post.author.id} handle={post.author.handle} />
+        </button>
+      </div>
       <div className="post-body">
         <div className="post-head">
           <span className="name">{post.author.handle}</span>
-          <span className="handle">@{post.author.handle}</span>
-          <span className="dot-sep">·</span>
-          <span className="time">{timeAgo(post.createdAt)}</span>
-          {expired && (
-            <span className="expired-tag" style={{ marginLeft: "auto" }}>
-              Expiré
-            </span>
-          )}
+          <span className="time">il y a {timeAgo(post.createdAt)}</span>
+          {expired && <span className="expired-tag">RIP</span>}
         </div>
         <div className="post-text">{post.text}</div>
 
@@ -53,18 +59,24 @@ export function PostCard({ post }: { post: ClientPost }) {
           </div>
         )}
 
-        <div className="post-meta">
+        <div className="post-stats">
           <TimeGauge createdAt={post.createdAt} pumped={post.pumped} />
           <div className="pumped-badge">
-            <span className="pb-amount">⚡ {fmtSol(post.pumped)}</span>
+            <span className="pb-amount">
+              <ZapIcon />
+              {fmtSol(post.pumped)}
+            </span>
             <span className="pb-label">SOL en zaps</span>
           </div>
         </div>
 
         <div className="post-actions" onClick={stop}>
           <button className="pa-btn" onClick={go} title="Commentaires">
-            <span className="pa-ico">💬</span>
+            <MessageCircle />
             <span>{post.comments}</span>
+          </button>
+          <button className="pa-btn" onClick={copyLink} title="Copier le lien">
+            <Link2 />
           </button>
           {!post.deleted && (
             <button className="pump-btn" onClick={doPump}>

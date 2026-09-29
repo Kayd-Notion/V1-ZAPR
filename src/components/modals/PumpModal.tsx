@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
+import { AlertTriangle, Hourglass, Landmark, Trash2, User } from "lucide-react";
 import { Modal } from "../Modal";
 import { Avatar } from "../Avatar";
-import { ZapIcon } from "../ZaprMark";
+import { ZapIcon, ZaprMark } from "../ZaprMark";
 import { useUI } from "@/context/UIContext";
 import { useSession } from "@/context/SessionContext";
 import { usePump } from "@/hooks/usePump";
@@ -108,7 +109,7 @@ export function PumpModal() {
       bumpData();
       setTimeout(() => {
         closeModal();
-        toast(`⚡ Zap de ${fmtSol(safeAmount)} SOL envoyé`);
+        toast(`Zap de ${fmtSol(safeAmount)} SOL envoyé. LFG.`);
       }, 1200);
     } catch (e) {
       setPhase("form");
@@ -131,13 +132,11 @@ export function PumpModal() {
   // --- Post purged: no pump possible ------------------------------------
   if (q?.status === "deleted") {
     return (
-      <Modal title="⚡ Envoyer un zap" onClose={closeModal}>
-        <div className="empty-state" style={{ padding: "30px 10px" }}>
-          <div className="ico">🗑️</div>
-          <b style={{ color: "var(--text)" }}>Post supprimé</b>
-          <p className="muted" style={{ marginTop: 6 }}>
-            Ce post a expiré et a été supprimé : il ne peut plus recevoir de zaps. Aucun SOL n&apos;a été envoyé.
-          </p>
+      <Modal title="Zap ce post" icon={<ZapIcon />} onClose={closeModal}>
+        <div className="zempty">
+          <Trash2 className="zempty-ico" />
+          <b>Trop tard, il est parti.</b>
+          <span>Ce post a expiré et a été supprimé : il ne peut plus recevoir de zaps. Aucun SOL n&apos;a été envoyé.</span>
         </div>
         <button className="btn btn-block" onClick={closeModal}>
           Fermer
@@ -147,14 +146,15 @@ export function PumpModal() {
   }
 
   return (
-    <Modal title="⚡ Envoyer un zap" onClose={closeModal}>
+    <Modal title="Zap ce post" icon={<ZapIcon />} onClose={closeModal}>
       {phase === "success" ? (
         <div className="pump-success">
-          <div className="ps-ico">✓</div>
-          <h3 style={{ fontSize: 19, marginBottom: 6 }}>Zap envoyé !</h3>
+          <ZaprMark className="ps-mark" />
+          <h3>Zap envoyé. LFG.</h3>
           <p className="muted">
-            Tu as envoyé un zap de <b>{fmtSol(safeAmount)} SOL</b>.<br />
-            Le post gagne en durée de vie. 🚀
+            <b>+{fmtSol(safeAmount)} SOL</b> sur ce post.
+            <br />
+            Il vient de gagner du temps de vie.
           </p>
         </div>
       ) : (
@@ -162,33 +162,35 @@ export function PumpModal() {
           <div className="pump-target">
             <Avatar id={post.author.id} handle={post.author.handle} size="sm" />
             <div className="pt-text">
-              Zap pour le post de <b>{post.author.handle}</b>
+              Tu envoies un zap à <b>@{post.author.handle}</b>
               <br />« {post.text.slice(0, 60)}
               {post.text.length > 60 ? "…" : ""} »
             </div>
           </div>
 
           {IS_MAINNET && (
-            <p className="muted" style={{ color: "var(--danger)", marginBottom: 12 }}>
-              ⚠️ Les zaps sont désactivés sur mainnet (programme non audité).
+            <p className="warn-line">
+              <AlertTriangle /> Les zaps sont désactivés sur mainnet (programme non audité).
             </p>
           )}
 
           {expired && (
             <div className="pump-notice">
               <p>
-                <b>⏳ Ce post est expiré.</b> Il faut au moins <b>{formatSolFr(requiredMin)} SOL</b> pour le sauver
-                (il sera supprimé sinon).
+                <b className="notice-title">
+                  <Hourglass /> Ce post est RIP.
+                </b>{" "}
+                Il faut au moins <b>{formatSolFr(requiredMin)} SOL</b> pour le ressusciter (sinon il sera supprimé).
               </p>
               {tooLow && (
                 <button className="btn btn-sm btn-accent-soft" style={{ marginTop: 8 }} onClick={() => setAmount(requiredMin)}>
-                  Utiliser {formatSolFr(requiredMin)} SOL
+                  Mettre {formatSolFr(requiredMin)} SOL
                 </button>
               )}
             </div>
           )}
 
-          <label className="field-label">Montants rapides</label>
+          <label className="field-label">Combien tu envoies ?</label>
           <div className="quick-amounts">
             {QUICK_AMOUNTS.map((a) => (
               <button
@@ -205,7 +207,7 @@ export function PumpModal() {
             ))}
           </div>
 
-          <label className="field-label">Montant personnalisé (SOL)</label>
+          <label className="field-label">Montant perso (SOL)</label>
           <input
             className={`field${amountError ? " field-invalid" : ""}`}
             type="number"
@@ -219,11 +221,15 @@ export function PumpModal() {
 
           <div className="split-box">
             <div className="split-row creator">
-              <span>👤 Créateur ({creatorBps / 100}%)</span>
+              <span>
+                <User /> Créateur ({creatorBps / 100}%)
+              </span>
               <b>{fmtSol(quoteSplit.creatorSol)} SOL</b>
             </div>
             <div className="split-row">
-              <span>🏦 Plateforme ({founderBps / 100}%)</span>
+              <span>
+                <Landmark /> Plateforme ({founderBps / 100}%)
+              </span>
               <b>{fmtSol(quoteSplit.founderSol)} SOL</b>
             </div>
             <div className="split-bar">
@@ -246,15 +252,15 @@ export function PumpModal() {
           >
             {!q ? (
               <>
-                <span className="spinner" /> Vérification du post…
+                <span className="spinner" /> Check du post…
               </>
             ) : phase === "sending" ? (
               <>
-                <span className="spinner" /> Signature en cours…
+                <span className="spinner" /> Signe dans ton wallet…
               </>
             ) : (
               <>
-                <ZapIcon /> Confirmer le zap de {formatSolFr(safeAmount)} SOL
+                <ZapIcon /> Send it · {formatSolFr(safeAmount)} SOL
               </>
             )}
           </button>
@@ -264,7 +270,7 @@ export function PumpModal() {
             onClick={closeModal}
             disabled={phase === "sending"}
           >
-            Annuler
+            Laisse tomber
           </button>
         </>
       )}

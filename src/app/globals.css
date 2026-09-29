@@ -397,16 +397,6 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
 }
 
 /* -------- 5. Feed & PostCard ------------------------------------------ */
-.visitor-banner {
-  display: flex; align-items: center; gap: 14px;
-  margin: 14px 16px 4px; padding: 14px 16px;
-  background: linear-gradient(135deg, var(--accent-soft), transparent);
-  border: 1px solid var(--accent-text);
-  border-radius: var(--radius);
-}
-.visitor-banner .vb-text { flex: 1; font-size: 13.5px; }
-.visitor-banner .vb-text b { display: block; margin-bottom: 2px; font-size: 15px; font-weight: 900; }
-.vb-mark { height: 42px; margin: 0 4px; transform: rotate(-8deg); }
 
 .composer-trigger {
   display: flex; align-items: center; gap: 12px;
@@ -755,7 +745,6 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
   .subbar { padding: 8px 14px; }
   .post { padding: 14px; gap: 12px; }
   .composer-trigger { padding: 14px; }
-  .visitor-banner { margin: 12px; flex-wrap: wrap; }
   .live-col.wide .live-list { grid-template-columns: minmax(0, 1fr); }
   .modal { max-width: 440px; align-self: flex-end; margin-bottom: 0; border-radius: 20px 20px 0 0; }
   .modal-overlay { align-items: flex-end; padding: 0; }

@@ -2,8 +2,7 @@ const BOLT = "M356 82 201 182l46 9-114 138 79 3-53 110 202-168-81-16 38-51 42 37
 
 /**
  * ZAPR logo: the yellow bolt alone, no background tile, so it sits directly on
- * the page. The outline (--logo-outline) is invisible in the dark theme and
- * dark in the light theme, where yellow on cream would not read.
+ * the page with a yellow halo (--logo-glow, stronger in the light theme).
  */
 export function ZaprMark({ className }: { className?: string }) {
   return (

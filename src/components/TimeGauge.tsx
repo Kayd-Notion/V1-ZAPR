@@ -15,7 +15,7 @@ export function TimeGauge({ createdAt, pumped }: { createdAt: number; pumped: nu
   return (
     <div className="time-gauge">
       <div className="tg-labels">
-        <span>Durée de vie</span>
+        <span>Temps de vie</span>
         <span className="tg-remaining">{remainingLabel(info.remainingMs)}</span>
       </div>
       <div className="tg-bar">

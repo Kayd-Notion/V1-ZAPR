@@ -8,6 +8,7 @@ import type { Adapter } from "@solana/wallet-adapter-base";
 import { rpcEndpoint } from "@/lib/solana";
 import { UIProvider } from "@/context/UIContext";
 import { SessionProvider } from "@/context/SessionContext";
+import { LiveProvider } from "@/context/LiveContext";
 import { AppShell } from "@/components/AppShell";
 
 // Only silently reconnect the wallet for people who already have a session;
@@ -31,7 +32,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <WalletProvider wallets={wallets} autoConnect={shouldAutoConnect}>
         <UIProvider>
           <SessionProvider>
-            <AppShell>{children}</AppShell>
+            <LiveProvider>
+              <AppShell>{children}</AppShell>
+            </LiveProvider>
           </SessionProvider>
         </UIProvider>
       </WalletProvider>

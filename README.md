@@ -48,6 +48,9 @@ dans le navigateur : Storage → ta base → **Open in Neon** → **SQL Editor**
 - **Connexion wallet** Phantom / Solflare / Backpack (Wallet Standard), preuve
   de propriété par signature d'un message, choix d'un pseudo.
 - **Mode visiteur** : le fil se lit sans wallet.
+- **Live permanent** (style pump.fun) : colonne « Nouveau / Bientôt RIP / En feu »
+  mise à jour toutes les 4 s, nouveaux posts qui arrivent en direct dans le feed,
+  bandeau des créateurs les plus zappés, panneau « Top degens ».
 - **Posts** texte + photo/vidéo (médias sur Arweave, payés en SOL), commentaires.
 - **Zaps** : montants rapides ou libres, aperçu du 70/30, option d'anonymat.
 - **Profil**, **Wallet** (solde devnet + airdrop), **Paramètres** (pseudo, bio,
@@ -70,7 +73,8 @@ un zap = un pump.
 Jaune électrique `#FED202` (texte noir dessus), crème `#FDFBF4`, jaune foncé
 `#8A6D00` pour le texte jaune en thème clair — variables dans
 `src/app/globals.css`. Logo : `public/brand/zapr-icon.svg` et `zapr-bolt.svg` ;
-favicon, icônes et image de partage dans `src/app/`.
+favicon, icônes et image de partage dans `src/app/`. Icônes de l'interface :
+[lucide-react](https://lucide.dev) (aucun emoji dans l'interface).
 
 ## Code
 
@@ -81,8 +85,8 @@ si `DATABASE_URL`, sinon fichier de démo).
 ```
 src/
   app/                 pages + routes API (/api/*), icônes, image de partage
-  components/          AppShell, PostCard, modales (Zap, Composer, Connect…)
-  context/             SessionContext (wallet), UIContext (thème, modales, toasts)
+  components/          AppShell (barre, ticker, rail, colonne live), PostCard, LiveColumn, modales…
+  context/             SessionContext (wallet), UIContext (thème, modales, toasts), LiveContext (live)
   hooks/usePump.ts     zap de bout en bout : vérif serveur → signature → envoi → enregistrement
   lib/
     pump.ts            transaction du zap — SEUL module à remplacer par le futur programme Anchor

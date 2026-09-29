@@ -1,3 +1,4 @@
+import { Ghost } from "lucide-react";
 import { avColor, initials } from "@/lib/format";
 
 export function Avatar({
@@ -8,13 +9,13 @@ export function Avatar({
 }: {
   id: string;
   handle: string;
-  size?: "" | "sm" | "lg";
+  size?: "" | "xs" | "sm" | "lg";
   anonymous?: boolean;
 }) {
   if (anonymous) {
     return (
-      <div className={`avatar ${size}`.trim()} style={{ background: "var(--text-faint)" }}>
-        🕶️
+      <div className={`avatar anon ${size}`.trim()} aria-label="Anonyme">
+        <Ghost />
       </div>
     );
   }

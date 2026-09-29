@@ -1,8 +1,10 @@
 "use client";
 import { useRef, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { ImagePlus, X } from "lucide-react";
 import { Modal } from "../Modal";
 import { Avatar } from "../Avatar";
+import { ZapIcon } from "../ZaprMark";
 import { useUI } from "@/context/UIContext";
 import { useSession } from "@/context/SessionContext";
 import { usePump } from "@/hooks/usePump";
@@ -43,7 +45,7 @@ export function ComposerModal() {
   const submit = async () => {
     const body = text.trim();
     if (!body) {
-      toast("Écris quelque chose 🙂");
+      toast("Écris un truc d'abord.");
       return;
     }
     // Rule 3: check the optional initial pump BEFORE publishing.
@@ -87,7 +89,7 @@ export function ComposerModal() {
 
       bumpData();
       closeModal();
-      toast("✅ Post publié !");
+      toast("Posté. Que les zaps pleuvent.");
       setText("");
       setFile(null);
       setPreview(null);
@@ -105,10 +107,10 @@ export function ComposerModal() {
         ? "Publication…"
         : phase === "pumping"
           ? "Zap initial…"
-          : "Publier";
+          : "Poster";
 
   return (
-    <Modal title="Nouveau post" onClose={closeModal}>
+    <Modal title="Balance un post" onClose={closeModal}>
       <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
         <Avatar id={user.id} handle={user.handle} size="sm" />
         <textarea
@@ -116,7 +118,7 @@ export function ComposerModal() {
           rows={4}
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Quoi de neuf ?"
+          placeholder="Balance ton alpha…"
           maxLength={500}
           style={{ resize: "none", border: "none", background: "transparent", fontSize: 17, padding: "8px 0" }}
           autoFocus
@@ -140,7 +142,7 @@ export function ComposerModal() {
               setPreview(null);
             }}
           >
-            ✕ Retirer
+            <X /> Retirer
           </button>
         </div>
       )}
@@ -154,7 +156,7 @@ export function ComposerModal() {
           onChange={pickFile}
         />
         <button className="btn btn-sm" onClick={() => fileInput.current?.click()} disabled={busy}>
-          📷 Photo / 🎬 Vidéo
+          <ImagePlus /> Photo / vidéo
         </button>
         <span className="faint" style={{ fontSize: 12, alignSelf: "center" }}>
           Upload Arweave payé en SOL
@@ -162,7 +164,7 @@ export function ComposerModal() {
       </div>
 
       <label className={`toggle${withPump ? " on" : ""}`} onClick={() => setWithPump((v) => !v)}>
-        <span className="tg-switch" /> Ajouter un zap initial pour booster mon post
+        <span className="tg-switch" /> Auto-zap de départ pour booster ton post
       </label>
       {withPump && (
         <div style={{ marginTop: 12 }}>
@@ -189,7 +191,9 @@ export function ComposerModal() {
             <span className="spinner" /> {phaseLabel}
           </>
         ) : (
-          "Publier"
+          <>
+            <ZapIcon /> Poster
+          </>
         )}
       </button>
     </Modal>

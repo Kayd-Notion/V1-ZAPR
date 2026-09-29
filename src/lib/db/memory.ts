@@ -137,7 +137,7 @@ export function createMemoryStore(): Store {
         id: randomUUID(),
         handle,
         wallet,
-        bio: bio || "Nouveau sur ZAPR 👋",
+        bio: bio || "gm, nouveau sur ZAPR.",
         country,
         createdAt: Date.now(),
         received: 0,

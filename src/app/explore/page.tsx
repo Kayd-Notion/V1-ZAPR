@@ -1,7 +1,9 @@
 "use client";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { Flame, Search } from "lucide-react";
 import { PostCard } from "@/components/PostCard";
+import { ZaprEmpty, ZaprLoader } from "@/components/ZaprMark";
 import { api } from "@/lib/api";
 import { useUI } from "@/context/UIContext";
 import type { ClientPost } from "@/lib/client-types";
@@ -32,7 +34,7 @@ function ExploreInner() {
   }, [all, query]);
 
   const trending = useMemo(
-    () => [...all].sort((a, b) => b.pumped - a.pumped).slice(0, 3),
+    () => [...all].sort((a, b) => b.pumped - a.pumped).slice(0, 10),
     [all],
   );
 
@@ -40,12 +42,12 @@ function ExploreInner() {
     <section>
       <div className="search-wrap">
         <div className="search-box">
-          <span className="s-ico">🔍</span>
+          <Search className="s-ico" />
           <input
             className="field"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Rechercher des posts, créateurs, tags…"
+            placeholder="Chercher un post, un degen, un #tag…"
           />
         </div>
       </div>
@@ -61,14 +63,15 @@ function ExploreInner() {
             ))}
           </>
         ) : (
-          <div className="empty-state">
-            <div className="ico">🔍</div>
-            Aucun résultat pour « {q} »
-          </div>
+          <ZaprEmpty title={`Rien pour « ${q} ».`}>
+            <span>Essaie un autre mot, ou un #tag.</span>
+          </ZaprEmpty>
         )
       ) : (
         <>
-          <div className="section-title">🔥 Posts en vogue</div>
+          <div className="section-title">
+            <Flame /> En feu
+          </div>
           {trending.map((p) => (
             <PostCard key={p.id} post={p} />
           ))}
@@ -80,7 +83,7 @@ function ExploreInner() {
 
 export default function ExplorePage() {
   return (
-    <Suspense fallback={<div className="loading-state">…</div>}>
+    <Suspense fallback={<ZaprLoader />}>
       <ExploreInner />
     </Suspense>
   );

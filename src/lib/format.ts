@@ -43,21 +43,22 @@ export function shortWallet(w: string): string {
   return w.slice(0, 4) + "…" + w.slice(-4);
 }
 
-/** Relative time from a ms-epoch timestamp. */
+/** Short relative time from a ms-epoch timestamp: "12s", "4min", "3h", "2j". */
 export function timeAgo(fromMs: number, nowMs: number = Date.now()): string {
-  const h = Math.max(0, (nowMs - fromMs) / 3600_000);
-  if (h < 1) return Math.round(h * 60) + "min";
-  if (h < 24) return Math.round(h) + "h";
-  return Math.round(h / 24) + "j";
+  const s = Math.max(0, Math.floor((nowMs - fromMs) / 1000));
+  if (s < 60) return s + "s";
+  if (s < 3600) return Math.floor(s / 60) + "min";
+  if (s < 86400) return Math.floor(s / 3600) + "h";
+  return Math.floor(s / 86400) + "j";
 }
 
-/** Human label for remaining lifespan (matches MVP wording). */
+/** Remaining lifespan: "reste 13j", "reste 4h", "reste 12min", or "RIP". */
 export function remainingLabel(remainingMs: number): string {
-  const h = remainingMs / 3600_000;
-  if (h <= 0) return "Expiré";
-  if (h < 1) return Math.round(h * 60) + "min restantes";
-  if (h < 24) return Math.round(h) + "h restantes";
-  return Math.round(h / 24) + "j restants";
+  const min = remainingMs / 60_000;
+  if (min <= 0) return "RIP";
+  if (min < 60) return "reste " + Math.max(1, Math.floor(min)) + "min";
+  if (min < 1440) return "reste " + Math.floor(min / 60) + "h";
+  return "reste " + Math.floor(min / 1440) + "j";
 }
 
 export const SOL_PER_LAMPORT = 1 / 1_000_000_000;

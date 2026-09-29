@@ -32,8 +32,8 @@ export function OnboardModal() {
     <div className="onboard">
       <div className="ob-inner">
         <ZaprMark className="ob-logo" />
-        <h2>Bienvenue sur ZAPR</h2>
-        <p>Ton wallet est connecté. Choisis un pseudo pour commencer à poster et envoyer des zaps.</p>
+        <h2>Bienvenue dans l&apos;arène</h2>
+        <p>Wallet connecté. Choisis ton blase de degen, c&apos;est parti.</p>
         <div
           className="avatar lg ob-avatar-preview"
           style={{ background: "var(--accent)", color: "var(--on-accent)" }}
@@ -41,7 +41,7 @@ export function OnboardModal() {
           {pseudo.trim() ? initials(pseudo) : "?"}
         </div>
         <div style={{ textAlign: "left", marginBottom: 16 }}>
-          <label className="field-label">Pseudo</label>
+          <label className="field-label">Ton blase</label>
           <input
             className="field"
             value={pseudo}
@@ -53,7 +53,7 @@ export function OnboardModal() {
           />
         </div>
         <button className="btn btn-primary btn-block" onClick={submit} disabled={busy}>
-          {busy ? "Création…" : "Entrer dans l'app"}
+          {busy ? "Création…" : "Entrer dans l'arène"}
         </button>
       </div>
     </div>

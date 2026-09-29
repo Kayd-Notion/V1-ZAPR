@@ -2,7 +2,9 @@
 import { useEffect } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletReadyState } from "@solana/wallet-adapter-base";
+import { Info } from "lucide-react";
 import { Modal } from "../Modal";
+import { ZaprLoader, ZaprMark } from "../ZaprMark";
 import { useUI } from "@/context/UIContext";
 import { useSession } from "@/context/SessionContext";
 
@@ -39,16 +41,14 @@ export function ConnectModal() {
   const notInstalled = KNOWN.filter((k) => !detectedNames.has(k.name.toLowerCase()));
 
   return (
-    <Modal title="Connexion requise" onClose={closeModal}>
+    <Modal title="Connecte ton wallet" onClose={closeModal}>
       <div style={{ textAlign: "center", marginBottom: 18 }}>
-        <div style={{ fontSize: 44, marginBottom: 10 }}>🔐</div>
+        <ZaprMark className="connect-mark" />
         <p className="muted">{connectMessage}</p>
       </div>
 
       {connecting && (
-        <div className="loading-state">
-          <span className="spinner" style={{ color: "var(--accent-text)" }} /> Connexion…
-        </div>
+        <ZaprLoader label="Connexion…" />
       )}
 
       {!connecting && (
@@ -93,13 +93,13 @@ export function ConnectModal() {
 
       {!connecting && detected.length === 0 && (
         <p className="faint" style={{ fontSize: 12.5, marginTop: 12, textAlign: "center" }}>
-          Aucun wallet détecté. Installe l&apos;un des wallets ci-dessus, puis reviens.
+          Aucun wallet détecté. Installe-en un ci-dessus, puis reviens.
         </p>
       )}
 
       {!connecting && detected.length > 0 && notInstalled.length > 0 && (
-        <p className="faint" style={{ fontSize: 12, marginTop: 12 }}>
-          💡 Phantom installé mais absent de la liste ? Dans Brave : <b>Paramètres → Web3 →
+        <p className="faint tip-line">
+          <Info /> Phantom installé mais absent de la liste ? Dans Brave : <b>Paramètres → Web3 →
           Portefeuille par défaut</b> → choisis <b>« Extensions (Phantom) »</b>, puis recharge la
           page.
         </p>

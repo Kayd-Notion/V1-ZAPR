@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowLeft, LogOut } from "lucide-react";
+import { ZaprEmpty } from "@/components/ZaprMark";
 import { useSession } from "@/context/SessionContext";
 import { useUI } from "@/context/UIContext";
 import { api } from "@/lib/api";
@@ -23,17 +25,14 @@ export default function SettingsPage() {
 
   if (!user) {
     return (
-      <div className="empty-state">
-        <div className="ico">⚙️</div>
-        <p>Connecte ton wallet pour accéder aux paramètres.</p>
+      <ZaprEmpty title="Connecte-toi pour régler ton compte.">
         <button
           className="btn btn-primary"
-          style={{ marginTop: 14 }}
-          onClick={() => openConnect("Connecte ton wallet pour accéder aux paramètres.")}
+          onClick={() => openConnect("Connecte ton wallet pour accéder aux réglages.")}
         >
           Connecter
         </button>
-      </div>
+      </ZaprEmpty>
     );
   }
 
@@ -42,7 +41,7 @@ export default function SettingsPage() {
     try {
       const res = await api.updateMe({ bio, handle });
       setUser(res.user);
-      toast("✅ Profil enregistré");
+      toast("Profil à jour.");
     } catch (e) {
       toast(e instanceof Error ? e.message : "Enregistrement impossible.");
     } finally {
@@ -54,7 +53,7 @@ export default function SettingsPage() {
     try {
       const res = await api.updateMe(patch);
       setUser(res.user);
-      toast("Préférence mise à jour");
+      toast("C'est noté.");
     } catch {
       toast("Mise à jour impossible.");
     }
@@ -62,19 +61,17 @@ export default function SettingsPage() {
 
   return (
     <section>
-      <div className="header back-bar" style={{ borderBottom: "1px solid var(--border-soft)" }}>
-        <button className="back-btn" onClick={() => router.push("/profile")}>
-          ←
+      <div className="subbar">
+        <button className="icon-btn" onClick={() => router.push("/profile")} aria-label="Retour">
+          <ArrowLeft />
         </button>
-        <div className="page-title" style={{ display: "block" }}>
-          Paramètres
-        </div>
+        <div className="page-title">Réglages</div>
       </div>
 
       <div className="settings-group">
         <div className="sg-title">Profil</div>
         <div style={{ padding: "14px 16px" }}>
-          <label className="field-label">Pseudo</label>
+          <label className="field-label">Ton blase</label>
           <input className="field" value={handle} onChange={(e) => setHandle(e.target.value)} maxLength={20} />
         </div>
         <div style={{ padding: "0 16px 14px" }}>
@@ -100,7 +97,7 @@ export default function SettingsPage() {
         <div className="settings-row">
           <div className="sr-text">
             Masquer mon historique de zaps
-            <small>Cache le total « zaps donnés » sur ton profil public</small>
+            <small>Cache le total « SOL envoyés » sur ton profil public</small>
           </div>
           <div
             className={`toggle${user.hidePumpHistory ? " on" : ""}`}
@@ -126,7 +123,7 @@ export default function SettingsPage() {
       <div className="settings-group">
         <div className="sg-title">Apparence</div>
         <div className="settings-row">
-          <div className="sr-text">Thème sombre</div>
+          <div className="sr-text">Mode sombre</div>
           <div className={`toggle${theme === "dark" ? " on" : ""}`} onClick={toggleTheme}>
             <span className="tg-switch" />
           </div>
@@ -140,7 +137,7 @@ export default function SettingsPage() {
             Déconnecter le wallet
             <small>{shortWallet(user.wallet)}</small>
           </div>
-          <span>🔓</span>
+          <LogOut className="sr-ico" />
         </div>
       </div>
     </section>

@@ -1,12 +1,16 @@
 "use client";
 import { useEffect } from "react";
+import { X } from "lucide-react";
 
 export function Modal({
   title,
+  icon,
   onClose,
   children,
 }: {
   title: string;
+  /** Optional icon shown before the title. */
+  icon?: React.ReactNode;
   onClose: () => void;
   children: React.ReactNode;
 }) {
@@ -28,9 +32,12 @@ export function Modal({
     >
       <div className="modal" role="dialog" aria-modal="true" aria-label={title}>
         <div className="modal-head">
-          <h3>{title}</h3>
+          <h3>
+            {icon}
+            {title}
+          </h3>
           <button className="icon-btn" onClick={onClose} aria-label="Fermer">
-            ✕
+            <X />
           </button>
         </div>
         <div className="modal-body">{children}</div>

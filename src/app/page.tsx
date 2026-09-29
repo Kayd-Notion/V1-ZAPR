@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { PostCard } from "@/components/PostCard";
 import { Avatar } from "@/components/Avatar";
 import { TopDegens } from "@/components/TopDegens";
-import { ZaprEmpty, ZaprLoader, ZaprMark } from "@/components/ZaprMark";
+import { ZaprEmpty, ZaprLoader } from "@/components/ZaprMark";
 import { useSession } from "@/context/SessionContext";
 import { useUI } from "@/context/UIContext";
 import { useLive } from "@/context/LiveContext";
@@ -12,7 +12,7 @@ import type { ClientPost } from "@/lib/client-types";
 
 export default function FeedPage() {
   const { user, requireAuth } = useSession();
-  const { openComposer, openConnect, dataVersion } = useUI();
+  const { openComposer, dataVersion } = useUI();
   const live = useLive();
   const [posts, setPosts] = useState<ClientPost[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -85,22 +85,6 @@ export default function FeedPage() {
     <div className="home-grid">
       <TopDegens />
       <section className="feed">
-        {!user && (
-          <div className="visitor-banner">
-            <ZaprMark className="vb-mark" />
-            <div className="vb-text">
-              <b>T&apos;es en spectateur.</b>
-              Connecte ton wallet pour poster, envoyer des zaps et grimper au classement.
-            </div>
-            <button
-              className="btn btn-primary btn-sm"
-              onClick={() => openConnect("Connecte ton wallet Solana pour entrer dans l'arène.")}
-            >
-              Connecter
-            </button>
-          </div>
-        )}
-
         <div className="composer-trigger">
           {user ? (
             <Avatar id={user.id} handle={user.handle} size="sm" />

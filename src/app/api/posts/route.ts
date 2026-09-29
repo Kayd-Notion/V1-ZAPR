@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getStore } from "@/lib/db";
 import { currentUser } from "@/lib/current-user";
 import { countryFromRequest } from "@/lib/geo";
-import type { FeedQuery, MediaType } from "@/lib/db/types";
+import type { MediaType } from "@/lib/db/types";
 
 export const runtime = "nodejs";
 
@@ -13,14 +13,13 @@ function extractTags(text: string): string[] {
   return Array.from(new Set(found.map((t) => t.toLowerCase()))).slice(0, 8);
 }
 
-/** Feed (read-only — available in visitor mode). */
+/** Feed, most recent first (read-only — available in visitor mode). */
 export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams;
-  const tab = (sp.get("tab") as FeedQuery["tab"]) || "live";
   const limit = Math.min(Number(sp.get("limit")) || 20, 50);
   const before = sp.get("before") ? Number(sp.get("before")) : undefined;
 
-  const posts = await getStore().listPosts({ tab, limit, before });
+  const posts = await getStore().listPosts({ limit, before });
   const nextCursor = posts.length === limit ? posts[posts.length - 1].createdAt : null;
   return NextResponse.json({ posts, nextCursor });
 }

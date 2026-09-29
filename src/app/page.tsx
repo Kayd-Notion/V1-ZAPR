@@ -7,16 +7,9 @@ import { useUI } from "@/context/UIContext";
 import { api } from "@/lib/api";
 import type { ClientPost } from "@/lib/client-types";
 
-const TABS = [
-  { key: "foryou", label: "Pour toi" },
-  { key: "following", label: "Abonnements" },
-  { key: "live", label: "Live 🔴" },
-];
-
 export default function FeedPage() {
   const { user, requireAuth } = useSession();
   const { openComposer, dataVersion } = useUI();
-  const [tab, setTab] = useState("foryou");
   const [posts, setPosts] = useState<ClientPost[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -28,7 +21,7 @@ export default function FeedPage() {
     setLoading(true);
     setDone(false);
     try {
-      const res = await api.feed(tab);
+      const res = await api.feed();
       setPosts(res.posts);
       setCursor(res.nextCursor);
       setDone(res.nextCursor === null);
@@ -37,7 +30,7 @@ export default function FeedPage() {
     } finally {
       setLoading(false);
     }
-  }, [tab]);
+  }, []);
 
   useEffect(() => {
     loadInitial();
@@ -47,14 +40,14 @@ export default function FeedPage() {
     if (loadingRef.current || done || cursor === null) return;
     loadingRef.current = true;
     try {
-      const res = await api.feed(tab, cursor);
+      const res = await api.feed(cursor);
       setPosts((prev) => [...prev, ...res.posts]);
       setCursor(res.nextCursor);
       if (res.nextCursor === null) setDone(true);
     } finally {
       loadingRef.current = false;
     }
-  }, [tab, cursor, done]);
+  }, [cursor, done]);
 
   useEffect(() => {
     const el = sentinel.current;
@@ -74,18 +67,6 @@ export default function FeedPage() {
 
   return (
     <section>
-      <div className="tabs">
-        {TABS.map((t) => (
-          <div
-            key={t.key}
-            className={`tab${tab === t.key ? " active" : ""}`}
-            onClick={() => setTab(t.key)}
-          >
-            {t.label}
-          </div>
-        ))}
-      </div>
-
       {!user && (
         <div className="visitor-banner">
           <span style={{ fontSize: 26 }}>👋</span>
@@ -113,7 +94,7 @@ export default function FeedPage() {
       <div>
         {loading ? (
           <div className="loading-state">
-            <span className="spinner" style={{ color: "var(--accent)" }} /> Chargement du feed…
+            <span className="spinner" style={{ color: "var(--accent-text)" }} /> Chargement du feed…
           </div>
         ) : posts.length === 0 ? (
           <div className="empty-state">

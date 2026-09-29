@@ -111,13 +111,6 @@ a { color: var(--accent-text); text-decoration: none; }
 .nav-item.active { color: var(--text); font-weight: 700; }
 .nav-item.active .ni-icon { color: var(--accent-text); }
 .ni-icon { font-size: 20px; width: 24px; text-align: center; }
-.nav-item .badge-dot {
-  position: absolute; left: 30px; top: 8px;
-  background: var(--accent); color: var(--on-accent);
-  font-size: 10px; font-weight: 700;
-  min-width: 16px; height: 16px; border-radius: 8px;
-  display: flex; align-items: center; justify-content: center; padding: 0 4px;
-}
 .sidebar .post-cta {
   margin-top: 12px;
   background: var(--accent);
@@ -179,12 +172,6 @@ a { color: var(--accent-text); text-decoration: none; }
 }
 .bn-item .ni-icon { font-size: 22px; }
 .bn-item.active { color: var(--accent-text); }
-.bn-item .badge-dot {
-  position: absolute; top: 2px; right: 50%; transform: translateX(16px);
-  background: var(--accent); color: var(--on-accent); font-size: 9px; font-weight: 700;
-  min-width: 14px; height: 14px; border-radius: 7px;
-  display: flex; align-items: center; justify-content: center;
-}
 
 /* -------- 4. Composants génériques ------------------------------------ */
 .btn {
@@ -223,12 +210,6 @@ a { color: var(--accent-text); text-decoration: none; }
 .avatar.sm { width: 34px; height: 34px; font-size: 13px; }
 .avatar.lg { width: 84px; height: 84px; font-size: 30px; }
 
-.pill {
-  display: inline-flex; align-items: center; gap: 5px;
-  background: var(--accent-soft); color: var(--accent-text);
-  font-weight: 700; font-size: 12px;
-  padding: 4px 10px; border-radius: 999px;
-}
 .chip {
   padding: 7px 14px; border-radius: 999px;
   background: var(--bg-elev-2); border: 1px solid var(--border);
@@ -246,7 +227,6 @@ a { color: var(--accent-text); text-decoration: none; }
 
 .muted { color: var(--text-dim); }
 .faint { color: var(--text-faint); }
-.divider { height: 1px; background: var(--border-soft); margin: 0; }
 .empty-state { text-align: center; padding: 60px 20px; color: var(--text-faint); }
 .empty-state .ico { font-size: 40px; margin-bottom: 10px; }
 .loading-state { text-align: center; padding: 40px 20px; color: var(--text-faint); }
@@ -356,8 +336,6 @@ a { color: var(--accent-text); text-decoration: none; }
   padding: 6px; border-radius: 8px;
 }
 .pa-btn:hover { color: var(--text); background: var(--bg-hover); }
-.pa-btn.liked { color: var(--danger); }
-.pa-btn.reposted { color: var(--accent-text); }
 .pa-btn .pa-ico { font-size: 16px; }
 .pump-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 5px;
@@ -486,11 +464,6 @@ a { color: var(--accent-text); text-decoration: none; }
 .search-box .field { padding-left: 42px; }
 .search-box .s-ico { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-faint); }
 .section-title { padding: 16px 16px 8px; font-size: 15px; font-weight: 800; }
-.trend-item { padding: 14px 16px; border-bottom: 1px solid var(--border-soft); cursor: pointer; }
-.trend-item:hover { background: var(--bg-elev); }
-.trend-item .t-rank { font-size: 12px; color: var(--text-faint); }
-.trend-item .t-tag { font-weight: 700; font-size: 15px; }
-.trend-item .t-count { font-size: 12.5px; color: var(--text-faint); }
 
 /* -------- 9. Détail de post ------------------------------------------ */
 .detail-post { padding: 16px; border-bottom: 1px solid var(--border-soft); }
@@ -550,19 +523,8 @@ a { color: var(--accent-text); text-decoration: none; }
 }
 .balance-card .bc-label { font-size: 13px; opacity: 0.85; }
 .balance-card .bc-value { font-size: 34px; font-weight: 800; margin: 4px 0; }
-.balance-card .bc-fiat { font-size: 13px; opacity: 0.85; }
 .balance-card .bc-actions { display: flex; gap: 10px; margin-top: 16px; }
 .balance-card .bc-actions .btn { flex: 1; background: rgba(0,0,0,0.1); color: var(--on-accent); border: none; }
-.tx-row { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--border-soft); }
-.tx-ico { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-.tx-ico.in { background: var(--accent-soft); color: var(--accent-text); }
-.tx-ico.out { background: var(--bg-hover); color: var(--text-dim); }
-.tx-info { flex: 1; min-width: 0; }
-.tx-info .tx-title { font-weight: 600; font-size: 14.5px; }
-.tx-info .tx-time { font-size: 12.5px; color: var(--text-faint); }
-.tx-amount { font-weight: 700; font-size: 14.5px; }
-.tx-amount.in { color: var(--accent-text); }
-.tx-amount.out { color: var(--text-dim); }
 .net-badge {
   display: inline-flex; align-items: center; gap: 6px;
   font-size: 11px; font-weight: 700; letter-spacing: 0.03em;
@@ -571,18 +533,7 @@ a { color: var(--accent-text); text-decoration: none; }
 .net-badge.safe { background: var(--accent-soft); color: var(--accent-text); }
 .net-badge.danger { background: rgba(239,68,68,0.16); color: var(--danger); }
 
-/* -------- 12. Notifications ------------------------------------------ */
-.notif-row { display: flex; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--border-soft); cursor: pointer; }
-.notif-row.unread { background: var(--accent-soft); }
-.notif-row:hover { background: var(--bg-elev); }
-.notif-ico { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; background: var(--bg-hover); }
-.notif-ico.pump { background: var(--accent-soft); color: var(--accent-text); }
-.notif-body { flex: 1; }
-.notif-body .nb-text { font-size: 14.5px; }
-.notif-body .nb-text b { font-weight: 700; }
-.notif-body .nb-time { font-size: 12.5px; color: var(--text-faint); margin-top: 2px; }
-
-/* -------- 13. Onboarding --------------------------------------------- */
+/* -------- 12. Onboarding --------------------------------------------- */
 .onboard {
   position: fixed; inset: 0; z-index: 200;
   background: var(--bg); display: flex;
@@ -595,7 +546,7 @@ a { color: var(--accent-text); text-decoration: none; }
 .onboard p { color: var(--text-dim); margin-bottom: 24px; }
 .onboard .ob-avatar-preview { width: 72px; height: 72px; margin: 0 auto 16px; }
 
-/* -------- 14. Utilitaires & responsive ------------------------------ */
+/* -------- 13. Utilitaires & responsive ------------------------------ */
 .hidden { display: none !important; }
 .right-rail { padding: 16px 20px; }
 .rail-card { background: var(--bg-elev-2); border: 1px solid var(--border-soft); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }

@@ -56,11 +56,7 @@ const isMainnet = (process.env.NEXT_PUBLIC_SOLANA_CLUSTER || "devnet").trim() ==
 export const FOUNDER_WALLET =
   process.env.NEXT_PUBLIC_FOUNDER_WALLET || (isMainnet ? "" : DEVNET_DEMO_FOUNDER);
 
-/**
- * Pump product rules — the single place for these values on the frontend.
- * With the standalone backend, the backend's own values (GET /config) take
- * precedence; these apply to the Next.js routes (Vercel preview).
- */
+/** Pump product rules — the single place for these values (UI and API routes). */
 // Rule 3: minimum pump. 0.005 SOL keeps both shares (70/30) above Solana's
 // rent-exempt minimum for an empty recipient wallet. Do not hard-code the rent
 // value elsewhere: adjust this constant instead.

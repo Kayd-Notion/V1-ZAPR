@@ -87,8 +87,6 @@ function rowToPostWithAuthor(r: Row): PostWithAuthor {
     createdAt: Number(r.created_at),
     pumped: Number(r.pumped),
     comments: r.comments,
-    reposts: r.reposts,
-    likes: r.likes,
     country: r.country,
     tags: r.tags ?? [],
     author: { id: r.author_id, handle: r.author_handle, wallet: r.author_wallet, bio: r.author_bio },
@@ -187,8 +185,6 @@ export function createPostgresStore(): Store {
         createdAt: Number(r.created_at),
         pumped: Number(r.pumped),
         comments: r.comments,
-        reposts: r.reposts,
-        likes: r.likes,
         country: r.country,
         tags: r.tags ?? [],
       };
@@ -203,17 +199,13 @@ export function createPostgresStore(): Store {
     },
     async listPosts(q: FeedQuery) {
       const db = await getSql();
-      const order =
-        q.tab === "foryou"
-          ? db`order by p.pumped desc`
-          : db`order by p.created_at desc`;
       const rows = await db`
         select p.*, u.id as author_id, u.handle as author_handle, u.wallet as author_wallet, u.bio as author_bio
         from posts p join users u on u.id = p.user_id
         where true
           ${q.authorId ? db`and p.user_id = ${q.authorId}` : db``}
           ${q.before ? db`and p.created_at < ${q.before}` : db``}
-        ${order}
+        order by p.created_at desc
         limit ${q.limit}`;
       return rows.map(rowToPostWithAuthor);
     },
@@ -246,8 +238,6 @@ export function createPostgresStore(): Store {
             createdAt: Number(p.created_at),
             pumped: Number(p.pumped),
             comments: p.comments,
-            reposts: p.reposts,
-            likes: p.likes,
             country: p.country,
             tags: p.tags ?? [],
           },

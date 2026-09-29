@@ -47,7 +47,7 @@ export function ConnectModal() {
 
       {connecting && (
         <div className="loading-state">
-          <span className="spinner" style={{ color: "var(--accent)" }} /> Connexion…
+          <span className="spinner" style={{ color: "var(--accent-text)" }} /> Connexion…
         </div>
       )}
 

@@ -51,7 +51,7 @@ test("rule 2: inverse of the lifespan tiers", () => {
   }
 });
 
-test("rule 2: expired post → minimum that saves it (same numbers as the backend)", () => {
+test("rule 2: expired post → minimum that saves it", () => {
   const post = { createdAt: NOW - 30 * H, pumped: 0, expiresAt: NOW - 6 * H }; // expired 6h ago
   const r = pumpRequirements(post, NOW);
   assert.equal(r.status, "expired");

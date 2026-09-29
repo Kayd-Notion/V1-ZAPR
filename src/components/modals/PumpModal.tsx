@@ -18,10 +18,9 @@ import { IS_MAINNET } from "@/lib/solana";
 const QUICK_AMOUNTS = [0.01, 0.1, 0.5, 1];
 const EPS = 1e-9;
 
-/** Reads the new minimum from a refusal body (standalone backend or Next routes). */
+/** Reads the new minimum from a refusal body. */
 function minFromError(data: Record<string, unknown>): number | null {
-  const v = data.required_min_sol ?? data.requiredMinSol;
-  const n = Number(v);
+  const n = Number(data.requiredMinSol);
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
@@ -35,7 +34,6 @@ export function PumpModal() {
   const [minPump, setMinPump] = useState(MIN_PUMP_SOL);
   // Rules for this post right now (null while loading).
   const [quote, setQuote] = useState<PumpQuote | null>(null);
-  const [purgedAfterPump, setPurgedAfterPump] = useState(false);
 
   // Ratio + minimum the data source will actually enforce.
   useEffect(() => {
@@ -105,16 +103,13 @@ export function PumpModal() {
     }
     setPhase("sending");
     try {
-      const { postPurged } = await runPump(post, safeAmount, user?.anonymizePumps ?? false);
-      setPurgedAfterPump(postPurged);
+      await runPump(post, safeAmount, user?.anonymizePumps ?? false);
       setPhase("success");
       bumpData();
-      if (!postPurged) {
-        setTimeout(() => {
-          closeModal();
-          toast(`⚡ Zap de ${fmtSol(safeAmount)} SOL envoyé`);
-        }, 1200);
-      }
+      setTimeout(() => {
+        closeModal();
+        toast(`⚡ Zap de ${fmtSol(safeAmount)} SOL envoyé`);
+      }, 1200);
     } catch (e) {
       setPhase("form");
       // Server refused right before signing (nothing was signed).
@@ -157,22 +152,10 @@ export function PumpModal() {
         <div className="pump-success">
           <div className="ps-ico">✓</div>
           <h3 style={{ fontSize: 19, marginBottom: 6 }}>Zap envoyé !</h3>
-          {purgedAfterPump ? (
-            <p className="muted">
-              Ton zap de <b>{fmtSol(safeAmount)} SOL</b> est bien enregistré, mais le post venait d&apos;être
-              supprimé. Ce cas est signalé pour un remboursement manuel.
-            </p>
-          ) : (
-            <p className="muted">
-              Tu as envoyé un zap de <b>{fmtSol(safeAmount)} SOL</b>.<br />
-              Le post gagne en durée de vie. 🚀
-            </p>
-          )}
-          {purgedAfterPump && (
-            <button className="btn btn-block" style={{ marginTop: 16 }} onClick={closeModal}>
-              Fermer
-            </button>
-          )}
+          <p className="muted">
+            Tu as envoyé un zap de <b>{fmtSol(safeAmount)} SOL</b>.<br />
+            Le post gagne en durée de vie. 🚀
+          </p>
         </div>
       ) : (
         <>

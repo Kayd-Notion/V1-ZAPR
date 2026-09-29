@@ -27,8 +27,6 @@ create table if not exists posts (
   created_at  bigint not null,
   pumped      double precision not null default 0,
   comments    integer not null default 0,
-  reposts     integer not null default 0,
-  likes       integer not null default 0,
   country     text not null default 'FR',
   tags        text[] not null default '{}'
 );

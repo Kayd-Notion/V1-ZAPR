@@ -6,14 +6,6 @@ import { api } from "@/lib/api";
 import { useUI } from "@/context/UIContext";
 import type { ClientPost } from "@/lib/client-types";
 
-const TRENDS = [
-  { tag: "#solana", count: "12.4k posts" },
-  { tag: "#zap", count: "8.9k posts" },
-  { tag: "#nft", count: "5.1k posts" },
-  { tag: "#build", count: "3.3k posts" },
-  { tag: "#privacy", count: "2.0k posts" },
-];
-
 function ExploreInner() {
   const params = useSearchParams();
   const { dataVersion } = useUI();
@@ -21,7 +13,7 @@ function ExploreInner() {
   const [q, setQ] = useState(params.get("q") || "");
 
   useEffect(() => {
-    api.feed("live", undefined, 50).then((r) => setAll(r.posts)).catch(() => setAll([]));
+    api.feed(undefined, 50).then((r) => setAll(r.posts)).catch(() => setAll([]));
   }, [dataVersion]);
 
   useEffect(() => {
@@ -76,15 +68,7 @@ function ExploreInner() {
         )
       ) : (
         <>
-          <div className="section-title">🔥 Tendances</div>
-          {TRENDS.map((t, i) => (
-            <div key={t.tag} className="trend-item" onClick={() => setQ(t.tag)}>
-              <div className="t-rank">Tendance {i + 1}</div>
-              <div className="t-tag">{t.tag}</div>
-              <div className="t-count">{t.count}</div>
-            </div>
-          ))}
-          <div className="section-title">Posts en vogue</div>
+          <div className="section-title">🔥 Posts en vogue</div>
           {trending.map((p) => (
             <PostCard key={p.id} post={p} />
           ))}

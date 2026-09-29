@@ -15,21 +15,19 @@ const NAV = [
   { key: "feed", href: "/", icon: "🏠", label: "Accueil" },
   { key: "explore", href: "/explore", icon: "🔍", label: "Explorer" },
   { key: "leaderboard", href: "/leaderboard", icon: "🏆", label: "Classement" },
-  { key: "notifications", href: "/notifications", icon: "🔔", label: "Notifications" },
   { key: "wallet", href: "/wallet", icon: "💳", label: "Wallet" },
   { key: "profile", href: "/profile", icon: "👤", label: "Profil" },
   { key: "settings", href: "/settings", icon: "⚙️", label: "Paramètres" },
 ];
 
 const MOBILE_NAV = NAV.filter((n) =>
-  ["feed", "explore", "leaderboard", "notifications", "wallet", "profile"].includes(n.key),
+  ["feed", "explore", "leaderboard", "wallet", "profile"].includes(n.key),
 );
 
 function titleFor(pathname: string): string {
   if (pathname === "/") return "Accueil";
   if (pathname.startsWith("/explore")) return "Explorer";
   if (pathname.startsWith("/leaderboard")) return "Classement";
-  if (pathname.startsWith("/notifications")) return "Notifications";
   if (pathname.startsWith("/wallet")) return "Wallet";
   if (pathname.startsWith("/profile")) return "Profil";
   if (pathname.startsWith("/settings")) return "Paramètres";

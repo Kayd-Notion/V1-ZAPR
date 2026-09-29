@@ -20,8 +20,6 @@ export const CLUSTER: SupportedCluster =
 export const IS_MAINNET = CLUSTER === "mainnet-beta";
 
 /** True while the app is on a safe (non-mainnet) network. */
-export const IS_SAFE_NETWORK = !IS_MAINNET;
-
 export function rpcEndpoint(): string {
   const custom = (process.env.NEXT_PUBLIC_SOLANA_RPC || "").trim();
   if (custom) return custom;
@@ -35,11 +33,6 @@ export function getConnection(): Connection {
 }
 
 /** Explorer URL for a signature, cluster-aware. */
-export function explorerTxUrl(signature: string): string {
-  const suffix = IS_MAINNET ? "" : `?cluster=${CLUSTER}`;
-  return `https://explorer.solana.com/tx/${signature}${suffix}`;
-}
-
 /** Explorer URL for an address, cluster-aware. */
 export function explorerAddressUrl(address: string): string {
   const suffix = IS_MAINNET ? "" : `?cluster=${CLUSTER}`;

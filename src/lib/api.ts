@@ -8,7 +8,6 @@ import type {
 import type { Api, LeaderboardPage, LeaderboardParams, ProfilePage, PumpQuote } from "./api-types";
 import { FOUNDER_WALLET, MIN_PUMP_SOL, resolvedSplitBps } from "./pump-config";
 import { ApiError } from "./api-error";
-import { backendApi, BACKEND_URL } from "./backend-api";
 
 /** Thin fetch wrapper: JSON, credentials, and typed errors. */
 async function req<T>(url: string, init?: RequestInit): Promise<T> {
@@ -29,11 +28,8 @@ async function req<T>(url: string, init?: RequestInit): Promise<T> {
   return data as T;
 }
 
-/** Data source #1: this Next.js app's own API routes (/api/*). */
-const nextApi: Api = {
-  mode: "next",
-  capabilities: { comments: true, profileExtras: true },
-
+/** The whole UI talks to the app's own API routes (/api/*) through this. */
+export const api: Api = {
   // Auth
   nonce: (wallet) => req<{ message: string }>(`/api/auth/nonce?wallet=${encodeURIComponent(wallet)}`),
   verify: (wallet, signature) =>
@@ -49,8 +45,8 @@ const nextApi: Api = {
   profile: (handle) => req<ProfilePage>(`/api/users/${encodeURIComponent(handle)}`),
 
   // Posts
-  feed: async (tab, cursor, limit = 20) => {
-    const p = new URLSearchParams({ tab, limit: String(limit) });
+  feed: async (cursor, limit = 20) => {
+    const p = new URLSearchParams({ limit: String(limit) });
     if (cursor) p.set("before", cursor);
     const r = await req<{ posts: ClientPost[]; nextCursor: number | null }>(`/api/posts?${p}`);
     return { posts: r.posts, nextCursor: r.nextCursor === null ? null : String(r.nextCursor) };
@@ -77,7 +73,6 @@ const nextApi: Api = {
   pumpQuote: (postId) => req<PumpQuote>(`/api/posts/${postId}/pump-quote`),
   preparePump: async (postId, amountSol) => {
     await req(`/api/posts/${postId}/pump/prepare`, { method: "POST", body: JSON.stringify({ amount: amountSol }) });
-    return { intentId: null }; // no purge in this data source → no reservation needed
   },
   recordPump: (postId, { amount, signature, anonymous }) =>
     req<{ post: ClientPost }>(`/api/posts/${postId}/pump`, {
@@ -107,9 +102,3 @@ const nextApi: Api = {
 
   geo: () => req<{ country: string }>("/api/geo"),
 };
-
-/**
- * The data source the whole UI uses. NEXT_PUBLIC_API_URL set (e.g.
- * http://localhost:4000) → the standalone backend; otherwise the Next routes.
- */
-export const api: Api = BACKEND_URL ? backendApi : nextApi;

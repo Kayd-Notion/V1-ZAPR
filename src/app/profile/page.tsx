@@ -10,7 +10,7 @@ export default function MyProfilePage() {
   if (status === "loading") {
     return (
       <div className="loading-state">
-        <span className="spinner" style={{ color: "var(--accent)" }} /> …
+        <span className="spinner" style={{ color: "var(--accent-text)" }} /> …
       </div>
     );
   }

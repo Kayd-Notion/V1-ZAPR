@@ -7,7 +7,7 @@ import {
   type TransactionSignature,
 } from "@solana/web3.js";
 import { solToLamports } from "./format";
-import { splitLamports, FOUNDER_WALLET, resolvedSplitBps } from "./pump-config";
+import { splitLamports, FOUNDER_WALLET } from "./pump-config";
 import { IS_MAINNET } from "./solana";
 
 /**
@@ -34,9 +34,9 @@ export interface PumpQuote {
 }
 
 /**
- * Recipients + ratio of a pump. Defaults come from env (lib/pump-config.ts);
- * with the standalone backend they come from its GET /config, so the
- * transaction always matches what the backend will verify.
+ * Recipients + ratio of a pump. They come from the server config
+ * (lib/pump-config.ts), so the transaction always matches what the server
+ * will verify.
  */
 export interface PumpTarget {
   platformWallet: string;
@@ -178,10 +178,4 @@ export async function sendPump(args: SendPumpArgs): Promise<SendPumpResult> {
   }
 
   return { ...quote, signature };
-}
-
-/** Human-readable current split, e.g. "70 / 30". */
-export function splitLabel(): string {
-  const { creatorBps, founderBps } = resolvedSplitBps();
-  return `${creatorBps / 100} / ${founderBps / 100}`;
 }

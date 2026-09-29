@@ -58,9 +58,8 @@ export function ComposerModal() {
     try {
       let media: UploadedMedia | null = null;
       if (file) {
-        // Irys needs the wallet to pay in SOL; the standalone backend uses a
-        // presigned upload tied to the session instead.
-        if (api.mode === "next" && !wallet?.adapter) {
+        // Irys needs the wallet to pay the upload in SOL.
+        if (!wallet?.adapter) {
           toast("Reconnecte ton wallet pour uploader le média.");
           return;
         }
@@ -101,9 +100,7 @@ export function ComposerModal() {
 
   const phaseLabel =
     phase === "uploading"
-      ? api.mode === "next"
-        ? "Upload du média sur Arweave…"
-        : "Upload du média…"
+      ? "Upload du média sur Arweave…"
       : phase === "posting"
         ? "Publication…"
         : phase === "pumping"
@@ -160,7 +157,7 @@ export function ComposerModal() {
           📷 Photo / 🎬 Vidéo
         </button>
         <span className="faint" style={{ fontSize: 12, alignSelf: "center" }}>
-          {api.mode === "next" ? "Upload Arweave payé en SOL" : "Upload direct (max 25 Mo)"}
+          Upload Arweave payé en SOL
         </span>
       </div>
 

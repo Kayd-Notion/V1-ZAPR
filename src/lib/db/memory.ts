@@ -169,8 +169,6 @@ export function createMemoryStore(): Store {
         createdAt: Date.now(),
         pumped: 0,
         comments: 0,
-        reposts: 0,
-        likes: 0,
         country,
         tags,
       };
@@ -191,15 +189,7 @@ export function createMemoryStore(): Store {
       let list = d.posts.slice();
       if (q.authorId) list = list.filter((p) => p.userId === q.authorId);
       if (q.before) list = list.filter((p) => p.createdAt < q.before!);
-
-      if (q.tab === "live") {
-        list.sort((a, b) => b.createdAt - a.createdAt);
-      } else if (q.tab === "foryou") {
-        list.sort((a, b) => b.pumped - a.pumped);
-      } else {
-        // "following" and default: most recent first
-        list.sort((a, b) => b.createdAt - a.createdAt);
-      }
+      list.sort((a, b) => b.createdAt - a.createdAt);
       list = list.slice(0, q.limit);
       return list
         .map((p) => {

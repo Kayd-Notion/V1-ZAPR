@@ -23,7 +23,7 @@ export async function POST(
 ) {
   const me = await currentUser();
   if (!me) {
-    return NextResponse.json({ error: "Connecte ton wallet pour pumper." }, { status: 401 });
+    return NextResponse.json({ error: "Connecte ton wallet pour envoyer un zap." }, { status: 401 });
   }
 
   const { id } = await params;

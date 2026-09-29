@@ -163,7 +163,7 @@ export default function LeaderboardPage() {
 
       {loading ? (
         <div className="loading-state">
-          <span className="spinner" style={{ color: "var(--accent)" }} /> Chargement…
+          <span className="spinner" style={{ color: "var(--accent-text)" }} /> Chargement…
         </div>
       ) : empty ? (
         <div className="empty-state">

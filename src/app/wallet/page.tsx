@@ -56,9 +56,6 @@ export default function WalletPage() {
         <div className="bc-value">
           {loading || balance === null ? "…" : `${fmtSol(balance)} SOL`}
         </div>
-        <div className="bc-fiat">
-          {balance !== null ? `≈ ${(balance * 145).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} € (estimation)` : ""}
-        </div>
         <div className="bc-actions">
           <button
             className="btn"
@@ -71,9 +68,6 @@ export default function WalletPage() {
             }
           >
             💧 Airdrop devnet
-          </button>
-          <button className="btn" onClick={() => toast("⬆️ Retrait — hors scope MVP")}>
-            Retirer
           </button>
         </div>
       </div>
@@ -95,13 +89,15 @@ export default function WalletPage() {
       </div>
 
       <p className="faint" style={{ padding: "0 16px 20px", fontSize: 12.5 }}>
-        Le solde est lu en direct sur la blockchain ({CLUSTER}).{" "}
+        Le solde est lu en direct sur la blockchain ({CLUSTER}).
         {publicKey && (
-          <a href={explorerAddressUrl(publicKey.toBase58())} target="_blank" rel="noreferrer">
-            Voir sur l&apos;explorer
-          </a>
+          <>
+            {" "}
+            <a href={explorerAddressUrl(publicKey.toBase58())} target="_blank" rel="noreferrer">
+              Voir sur l&apos;explorer
+            </a>
+          </>
         )}
-        . L&apos;historique détaillé des transactions arrivera dans une phase ultérieure.
       </p>
     </section>
   );

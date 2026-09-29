@@ -1,5 +1,4 @@
 "use client";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Avatar } from "./Avatar";
 import { TimeGauge } from "./TimeGauge";
@@ -7,30 +6,19 @@ import { ZapIcon } from "./ZaprMark";
 import { useUI } from "@/context/UIContext";
 import { useSession } from "@/context/SessionContext";
 import { fmtSol, timeAgo } from "@/lib/format";
-import { postLifespanInfo } from "@/lib/lifespan";
+import { lifespanInfo } from "@/lib/lifespan";
 import type { ClientPost } from "@/lib/client-types";
 
 export function PostCard({ post }: { post: ClientPost }) {
   const router = useRouter();
-  const { openPump, toast } = useUI();
+  const { openPump } = useUI();
   const { requireAuth } = useSession();
-  const [liked, setLiked] = useState(false);
-  const [reposted, setReposted] = useState(false);
 
-  const expired = postLifespanInfo(post).expired;
+  const expired = lifespanInfo(post.createdAt, post.pumped).expired;
 
   const go = () => router.push(`/post/${post.id}`);
   const stop = (e: React.MouseEvent) => e.stopPropagation();
 
-  const toggleLike = () => {
-    if (!requireAuth("Connecte ton wallet pour aimer un post.")) return;
-    setLiked((v) => !v);
-  };
-  const toggleRepost = () => {
-    if (!requireAuth("Connecte ton wallet pour reposter.")) return;
-    setReposted((v) => !v);
-    toast(reposted ? "Repost annulé" : "🔁 Reposté");
-  };
   const doPump = () => {
     if (!requireAuth("Connecte ton wallet pour envoyer un zap.")) return;
     openPump(post);
@@ -66,7 +54,7 @@ export function PostCard({ post }: { post: ClientPost }) {
         )}
 
         <div className="post-meta">
-          <TimeGauge createdAt={post.createdAt} pumped={post.pumped} expiresAt={post.expiresAt} />
+          <TimeGauge createdAt={post.createdAt} pumped={post.pumped} />
           <div className="pumped-badge">
             <span className="pb-amount">⚡ {fmtSol(post.pumped)}</span>
             <span className="pb-label">SOL en zaps</span>
@@ -74,20 +62,9 @@ export function PostCard({ post }: { post: ClientPost }) {
         </div>
 
         <div className="post-actions" onClick={stop}>
-          <button className={`pa-btn${liked ? " liked" : ""}`} onClick={toggleLike}>
-            <span className="pa-ico">{liked ? "❤️" : "🤍"}</span>
-            <span className="pa-count">{post.likes + (liked ? 1 : 0)}</span>
-          </button>
-          <button className="pa-btn" onClick={go}>
+          <button className="pa-btn" onClick={go} title="Commentaires">
             <span className="pa-ico">💬</span>
             <span>{post.comments}</span>
-          </button>
-          <button className={`pa-btn${reposted ? " reposted" : ""}`} onClick={toggleRepost}>
-            <span className="pa-ico">🔁</span>
-            <span>{post.reposts + (reposted ? 1 : 0)}</span>
-          </button>
-          <button className="pa-btn" onClick={() => toast("🚩 Post signalé (modération — hors scope MVP)")}>
-            <span className="pa-ico">🚩</span>
           </button>
           {!post.deleted && (
             <button className="pump-btn" onClick={doPump}>

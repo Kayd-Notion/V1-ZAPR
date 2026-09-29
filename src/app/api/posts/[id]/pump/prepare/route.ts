@@ -13,7 +13,7 @@ export const runtime = "nodejs";
  */
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const me = await currentUser();
-  if (!me) return NextResponse.json({ error: "Connecte ton wallet pour pumper.", code: "auth_required" }, { status: 401 });
+  if (!me) return NextResponse.json({ error: "Connecte ton wallet pour envoyer un zap.", code: "auth_required" }, { status: 401 });
 
   const { id } = await params;
   const body = await req.json().catch(() => null);

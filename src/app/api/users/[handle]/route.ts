@@ -15,7 +15,7 @@ export async function GET(
   const user = await store.getUserByHandle(handle);
   if (!user) return NextResponse.json({ error: "Profil introuvable." }, { status: 404 });
 
-  const posts = await store.listPosts({ limit: 100, authorId: user.id, tab: "live" });
+  const posts = await store.listPosts({ limit: 100, authorId: user.id });
   const now = Date.now();
   const active = posts.filter((p) => !lifespanInfo(p.createdAt, p.pumped, now).expired);
   const expiredCount = posts.length - active.length;

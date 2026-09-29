@@ -29,8 +29,6 @@ export interface Post {
   /** Cumulative SOL pumped on this post — drives lifespan + posts leaderboard. */
   pumped: number;
   comments: number;
-  reposts: number;
-  likes: number;
   country: string;
   tags: string[];
 }
@@ -69,7 +67,6 @@ export interface FeedQuery {
   limit: number;
   /** Cursor: return items created strictly before this ms timestamp. */
   before?: number;
-  tab?: "foryou" | "following" | "live";
   authorId?: string;
 }
 

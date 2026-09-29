@@ -1,8 +1,4 @@
-/**
- * Contract between the UI and its data source. Two implementations:
- *  - lib/api.ts          → the Next.js API routes (default; Vercel preview)
- *  - lib/backend-api.ts  → the standalone backend (NEXT_PUBLIC_API_URL set)
- */
+/** Contract between the UI and the app's API routes (implemented in lib/api.ts). */
 import type {
   ClientComment,
   ClientPost,
@@ -17,8 +13,6 @@ import type { MediaType } from "./db/types";
 export interface UploadedMedia {
   url: string;
   type: MediaType;
-  /** Object key when stored by the standalone backend (MinIO). */
-  key?: string;
 }
 
 /** Recipients + ratio a pump transaction must use to be accepted. */
@@ -67,10 +61,6 @@ export interface ProfilePage {
 }
 
 export interface Api {
-  mode: "next" | "backend";
-  /** Features the standalone backend's data model doesn't have (yet). */
-  capabilities: { comments: boolean; profileExtras: boolean };
-
   // Auth
   nonce(wallet: string): Promise<{ message: string }>;
   verify(wallet: string, signature: string): Promise<{ user?: ClientUser; needsOnboarding?: boolean; wallet?: string }>;
@@ -85,7 +75,8 @@ export interface Api {
   profile(handle: string): Promise<ProfilePage>;
 
   // Posts
-  feed(tab: string, cursor?: string | null, limit?: number): Promise<{ posts: ClientPost[]; nextCursor: string | null }>;
+  /** Most recent posts first. */
+  feed(cursor?: string | null, limit?: number): Promise<{ posts: ClientPost[]; nextCursor: string | null }>;
   /** Upload a media file; the result is passed to createPost. */
   uploadMedia(file: File, walletProvider?: unknown): Promise<UploadedMedia>;
   createPost(input: { text: string; media?: UploadedMedia | null }): Promise<{ post: ClientPost }>;
@@ -99,13 +90,12 @@ export interface Api {
    * Server-side re-check right BEFORE signing (post purged meanwhile? amount
    * still enough?). Throws ApiError (code post_deleted | amount_too_low_to_save
    * | below_min_pump, with the new minimum in `data`) → nothing gets signed.
-   * Returns a reservation id to pass to recordPump (null if not applicable).
    */
-  preparePump(postId: string, amountSol: number): Promise<{ intentId: string | null }>;
+  preparePump(postId: string, amountSol: number): Promise<void>;
   recordPump(
     postId: string,
-    input: { amount: number; signature: string; anonymous?: boolean; intentId?: string | null },
-  ): Promise<{ post: ClientPost; postPurged?: boolean }>;
+    input: { amount: number; signature: string; anonymous?: boolean },
+  ): Promise<{ post: ClientPost }>;
 
   // Comments
   addComment(postId: string, text: string): Promise<{ comments: ClientComment[] }>;

@@ -38,10 +38,6 @@ export function fmtSol(n: number): string {
   });
 }
 
-export function fmtNum(n: number): string {
-  return n >= 1000 ? (n / 1000).toFixed(1).replace(".0", "") + "k" : "" + n;
-}
-
 export function shortWallet(w: string): string {
   if (!w) return "";
   return w.slice(0, 4) + "…" + w.slice(-4);

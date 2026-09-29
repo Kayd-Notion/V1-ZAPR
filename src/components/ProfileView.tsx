@@ -41,7 +41,7 @@ export function ProfileView({ handle }: { handle: string }) {
   if (!data) {
     return (
       <div className="loading-state">
-        <span className="spinner" style={{ color: "var(--accent)" }} /> Chargement du profil…
+        <span className="spinner" style={{ color: "var(--accent-text)" }} /> Chargement du profil…
       </div>
     );
   }

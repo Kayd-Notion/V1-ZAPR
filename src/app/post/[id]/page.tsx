@@ -8,7 +8,7 @@ import { useSession } from "@/context/SessionContext";
 import { useUI } from "@/context/UIContext";
 import { api } from "@/lib/api";
 import { fmtSol, timeAgo } from "@/lib/format";
-import { postLifespanInfo } from "@/lib/lifespan";
+import { lifespanInfo } from "@/lib/lifespan";
 import type { ClientComment, ClientPost, ClientPumper } from "@/lib/client-types";
 
 export default function PostDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -20,7 +20,6 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   const [post, setPost] = useState<ClientPost | null>(null);
   const [pumpers, setPumpers] = useState<ClientPumper[]>([]);
   const [comments, setComments] = useState<ClientComment[]>([]);
-  const [anon, setAnon] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [notFound, setNotFound] = useState(false);
 
@@ -50,12 +49,12 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   if (!post) {
     return (
       <div className="loading-state">
-        <span className="spinner" style={{ color: "var(--accent)" }} /> Chargement…
+        <span className="spinner" style={{ color: "var(--accent-text)" }} /> Chargement…
       </div>
     );
   }
 
-  const expired = postLifespanInfo(post).expired;
+  const expired = lifespanInfo(post.createdAt, post.pumped).expired;
 
   const submitComment = async () => {
     if (!requireAuth("Connecte ton wallet pour commenter.")) return;
@@ -127,7 +126,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
         )}
 
         <div className="post-meta" style={{ marginTop: 12 }}>
-          <TimeGauge createdAt={post.createdAt} pumped={post.pumped} expiresAt={post.expiresAt} />
+          <TimeGauge createdAt={post.createdAt} pumped={post.pumped} />
           <div className="pumped-badge">
             <span className="pb-amount">⚡ {fmtSol(post.pumped)}</span>
             <span className="pb-label">SOL en zaps</span>
@@ -135,12 +134,6 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
         </div>
 
         <div className="detail-stats">
-          <span className="ds">
-            <b>{post.reposts}</b> <span className="faint">reposts</span>
-          </span>
-          <span className="ds">
-            <b>{post.likes}</b> <span className="faint">likes</span>
-          </span>
           <span className="ds">
             <b>{post.comments}</b> <span className="faint">commentaires</span>
           </span>
@@ -153,23 +146,15 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
             Il a expiré et son contenu a été supprimé : il ne peut plus recevoir de zaps.
           </div>
         ) : (
-          <div style={{ display: "flex", gap: 8 }}>
-            <button className="pump-btn" style={{ flex: 1, padding: 11 }} onClick={doPump}>
-              <ZapIcon /> Envoyer un zap
-            </button>
-            <button className="btn" onClick={() => toast("🚩 Signalé (modération — hors scope MVP)")}>
-              🚩
-            </button>
-          </div>
+          <button className="pump-btn" style={{ width: "100%", padding: 11 }} onClick={doPump}>
+            <ZapIcon /> Envoyer un zap
+          </button>
         )}
       </div>
 
       {/* Pumpers */}
       <div className="pumpers-head">
         <h4>⚡ Zappeurs ({pumpers.length})</h4>
-        <div className={`toggle${anon ? " on" : ""}`} onClick={() => setAnon((v) => !v)}>
-          <span className="tg-switch" /> Anonymiser
-        </div>
       </div>
       {pumpers.length === 0 && (
         <p className="faint" style={{ padding: "4px 16px 12px", fontSize: 13 }}>
@@ -177,7 +162,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
         </p>
       )}
       {pumpers.map((pp, i) => {
-        const masked = anon || pp.anonymous || !pp.author;
+        const masked = pp.anonymous || !pp.author;
         const name = masked ? `Zappeur #${i + 1}` : pp.author!.handle;
         const sub = masked ? "•••••••" : `${pp.author!.wallet} · ${timeAgo(pp.createdAt)}`;
         return (
@@ -207,14 +192,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
 
       {/* Comments */}
       <div className="section-title">Commentaires</div>
-      {!api.capabilities.comments && (
-        <p className="faint" style={{ padding: "0 16px 16px", fontSize: 13 }}>
-          Les commentaires arrivent bientôt.
-        </p>
-      )}
-      <div
-        style={{ padding: "0 16px 12px", display: api.capabilities.comments ? "flex" : "none", gap: 10 }}
-      >
+      <div style={{ padding: "0 16px 12px", display: "flex", gap: 10 }}>
         <input
           className="field"
           value={commentText}

@@ -1,6 +1,5 @@
 /**
- * Pump product rules for the Next.js API routes (the standalone backend has
- * its own copy in backend/src/lib/pump-rules.ts — same rules, same tiers).
+ * Pump (zap) product rules, checked by the API routes and shown in the UI:
  *  - rule 2: an expired post can only be pumped with an amount that saves it
  *    (expiry pushed to ≥ now + PUMP_SAVE_MIN_LIFETIME_SECONDS);
  *  - rule 3: nothing below MIN_PUMP_SOL.

@@ -21,18 +21,18 @@ export function usePump() {
       post: ClientPost,
       amountSol: number,
       anonymous: boolean,
-    ): Promise<{ post: ClientPost; postPurged: boolean }> => {
+    ): Promise<ClientPost> => {
       if (!publicKey || !sendTransaction) {
         throw new Error("Wallet non connecté.");
       }
       // 1. Server re-check at this exact moment (rules 2 + 3): post purged in
       //    the meantime? amount still enough to save an expired post? If it
       //    refuses (ApiError), we stop here — nothing is ever signed.
-      const { intentId } = await api.preparePump(post.id, amountSol);
+      await api.preparePump(post.id, amountSol);
 
       // 2. Build + sign + send the atomic 2-transfer transaction (unchanged).
-      //    Recipients + ratio come from the data source, so the transaction
-      //    always matches what the backend verifies.
+      //    Recipients + ratio come from the server config, so the transaction
+      //    always matches what the server verifies.
       const cfg = await api.pumpConfig();
       let signature: string;
       try {
@@ -53,14 +53,10 @@ export function usePump() {
         throw new Error(humanizePumpError(e));
       }
 
-      // 3. Record it (the backend verifies the transaction on-chain).
-      const { post: updated, postPurged } = await api.recordPump(post.id, {
-        amount: amountSol,
-        signature,
-        anonymous,
-        intentId,
-      });
-      return { post: updated, postPurged: Boolean(postPurged) };
+      // 3. Record it (the server verifies the transaction on-chain when
+      //    PUMP_REQUIRE_ONCHAIN_VERIFY=true).
+      const { post: updated } = await api.recordPump(post.id, { amount: amountSol, signature, anonymous });
+      return updated;
     },
     [connection, publicKey, sendTransaction, signTransaction],
   );

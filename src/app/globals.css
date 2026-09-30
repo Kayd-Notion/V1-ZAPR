@@ -146,6 +146,30 @@ a { color: var(--accent-text); text-decoration: none; }
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: var(--radius-sm); }
 
+/* -------- 2b. Typography roles ----------------------------------------- */
+/* Display — Chakra Petch (cut corners like the bolt's notch): logo, titles,
+   tabs, buttons, ranks. It stops at 700: heavier requests render at 700. */
+.brand .logo-text, .page-title, .panel-head h4, .live-title, .modal-head h3,
+.pump-success h3, .onboard h2, .zempty b, .section-title, .sg-title,
+.profile-name, .btn, .pump-btn, .lc-zap, .chip, .tab, .feed-tab, .live-tab,
+.lb-rank, .td-rank {
+  font-family: var(--font-display);
+}
+.page-title, .panel-head h4, .live-title, .modal-head h3, .zempty b,
+.section-title, .profile-name, .pump-success h3, .onboard h2 { letter-spacing: 0.01em; }
+
+/* Mono — JetBrains Mono (same-width digits, rankings stay aligned): SOL
+   amounts, zap scores, lifespans, counters, wallet addresses. */
+.pb-amount, .lc-amount, .td-amount, .lb-amount span, .pr-amount,
+.notif-amount, .stat-box .sb-val, .balance-card .bc-value, .split-row b,
+.qa-btn, .tg-remaining, .lc-left, .profile-wallet, .pr-sub, .net-badge,
+.unread-badge, .tb-wallet {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.pb-amount, .lc-amount, .td-amount, .lb-amount span, .pr-amount,
+.notif-amount, .stat-box .sb-val, .balance-card .bc-value { letter-spacing: -0.02em; }
+
 /* -------- 3. Layout applicatif (plein écran, style pump.fun) ---------- */
 /* Icônes lucide : taille du texte par défaut, trait 2px. */
 svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em; }

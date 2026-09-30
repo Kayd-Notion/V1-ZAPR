@@ -99,7 +99,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {theme === "dark" ? <Moon /> : <Sun />}
           </button>
           <button
-            className={`btn btn-sm${user ? " btn-accent-soft" : " btn-primary"}`}
+            className={`btn btn-sm${user ? " btn-accent-soft tb-wallet" : " btn-primary"}`}
             onClick={onWalletBtn}
             title={user ? "Disconnect" : "Connect"}
           >

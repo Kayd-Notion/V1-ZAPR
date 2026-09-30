@@ -8,7 +8,6 @@ import { useSession } from "@/context/SessionContext";
 import { shortWallet } from "@/lib/format";
 import { CLUSTER, IS_MAINNET } from "@/lib/solana";
 import { LiveColumn } from "./LiveColumn";
-import { Ticker } from "./Ticker";
 import { ZaprMark } from "./ZaprMark";
 import { ConnectModal } from "./modals/ConnectModal";
 import { ComposerModal } from "./modals/ComposerModal";
@@ -86,7 +85,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </button>
         </div>
       </header>
-      <Ticker />
 
       <div className={`app${showLiveCol ? "" : " no-live"}`}>
         <nav className="rail" aria-label="Navigation">

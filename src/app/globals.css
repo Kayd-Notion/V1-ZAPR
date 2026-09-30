@@ -16,11 +16,10 @@
   --warn: #f97316;
   --radius: 16px;
   --radius-sm: 10px;
-  /* Mise en page plein écran : barre du haut + ticker, rail d'icônes,
+  /* Mise en page plein écran : barre du haut, rail d'icônes,
      contenu, colonne live. */
   --topbar-h: 60px;
-  --ticker-h: 34px;
-  --chrome-h: calc(var(--topbar-h) + var(--ticker-h));
+  --chrome-h: var(--topbar-h);
   --rail-w: 84px;
   --live-w: 400px;
   --panel-w: 320px;
@@ -121,29 +120,6 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
 .tb-search-btn { display: none; }
 .tb-post svg.lucide { width: 18px; height: 18px; }
 
-.ticker {
-  position: sticky; top: var(--topbar-h); z-index: 45;
-  height: var(--ticker-h);
-  display: flex; align-items: center;
-  background: var(--bg-elev);
-  border-bottom: 1px solid var(--border-soft);
-  font-size: 13px; overflow: hidden;
-}
-.tk-label {
-  flex-shrink: 0; align-self: stretch; display: flex; align-items: center;
-  padding: 0 12px; background: var(--accent); color: var(--on-accent);
-  font-weight: 900; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
-}
-.tk-viewport { flex: 1; overflow: hidden; mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); }
-.tk-track { display: flex; width: max-content; animation: tk-scroll 45s linear infinite; }
-.ticker:hover .tk-track { animation-play-state: paused; }
-.tk-run { display: flex; align-items: center; gap: 28px; padding-right: 28px; }
-.tk-item { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; color: var(--text); font-weight: 600; }
-.tk-handle { color: var(--text); }
-.tk-amount { display: inline-flex; align-items: center; gap: 3px; color: var(--accent-text); font-weight: 800; }
-.tk-item .zap-ico, .tk-amount .zap-ico { color: var(--accent-text); }
-@keyframes tk-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-@media (prefers-reduced-motion: reduce) { .tk-track { animation: none; } }
 
 .app {
   display: grid;
@@ -179,7 +155,7 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
 
 .main { min-width: 0; padding-bottom: 60px; border-right: 1px solid var(--border-soft); }
 
-/* Sous-barre de page (titre + retour), collée sous le ticker. */
+/* Sous-barre de page (titre + retour), collée sous la barre du haut. */
 .subbar {
   position: sticky; top: var(--chrome-h); z-index: 30;
   display: flex; align-items: center; gap: 12px;
@@ -397,6 +373,26 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
 }
 
 /* -------- 5. Feed & PostCard ------------------------------------------ */
+/* Bandeau visiteur : l'éclair est éteint (gris) tant que le wallet n'est pas
+   connecté, et s'allume au survol du bandeau. */
+.visitor-banner {
+  display: flex; align-items: center; gap: 14px;
+  margin: 14px 16px 4px; padding: 14px 16px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color 0.25s ease, background 0.25s ease;
+}
+.visitor-banner .vb-text { flex: 1; font-size: 13.5px; color: var(--text-dim); }
+.visitor-banner .vb-text b { display: block; margin-bottom: 2px; font-size: 15px; font-weight: 900; color: var(--text); }
+.vb-mark { height: 42px; margin: 0 4px; transform: rotate(-8deg); transition: filter 0.25s ease; }
+.visitor-banner:not(:hover) .vb-mark {
+  --logo-top: #55555c; --logo-bottom: #3a3a40; --logo-outline: #3a3a40; --logo-glow: none;
+}
+:root[data-theme="light"] .visitor-banner:not(:hover) .vb-mark {
+  --logo-top: #cfcabb; --logo-bottom: #b3ae9f; --logo-outline: #b3ae9f;
+}
+.visitor-banner:hover { border-color: var(--accent-text); background: linear-gradient(135deg, var(--accent-soft), transparent); }
 
 .composer-trigger {
   display: flex; align-items: center; gap: 12px;
@@ -717,7 +713,7 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* Grand écran moyen : on retire le panneau Top degens (il reste dans le ticker). */
+/* Grand écran moyen : on retire le panneau Top degens (le classement reste dans Top). */
 @media (max-width: 1360px) {
   .home-grid { grid-template-columns: minmax(0, 1fr); }
   .home-grid > .panel { display: none; }
@@ -732,7 +728,7 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
 }
 /* Mobile */
 @media (max-width: 760px) {
-  :root { --topbar-h: 56px; --ticker-h: 32px; }
+  :root { --topbar-h: 56px; }
   .topbar { gap: 10px; padding: 0 12px; }
   .brand .logo-mark { height: 30px; }
   .tb-search, .tb-post, .tb-theme { display: none; }
@@ -745,6 +741,7 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
   .subbar { padding: 8px 14px; }
   .post { padding: 14px; gap: 12px; }
   .composer-trigger { padding: 14px; }
+  .visitor-banner { margin: 12px; flex-wrap: wrap; }
   .live-col.wide .live-list { grid-template-columns: minmax(0, 1fr); }
   .modal { max-width: 440px; align-self: flex-end; margin-bottom: 0; border-radius: 20px 20px 0 0; }
   .modal-overlay { align-items: flex-end; padding: 0; }

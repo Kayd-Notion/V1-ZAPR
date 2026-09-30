@@ -95,7 +95,7 @@ export interface LeaderboardQuery {
   cursor?: LeaderboardCursor;
 }
 
-/** A posts-leaderboard row. `post` is null when its content no longer exists. */
+/** A posts-leaderboard row (live posts only). */
 export interface PostRankEntry {
   postId: string;
   total: number;
@@ -150,8 +150,18 @@ export interface Store {
     country?: string;
     tags?: string[];
   }): Promise<Post>;
-  getPost(id: string): Promise<PostWithAuthor | null>;
+  /**
+   * A live post, or null once it has expired. `graceMs` also returns a post
+   * that expired less than that long ago (recording an in-flight zap).
+   */
+  getPost(id: string, opts?: { graceMs?: number }): Promise<PostWithAuthor | null>;
+  /** Live posts only: expired posts never appear anywhere. */
   listPosts(q: FeedQuery): Promise<PostWithAuthor[]>;
+  /**
+   * Deletes posts (with their comments) that expired before `before`. The zap
+   * log is kept: it is the record of money that moved and feeds creator totals.
+   */
+  purgeExpired(before: number): Promise<number>;
 
   // Pumps
   recordPump(input: {

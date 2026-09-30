@@ -8,6 +8,7 @@ import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { databaseUrl } from "./url";
+import { expiresAt } from "../lifespan";
 import type {
   CommentWithAuthor,
   CreatorRankEntry,
@@ -56,6 +57,12 @@ async function applySchema(sql: Sql): Promise<void> {
   await sql.begin(async (tx) => {
     await tx`select pg_advisory_xact_lock(727001)`;
     await tx.unsafe(schema);
+    // Posts created before the expires_at column: compute it once (the
+    // lifespan tiers live in the app, not in SQL).
+    const missing = await tx`select id, created_at, pumped from posts where expires_at is null`;
+    for (const r of missing) {
+      await tx`update posts set expires_at = ${expiresAt(Number(r.created_at), Number(r.pumped))} where id = ${r.id}`;
+    }
   });
 }
 
@@ -171,9 +178,10 @@ export function createPostgresStore(): Store {
     async createPost({ userId, text, mediaUrl = null, mediaType = null, country = "FR", tags = [] }) {
       const db = await getSql();
       const id = randomUUID();
+      const now = Date.now();
       const rows = await db`
-        insert into posts (id, user_id, text, media_url, media_type, created_at, country, tags)
-        values (${id}, ${userId}, ${text}, ${mediaUrl}, ${mediaType}, ${Date.now()}, ${country}, ${db.array(tags)})
+        insert into posts (id, user_id, text, media_url, media_type, created_at, expires_at, country, tags)
+        values (${id}, ${userId}, ${text}, ${mediaUrl}, ${mediaType}, ${now}, ${expiresAt(now, 0)}, ${country}, ${db.array(tags)})
         returning *`;
       const r = rows[0];
       return {
@@ -189,12 +197,14 @@ export function createPostgresStore(): Store {
         tags: r.tags ?? [],
       };
     },
-    async getPost(id) {
+    async getPost(id, opts) {
       const db = await getSql();
+      if (!UUID_RE.test(id)) return null;
+      const aliveAfter = Date.now() - (opts?.graceMs ?? 0);
       const rows = await db`
         select p.*, u.id as author_id, u.handle as author_handle, u.wallet as author_wallet, u.bio as author_bio
         from posts p join users u on u.id = p.user_id
-        where p.id = ${id} limit 1`;
+        where p.id = ${id} and p.expires_at > ${aliveAfter} limit 1`;
       return rows[0] ? rowToPostWithAuthor(rows[0]) : null;
     },
     async listPosts(q: FeedQuery) {
@@ -202,7 +212,7 @@ export function createPostgresStore(): Store {
       const rows = await db`
         select p.*, u.id as author_id, u.handle as author_handle, u.wallet as author_wallet, u.bio as author_bio
         from posts p join users u on u.id = p.user_id
-        where true
+        where p.expires_at > ${Date.now()}
           ${q.authorId ? db`and p.user_id = ${q.authorId}` : db``}
           ${q.before ? db`and p.created_at < ${q.before}` : db``}
         order by p.created_at desc
@@ -216,6 +226,8 @@ export function createPostgresStore(): Store {
         const postRows = await tx`
           update posts set pumped = pumped + ${amount} where id = ${postId} returning *`;
         if (!postRows[0]) throw new Error("post not found");
+        const newExpiry = expiresAt(Number(postRows[0].created_at), Number(postRows[0].pumped));
+        await tx`update posts set expires_at = ${newExpiry} where id = ${postId}`;
         const id = randomUUID();
         const pumpRows = await tx`
           insert into pumps (id, post_id, pumper_user_id, amount, creator_amount, founder_amount,
@@ -243,6 +255,12 @@ export function createPostgresStore(): Store {
           },
         };
       });
+    },
+    async purgeExpired(before) {
+      const db = await getSql();
+      // Comments go with the post (ON DELETE CASCADE); the zap log stays.
+      const rows = await db`delete from posts where expires_at <= ${before} returning id`;
+      return rows.length;
     },
     async getPumpBySignature(signature) {
       const db = await getSql();
@@ -316,7 +334,7 @@ export function createPostgresStore(): Store {
           select p.*, p.id as rank_post_id, p.pumped as rank_total,
                  u.id as author_id, u.handle as author_handle, u.wallet as author_wallet, u.bio as author_bio
           from posts p join users u on u.id = p.user_id
-          where true
+          where p.expires_at > ${Date.now()}
             ${country ? db`and p.country = ${country}` : db``}
             ${c ? db`and (p.pumped < ${c.total}::float8 or (p.pumped = ${c.total}::float8 and p.id > ${c.id}::uuid))` : db``}
           order by p.pumped desc, p.id asc
@@ -324,10 +342,9 @@ export function createPostgresStore(): Store {
         return rows.map(rowToPostRank);
       }
 
-      // Period: sum the per-pump log over the window, grouped by post. Only the
-      // pump rows (with their creator/country snapshot) decide ranking; the post
-      // row is LEFT JOINed purely for display and may be gone. Sums use numeric
-      // so totals are exact and identical across pages (stable keyset).
+      // Period: sum the per-pump log over the window, grouped by post, for posts
+      // that are still alive (expired posts appear nowhere). Sums use numeric so
+      // totals are exact and identical across pages (stable keyset).
       const rows = await db`
         with agg as (
           select pm.post_id, pm.creator_user_id, sum(pm.amount::numeric) as total
@@ -339,9 +356,9 @@ export function createPostgresStore(): Store {
         select p.*, agg.post_id as rank_post_id, agg.total::text as rank_total,
                u.id as author_id, u.handle as author_handle, u.wallet as author_wallet, u.bio as author_bio
         from agg
-        left join posts p on p.id = agg.post_id
-        left join users u on u.id = coalesce(p.user_id, agg.creator_user_id)
-        where true
+        join posts p on p.id = agg.post_id
+        join users u on u.id = p.user_id
+        where p.expires_at > ${Date.now()}
           ${c ? db`and (agg.total < ${c.total}::numeric or (agg.total = ${c.total}::numeric and agg.post_id > ${c.id}::uuid))` : db``}
         order by agg.total desc, agg.post_id asc
         limit ${q.limit}`;

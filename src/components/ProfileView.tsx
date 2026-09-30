@@ -19,7 +19,6 @@ export function ProfileView({ handle }: { handle: string }) {
     user: ClientUser;
     postsCount: number;
     active: ClientPost[];
-    expiredCount: number;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -104,9 +103,7 @@ export function ProfileView({ handle }: { handle: string }) {
         </div>
         <div className="stat-box">
           <div className="sb-val">{data.postsCount}</div>
-          <div className="sb-label">
-            posts · {data.expiredCount} RIP
-          </div>
+          <div className="sb-label">posts en vie</div>
         </div>
       </div>
       {!showGiven && (
@@ -120,7 +117,7 @@ export function ProfileView({ handle }: { handle: string }) {
         data.active.map((p) => <PostCard key={p.id} post={p} />)
       ) : (
         <ZaprEmpty title="Aucun post en vie.">
-          <span>{isMe ? "Poste un truc, le feed t'attend." : "Tout est RIP ici."}</span>
+          <span>{isMe ? "Poste un truc, le feed t'attend." : "Rien pour l'instant."}</span>
         </ZaprEmpty>
       )}
     </section>

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getStore } from "@/lib/db";
+import { getStore, purgeIfDue } from "@/lib/db";
 import { currentUser } from "@/lib/current-user";
 import { countryFromRequest } from "@/lib/geo";
 import type { MediaType } from "@/lib/db/types";
@@ -19,6 +19,7 @@ export async function GET(req: NextRequest) {
   const limit = Math.min(Number(sp.get("limit")) || 20, 50);
   const before = sp.get("before") ? Number(sp.get("before")) : undefined;
 
+  await purgeIfDue();
   const posts = await getStore().listPosts({ limit, before });
   const nextCursor = posts.length === limit ? posts[posts.length - 1].createdAt : null;
   return NextResponse.json({ posts, nextCursor });

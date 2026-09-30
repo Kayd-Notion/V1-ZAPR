@@ -258,7 +258,6 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
 .lc-meta { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
 .lc-bar { flex: 1; height: 4px; border-radius: 4px; background: var(--bg-hover); overflow: hidden; }
 .lc-left { font-size: 11px; font-weight: 700; color: var(--text-faint); white-space: nowrap; }
-.lc-left.rip { color: var(--danger); }
 .lc-side { display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; gap: 6px; flex-shrink: 0; }
 .lc-amount { display: inline-flex; align-items: center; gap: 2px; font-weight: 900; font-size: 13.5px; color: var(--accent-text); }
 .lc-zap {
@@ -428,7 +427,6 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
 .post-head .name { font-weight: 700; font-size: 15px; }
 .post-head .name { font-weight: 800; }
 .post-head .time { color: var(--text-faint); font-size: 13px; }
-.post-head .expired-tag { margin-left: auto; }
 .avatar-link { border-radius: 50%; }
 .post-text { margin: 4px 0 10px; font-size: 15px; white-space: pre-wrap; word-wrap: break-word; max-width: 760px; }
 
@@ -668,9 +666,6 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
 .stat-box .sb-val { display: flex; align-items: center; justify-content: center; gap: 3px; font-size: 18px; font-weight: 900; }
 .stat-box .sb-val.accent { color: var(--accent-text); }
 .stat-box .sb-label { font-size: 11.5px; color: var(--text-faint); margin-top: 2px; }
-.post.expired { opacity: 0.62; }
-.post.expired .pumped-badge .pb-amount { color: var(--text-faint); }
-.expired-tag { font-size: 11px; font-weight: 900; letter-spacing: 0.06em; color: var(--danger); background: rgba(239, 68, 68, 0.12); padding: 2px 8px; border-radius: 6px; }
 
 .settings-group { padding: 8px 0; max-width: 760px; }
 .settings-group .sg-title { padding: 16px 20px 6px; font-size: 13px; font-weight: 700; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.04em; }

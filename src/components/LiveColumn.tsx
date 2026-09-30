@@ -98,6 +98,8 @@ function LiveCard({ post, now, fresh }: { post: ClientPost; now: number; fresh: 
   const { openPump } = useUI();
   const { requireAuth } = useSession();
   const info = lifespanInfo(post.createdAt, post.pumped, now);
+  // Expired posts are deleted: drop it the second it expires.
+  if (info.expired) return null;
 
   const zap = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -125,7 +127,7 @@ function LiveCard({ post, now, fresh }: { post: ClientPost; now: number; fresh: 
           <div className="lc-bar">
             <div className={`tg-fill ${info.cls}`.trim()} style={{ width: `${info.pct}%` }} />
           </div>
-          <span className={`lc-left${info.expired ? " rip" : ""}`}>{remainingLabel(info.remainingMs)}</span>
+          <span className="lc-left">{remainingLabel(info.remainingMs)}</span>
         </div>
       </div>
       <div className="lc-side">

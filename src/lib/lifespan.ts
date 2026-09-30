@@ -26,6 +26,13 @@ export function lifespanHours(totalPumpedSol: number): number {
   return LIFESPAN_CONFIG.baseHours + extra;
 }
 
+/**
+ * Expired posts disappear from every read at once, but are only deleted from
+ * storage this long after expiry, so a zap already being signed when the post
+ * dies can still be recorded (money has moved on-chain by then).
+ */
+export const PURGE_GRACE_MS = 10 * 60_000;
+
 /** Absolute expiry timestamp (ms epoch) for a post. */
 export function expiresAt(createdAtMs: number, totalPumpedSol: number): number {
   return createdAtMs + lifespanHours(totalPumpedSol) * HOUR_MS;

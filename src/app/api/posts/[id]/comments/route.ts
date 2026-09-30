@@ -9,6 +9,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
+  if (!(await getStore().getPost(id))) return NextResponse.json({ error: "Post introuvable." }, { status: 404 });
   const comments = await getStore().listComments(id);
   return NextResponse.json({ comments });
 }

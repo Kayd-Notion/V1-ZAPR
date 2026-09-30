@@ -6,6 +6,7 @@ import { TimeGauge } from "./TimeGauge";
 import { ZapIcon } from "./ZaprMark";
 import { useUI } from "@/context/UIContext";
 import { useSession } from "@/context/SessionContext";
+import { useNow } from "@/context/LiveContext";
 import { fmtSol, timeAgo } from "@/lib/format";
 import { lifespanInfo } from "@/lib/lifespan";
 import type { ClientPost } from "@/lib/client-types";
@@ -15,7 +16,9 @@ export function PostCard({ post, fresh = false }: { post: ClientPost; fresh?: bo
   const { openPump, toast } = useUI();
   const { requireAuth } = useSession();
 
-  const expired = lifespanInfo(post.createdAt, post.pumped).expired;
+  // Expired posts are deleted: one that expires while on screen disappears.
+  const now = useNow(10_000);
+  if (lifespanInfo(post.createdAt, post.pumped, now).expired) return null;
 
   const go = () => router.push(`/post/${post.id}`);
   const stop = (e: React.MouseEvent) => e.stopPropagation();
@@ -33,7 +36,7 @@ export function PostCard({ post, fresh = false }: { post: ClientPost; fresh?: bo
   };
 
   return (
-    <article className={`post${expired ? " expired" : ""}${fresh ? " fresh" : ""}`} onClick={go}>
+    <article className={`post${fresh ? " fresh" : ""}`} onClick={go}>
       <div onClick={stop}>
         <button className="avatar-link" onClick={() => router.push(`/profile/${post.author.handle}`)}>
           <Avatar id={post.author.id} handle={post.author.handle} />
@@ -43,7 +46,6 @@ export function PostCard({ post, fresh = false }: { post: ClientPost; fresh?: bo
         <div className="post-head">
           <span className="name">{post.author.handle}</span>
           <span className="time">il y a {timeAgo(post.createdAt)}</span>
-          {expired && <span className="expired-tag">RIP</span>}
         </div>
         <div className="post-text">{post.text}</div>
 

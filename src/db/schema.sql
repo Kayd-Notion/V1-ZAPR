@@ -30,6 +30,10 @@ create table if not exists posts (
   country     text not null default 'FR',
   tags        text[] not null default '{}'
 );
+-- Expiry (ms epoch), kept in sync by the app on create and on every zap:
+-- expired posts are hidden from every read, then deleted by the purge.
+alter table posts add column if not exists expires_at bigint;
+create index if not exists posts_expires_idx on posts (expires_at);
 create index if not exists posts_created_idx on posts (created_at desc);
 create index if not exists posts_pumped_idx on posts (pumped desc);
 create index if not exists posts_country_idx on posts (country);

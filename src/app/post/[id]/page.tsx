@@ -7,7 +7,7 @@ import { TimeGauge } from "@/components/TimeGauge";
 import { ZapIcon, ZaprEmpty, ZaprLoader } from "@/components/ZaprMark";
 import { useSession } from "@/context/SessionContext";
 import { useUI } from "@/context/UIContext";
-import { useLive } from "@/context/LiveContext";
+import { useLive, useNow } from "@/context/LiveContext";
 import { api } from "@/lib/api";
 import { fmtSol, shortWallet, timeAgo } from "@/lib/format";
 import { lifespanInfo } from "@/lib/lifespan";
@@ -40,6 +40,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
     load();
   }, [load, dataVersion]);
 
+  const now = useNow(5_000);
   // Live: reload when someone zaps this post (its total changed in the live feed).
   const { posts: livePosts } = useLive();
   const liveTotal = livePosts?.find((p) => p.id === id)?.pumped;
@@ -57,7 +58,14 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   }
   if (!post) return <ZaprLoader label="Chargement…" />;
 
-  const expired = lifespanInfo(post.createdAt, post.pumped).expired;
+  // Expired posts are deleted: if it dies while open, say so.
+  if (lifespanInfo(post.createdAt, post.pumped, now).expired) {
+    return (
+      <ZaprEmpty title="Trop tard, ce post a expiré.">
+        <span>Il a été supprimé. Aucun zap ne l&apos;a sauvé à temps.</span>
+      </ZaprEmpty>
+    );
+  }
 
   const submitComment = async () => {
     if (!requireAuth("Connecte ton wallet pour commenter.")) return;
@@ -99,11 +107,6 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                   @{post.author.handle} · il y a {timeAgo(post.createdAt)}
                 </div>
               </div>
-              {expired && (
-                <span className="expired-tag" style={{ marginLeft: "auto" }}>
-                  RIP
-                </span>
-              )}
             </div>
 
             {post.deleted ? (

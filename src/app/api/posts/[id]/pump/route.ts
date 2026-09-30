@@ -4,7 +4,7 @@ import { currentUser } from "@/lib/current-user";
 import { resolvedSplitBps } from "@/lib/pump-config";
 import { verifyPumpTransaction } from "@/lib/verify-pump";
 import { solToLamports } from "@/lib/format";
-import { lifespanInfo } from "@/lib/lifespan";
+import { lifespanInfo, PURGE_GRACE_MS } from "@/lib/lifespan";
 import { MIN_PUMP_SOL } from "@/lib/pump-config";
 import { formatSolFr } from "@/lib/pump-rules";
 
@@ -47,7 +47,10 @@ export async function POST(
   }
 
   const store = getStore();
-  const post = await store.getPost(id);
+  // The zap was checked (prepare) while the post was alive; it may have
+  // expired while the wallet was signing. The money has moved, so record it
+  // (which also extends the post's life) unless the post is already deleted.
+  const post = await store.getPost(id, { graceMs: PURGE_GRACE_MS });
   if (!post) return NextResponse.json({ error: "Post introuvable." }, { status: 404 });
 
   // Idempotency: never record the same on-chain tx twice.
@@ -84,7 +87,7 @@ export async function POST(
     anonymous: anonymous || me.anonymizePumps,
   });
 
-  const full = await store.getPost(id);
+  const full = await store.getPost(id, { graceMs: PURGE_GRACE_MS });
   const info = lifespanInfo(updated.createdAt, updated.pumped);
   return NextResponse.json({
     post: full,

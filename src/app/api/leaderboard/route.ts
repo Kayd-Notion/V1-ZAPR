@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getStore } from "@/lib/db";
+import { getStore, purgeIfDue } from "@/lib/db";
 import { publicUser } from "@/lib/current-user";
 import { countryFromRequest, normalizeCountry } from "@/lib/geo";
 import type {
@@ -43,6 +43,7 @@ function decodeCursor(raw: string): LeaderboardCursor | null {
  * Country defaults to the requester's IP-derived country (never stored).
  */
 export async function GET(req: NextRequest) {
+  await purgeIfDue();
   const sp = req.nextUrl.searchParams;
   const kind: LeaderboardKind = sp.get("kind") === "creators" ? "creators" : "posts";
   const scope: LeaderboardScope = sp.get("scope") === "country" ? "country" : "world";

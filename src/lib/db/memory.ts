@@ -10,6 +10,7 @@ import os from "node:os";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { buildSeed } from "./seed";
+import { expiresAt } from "../lifespan";
 import type {
   Comment,
   CommentWithAuthor,
@@ -114,6 +115,11 @@ function authorOf(u: User) {
   return { id: u.id, handle: u.handle, wallet: u.wallet, bio: u.bio };
 }
 
+/** Still alive at `now` (expired posts appear nowhere). */
+function isAlive(p: Post, now: number = Date.now()): boolean {
+  return expiresAt(p.createdAt, p.pumped) > now;
+}
+
 export function createMemoryStore(): Store {
   const findUser = (d: DbShape, id: string) => d.users.find((u) => u.id === id) || null;
 
@@ -176,17 +182,18 @@ export function createMemoryStore(): Store {
       persist();
       return post;
     },
-    async getPost(id) {
+    async getPost(id, opts) {
       const d = await load();
       const p = d.posts.find((x) => x.id === id);
-      if (!p) return null;
+      if (!p || !isAlive(p, Date.now() - (opts?.graceMs ?? 0))) return null;
       const author = findUser(d, p.userId);
       if (!author) return null;
       return { ...p, author: authorOf(author) };
     },
     async listPosts(q: FeedQuery) {
       const d = await load();
-      let list = d.posts.slice();
+      const now = Date.now();
+      let list = d.posts.filter((p) => isAlive(p, now));
       if (q.authorId) list = list.filter((p) => p.userId === q.authorId);
       if (q.before) list = list.filter((p) => p.createdAt < q.before!);
       list.sort((a, b) => b.createdAt - a.createdAt);
@@ -228,6 +235,16 @@ export function createMemoryStore(): Store {
       if (pumper) pumper.given += amount;
       persist();
       return { pump, post: { ...post } };
+    },
+    async purgeExpired(before) {
+      const d = await load();
+      const dead = new Set(d.posts.filter((p) => !isAlive(p, before)).map((p) => p.id));
+      if (dead.size === 0) return 0;
+      // Posts and their comments go; the zap log stays (money that moved).
+      d.posts = d.posts.filter((p) => !dead.has(p.id));
+      d.comments = d.comments.filter((c) => !dead.has(c.postId));
+      persist();
+      return dead.size;
     },
     async getPumpBySignature(signature) {
       const d = await load();
@@ -282,18 +299,19 @@ export function createMemoryStore(): Store {
       const byCountry = q.scope === "country" && q.country ? q.country : null;
       let rows: { id: string; total: number; creatorUserId: string | null }[];
 
+      const now = Date.now();
+      const alive = new Set(d.posts.filter((p) => isAlive(p, now)).map((p) => p.id));
       if (q.since === undefined) {
         // All time: cumulative total kept on the post.
         rows = d.posts
+          .filter((p) => alive.has(p.id))
           .filter((p) => !byCountry || p.country === byCountry)
           .map((p) => ({ id: p.id, total: p.pumped, creatorUserId: p.userId }));
       } else {
-        // Period: sum the per-pump log over the window. Uses only pump history
-        // (creator/country snapshots), never the post row, so posts whose
-        // content was removed still rank.
+        // Period: sum the per-pump log over the window, live posts only.
         const sums = new Map<string, { total: number; creatorUserId: string | null }>();
         for (const pm of d.pumps) {
-          if (pm.createdAt < q.since) continue;
+          if (pm.createdAt < q.since || !alive.has(pm.postId)) continue;
           if (byCountry && pm.postCountry !== byCountry) continue;
           const cur = sums.get(pm.postId) ?? { total: 0, creatorUserId: pm.creatorUserId ?? null };
           cur.total += pm.amount;

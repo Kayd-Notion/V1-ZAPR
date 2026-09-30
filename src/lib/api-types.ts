@@ -57,7 +57,6 @@ export interface ProfilePage {
   user: ClientUser;
   postsCount: number;
   active: ClientPost[];
-  expiredCount: number;
 }
 
 export interface Api {

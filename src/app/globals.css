@@ -366,12 +366,31 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
 
 /* Chargement et états vides avec le logo */
 .zloader { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 48px 20px; color: var(--text-faint); font-size: 13.5px; }
-.zloader-mark { height: 48px; animation: zpulse 1s ease-in-out infinite; }
-@keyframes zpulse { 0%, 100% { transform: scale(0.92); opacity: 0.7; } 50% { transform: scale(1.04); opacity: 1; } }
+/* Charging bolt: an empty outline filling with yellow from the bottom. */
+.zloader-mark { height: 52px; width: auto; aspect-ratio: 2 / 3; overflow: visible; }
+.zl-empty { fill: var(--bg-hover); stroke: var(--border); }
+.zl-full { fill: var(--accent); stroke: var(--accent); filter: drop-shadow(0 0 8px rgba(var(--zapr-yellow-rgb), 0.5)); }
+.zl-level { transform-box: fill-box; transform-origin: 50% 100%; animation: zl-charge 1.2s cubic-bezier(0.6, 0, 0.3, 1) infinite; }
+@keyframes zl-charge { 0% { transform: scaleY(0); } 70%, 85% { transform: scaleY(1); opacity: 1; } 100% { transform: scaleY(1); opacity: 0; } }
+.zsplash { min-height: calc(70vh - var(--chrome-h)); display: flex; align-items: center; justify-content: center; }
+.zsplash .zloader-mark { height: 84px; }
+.zsplash .zloader { font-family: var(--font-display); letter-spacing: 0.04em; }
 .zempty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 56px 24px; text-align: center; color: var(--text-dim); font-size: 14px; }
 .zempty b { color: var(--text); font-size: 17px; font-weight: 900; }
 .zempty .btn { margin-top: 8px; }
-.zempty-mark { height: 72px; margin-bottom: 8px; transform: rotate(-8deg); }
+/* Empty-state illustration: logo tile + bolt floating, sparks flickering. */
+.zempty-art { width: 132px; height: auto; margin-bottom: 6px; overflow: visible; }
+.ze-tile { fill: var(--bg-elev-2); stroke: var(--border); stroke-width: 1.5; }
+.ze-bolt { fill: var(--logo-top); stroke: var(--logo-top); filter: var(--logo-glow); transition: fill var(--dur) ease, stroke var(--dur) ease; }
+.ze-shadow { fill: rgba(var(--zapr-yellow-rgb), 0.14); transform-box: fill-box; transform-origin: center; animation: ze-shadow 3.2s ease-in-out infinite; }
+.ze-float { animation: ze-float 3.2s ease-in-out infinite; }
+.ze-spark { fill: none; stroke: var(--accent-text); stroke-width: 4; stroke-linecap: square; animation: ze-spark 1.6s steps(2, jump-none) infinite; }
+@keyframes ze-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes ze-shadow { 0%, 100% { transform: scaleX(1); opacity: 1; } 50% { transform: scaleX(0.8); opacity: 0.6; } }
+@keyframes ze-spark { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+/* Visitors: the illustration's bolt is switched off (grey) until hovered. */
+:root[data-auth="guest"] .zempty:not(:hover) .ze-bolt { fill: var(--bolt-off-top); stroke: var(--bolt-off-top); filter: none; }
+:root[data-auth="guest"] .zempty:not(:hover) .ze-spark { stroke: var(--bolt-off-bottom); }
 .zempty-ico { width: 40px; height: 40px; color: var(--text-faint); margin-bottom: 6px; }
 
 /* Mobile : bouton flottant + barre du bas */

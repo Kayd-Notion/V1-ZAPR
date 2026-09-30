@@ -39,7 +39,9 @@ export const viewport: Viewport = {
 };
 
 // Set the theme before paint to avoid a flash of the wrong theme.
-const themeScript = `(function(){try{var t=localStorage.getItem('zapr_theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();`;
+// Also mark visitors (data-auth="guest") so every bolt starts grey without a
+// yellow flash; AppShell corrects it once the session is known.
+const themeScript = `(function(){var d=document.documentElement;try{var t=localStorage.getItem('zapr_theme');d.setAttribute('data-theme',t==='light'?'light':'dark');d.setAttribute('data-auth',localStorage.getItem('zapr_logged_in')==='1'?'in':'guest');}catch(e){d.setAttribute('data-theme','dark');d.setAttribute('data-auth','guest');}})();`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

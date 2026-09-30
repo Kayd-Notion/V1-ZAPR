@@ -41,6 +41,9 @@
   --shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
   --accent-soft: rgba(254, 210, 2, 0.14);
   --accent-text: #fed202;
+  /* Éclairs éteints (visiteur non connecté). */
+  --bolt-off-top: #5a5a61;
+  --bolt-off-bottom: #3d3d43;
   /* Logo : jaune plein, léger halo. */
   --logo-top: #fed202;
   --logo-bottom: #fed202;
@@ -64,6 +67,9 @@
   --accent-soft: rgba(254, 210, 2, 0.24);
   /* Contraste 4,75:1 sur le fond crème (AA). */
   --accent-text: #8a6d00;
+  /* Éclairs éteints (visiteur non connecté). */
+  --bolt-off-top: #c4bfae;
+  --bolt-off-bottom: #a9a493;
   /* Logo : dégradé jaune → ambre, fin liseré doré et petite ombre portée,
      pour qu'il se détache du crème sans contour noir ni halo flou. */
   --logo-top: #ffd60a;
@@ -94,6 +100,18 @@ a { color: var(--accent-text); text-decoration: none; }
 svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em; }
 /* Logo ZAPR : l'éclair seul (ratio 2:3), posé directement sur la page. */
 .zmark { display: block; flex-shrink: 0; aspect-ratio: 2 / 3; height: 1em; width: auto; filter: var(--logo-glow); overflow: visible; }
+
+/* Visiteur non connecté : tous les éclairs du site sont éteints (gris) et
+   s'allument en jaune au survol. Les éclairs noirs des boutons jaunes ne
+   changent pas. Le bandeau visiteur s'allume quand on le survole. */
+.zmark, .zap-ico { transition: filter 0.2s ease, color 0.2s ease; }
+:root[data-auth="guest"] .zmark:not(:hover):not(.vb-mark),
+:root[data-auth="guest"] .visitor-banner:not(:hover) .vb-mark {
+  --logo-top: var(--bolt-off-top); --logo-bottom: var(--bolt-off-bottom);
+  --logo-outline: var(--bolt-off-bottom); --logo-glow: none;
+}
+:root[data-auth="guest"] .zap-ico:not(button .zap-ico):not(:hover) { color: var(--bolt-off-top); }
+:root[data-auth="guest"] .zap-ico:not(button .zap-ico):hover { color: var(--accent-text); }
 
 .topbar {
   position: sticky; top: 0; z-index: 50;
@@ -373,22 +391,19 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
 }
 
 /* -------- 5. Feed & PostCard ------------------------------------------ */
-/* Bandeau visiteur : l'éclair reste éteint (gris) tant que le wallet n'est
-   pas connecté ; le bandeau disparaît une fois connecté. */
+/* Bandeau visiteur (affiché seulement quand le wallet n'est pas connecté). */
 .visitor-banner {
   display: flex; align-items: center; gap: 14px;
   margin: 14px 16px 4px; padding: 14px 16px;
   background: var(--bg-elev-2);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  transition: border-color 0.25s ease, background 0.25s ease;
 }
 .visitor-banner .vb-text { flex: 1; font-size: 13.5px; color: var(--text-dim); }
 .visitor-banner .vb-text b { display: block; margin-bottom: 2px; font-size: 15px; font-weight: 900; color: var(--text); }
-.vb-mark {
-  height: 42px; margin: 0 4px; transform: rotate(-8deg);
-  --logo-top: #55555c; --logo-bottom: #3a3a40; --logo-outline: #3a3a40; --logo-glow: none;
-}
-:root[data-theme="light"] .vb-mark { --logo-top: #cfcabb; --logo-bottom: #b3ae9f; --logo-outline: #b3ae9f; }
+.visitor-banner:hover { border-color: var(--accent-text); background: linear-gradient(135deg, var(--accent-soft), transparent); }
+.vb-mark { height: 42px; margin: 0 4px; transform: rotate(-8deg); }
 
 .composer-trigger {
   display: flex; align-items: center; gap: 12px;

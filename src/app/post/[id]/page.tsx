@@ -1,10 +1,10 @@
 "use client";
 import { use, useCallback, useEffect, useState } from "react";
-import { ArrowLeft, MessageCircle, Trash2 } from "lucide-react";
+import { IconBack, IconComment, IconTrash, IconZap } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { Avatar } from "@/components/Avatar";
 import { TimeGauge } from "@/components/TimeGauge";
-import { ZapIcon, ZaprEmpty, ZaprLoader } from "@/components/ZaprMark";
+import { ZaprEmpty, ZaprLoader } from "@/components/ZaprMark";
 import { useSession } from "@/context/SessionContext";
 import { useUI } from "@/context/UIContext";
 import { useLive, useNow } from "@/context/LiveContext";
@@ -91,7 +91,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
     <section>
       <div className="subbar">
         <button className="icon-btn" onClick={() => router.push("/")} aria-label="Back">
-          <ArrowLeft />
+          <IconBack />
         </button>
         <div className="page-title">Post</div>
       </div>
@@ -133,7 +133,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
               <TimeGauge createdAt={post.createdAt} pumped={post.pumped} />
               <div className="pumped-badge">
                 <span className="pb-amount">
-                  <ZapIcon />
+                  <IconZap />
                   {fmtSol(post.pumped)}
                 </span>
                 <span className="pb-label">SOL zapped</span>
@@ -144,19 +144,19 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
               // Rule 2.1: a purged post can't be zapped — no Zap button at all.
               <div className="pump-notice" style={{ marginBottom: 0 }}>
                 <b className="notice-title">
-                  <Trash2 /> Post deleted
+                  <IconTrash /> Post deleted
                 </b>
                 It expired and its content was deleted: it can&apos;t get zaps anymore.
               </div>
             ) : (
               <button className="pump-btn pump-btn-lg" onClick={doPump}>
-                <ZapIcon /> Send a zap
+                <IconZap /> Send a zap
               </button>
             )}
           </div>
 
           <div className="section-title">
-            <MessageCircle /> Comments ({comments.length})
+            <IconComment /> Comments ({comments.length})
           </div>
           <div className="comment-form">
             <input
@@ -188,7 +188,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
         <aside className="panel zappers">
           <div className="panel-head">
             <h4>
-              <ZapIcon /> Zappers ({pumpers.length})
+              <IconZap /> Zappers ({pumpers.length})
             </h4>
           </div>
           {pumpers.length === 0 && <p className="faint panel-empty">No zaps yet. Be the first.</p>}
@@ -215,7 +215,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                   <div className="faint pr-sub">{sub}</div>
                 </div>
                 <span className="pr-amount">
-                  <ZapIcon />
+                  <IconZap />
                   {fmtSol(pp.amount)}
                 </span>
               </div>

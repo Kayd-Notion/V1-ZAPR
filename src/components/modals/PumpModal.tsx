@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-import { AlertTriangle, Hourglass, Landmark, Trash2, User } from "lucide-react";
+import { IconAlert, IconHourglass, IconPlatform, IconTrash, IconUser, IconZap } from "@/components/icons";
 import { Modal } from "../Modal";
 import { Avatar } from "../Avatar";
-import { ZapIcon, ZaprMark } from "../ZaprMark";
+import { ZaprMark } from "../ZaprMark";
 import { useUI } from "@/context/UIContext";
 import { useSession } from "@/context/SessionContext";
 import { usePump } from "@/hooks/usePump";
@@ -132,9 +132,9 @@ export function PumpModal() {
   // --- Post purged: no pump possible ------------------------------------
   if (q?.status === "deleted") {
     return (
-      <Modal title="Zap this post" icon={<ZapIcon />} onClose={closeModal}>
+      <Modal title="Zap this post" icon={<IconZap />} onClose={closeModal}>
         <div className="zempty">
-          <Trash2 className="zempty-ico" />
+          <IconTrash className="zempty-ico" />
           <b>Too late, it&apos;s gone.</b>
           <span>This post expired and was deleted: it can&apos;t get zaps anymore. No SOL was sent.</span>
         </div>
@@ -146,7 +146,7 @@ export function PumpModal() {
   }
 
   return (
-    <Modal title="Zap this post" icon={<ZapIcon />} onClose={closeModal}>
+    <Modal title="Zap this post" icon={<IconZap />} onClose={closeModal}>
       {phase === "success" ? (
         <div className="pump-success">
           <ZaprMark className="ps-mark" />
@@ -170,7 +170,7 @@ export function PumpModal() {
 
           {IS_MAINNET && (
             <p className="warn-line">
-              <AlertTriangle /> Zaps are disabled on mainnet (program not audited yet).
+              <IconAlert /> Zaps are disabled on mainnet (program not audited yet).
             </p>
           )}
 
@@ -178,7 +178,7 @@ export function PumpModal() {
             <div className="pump-notice">
               <p>
                 <b className="notice-title">
-                  <Hourglass /> This post is RIP.
+                  <IconHourglass /> This post is RIP.
                 </b>{" "}
                 It takes at least <b>{formatSol(requiredMin)} SOL</b> to bring it back (otherwise it gets deleted).
               </p>
@@ -222,13 +222,13 @@ export function PumpModal() {
           <div className="split-box">
             <div className="split-row creator">
               <span>
-                <User /> Creator ({creatorBps / 100}%)
+                <IconUser /> Creator ({creatorBps / 100}%)
               </span>
               <b>{fmtSol(quoteSplit.creatorSol)} SOL</b>
             </div>
             <div className="split-row">
               <span>
-                <Landmark /> Platform ({founderBps / 100}%)
+                <IconPlatform /> Platform ({founderBps / 100}%)
               </span>
               <b>{fmtSol(quoteSplit.founderSol)} SOL</b>
             </div>
@@ -260,7 +260,7 @@ export function PumpModal() {
               </>
             ) : (
               <>
-                <ZapIcon /> Send it · {formatSol(safeAmount)} SOL
+                <IconZap /> Send it · {formatSol(safeAmount)} SOL
               </>
             )}
           </button>

@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { Droplet, ExternalLink } from "lucide-react";
-import { ZapIcon, ZaprEmpty } from "@/components/ZaprMark";
+import { IconDroplet, IconExternal, IconZap } from "@/components/icons";
+import { ZaprEmpty } from "@/components/ZaprMark";
 import { useSession } from "@/context/SessionContext";
 import { useUI } from "@/context/UIContext";
 import { fmtSol, lamportsToSol } from "@/lib/format";
@@ -54,7 +54,7 @@ export default function WalletPage() {
         <div className="page-title">Wallet</div>
       </div>
       <div className="balance-card">
-        <ZapIcon className="bc-mark" />
+        <IconZap className="bc-mark" />
         <div className="bc-label">Your balance ({CLUSTER})</div>
         <div className="bc-value">
           {loading || balance === null ? "…" : `${fmtSol(balance)} SOL`}
@@ -70,7 +70,7 @@ export default function WalletPage() {
                 .catch(() => toast("Faucet is dry (RPC limit). Try again later or use faucet.solana.com."))
             }
           >
-            <Droplet /> Devnet faucet +1 SOL
+            <IconDroplet /> Devnet faucet +1 SOL
           </button>
         </div>
       </div>
@@ -79,21 +79,21 @@ export default function WalletPage() {
       <div className="stats-grid">
         <div className="stat-box">
           <div className="sb-val accent">
-            <ZapIcon />
+            <IconZap />
             {fmtSol(user.received)}
           </div>
           <div className="sb-label">SOL received</div>
         </div>
         <div className="stat-box">
           <div className="sb-val accent">
-            <ZapIcon />
+            <IconZap />
             {fmtSol(user.zapped)}
           </div>
           <div className="sb-label">SOL zapped to you</div>
         </div>
         <div className="stat-box">
           <div className="sb-val">
-            <ZapIcon />
+            <IconZap />
             {fmtSol(user.given)}
           </div>
           <div className="sb-label">SOL sent</div>
@@ -110,7 +110,7 @@ export default function WalletPage() {
           <>
             {" "}
             <a href={explorerAddressUrl(publicKey.toBase58())} target="_blank" rel="noreferrer">
-              View on explorer <ExternalLink />
+              View on explorer <IconExternal />
             </a>
           </>
         )}

@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, House, Moon, Plus, Radio, Search, Settings, Sun, Trophy, User, Wallet } from "lucide-react";
+import { IconBell, IconFeed, IconLive, IconMoon, IconPlus, IconSearch, IconSettings, IconSun, IconTop, IconUser, IconWallet } from "@/components/icons";
 import { useUI } from "@/context/UIContext";
 import { useSession } from "@/context/SessionContext";
 import { useNotifications } from "@/context/NotificationsContext";
@@ -17,16 +17,16 @@ import { CreatorZapModal } from "./modals/CreatorZapModal";
 import { OnboardModal } from "./modals/OnboardModal";
 
 const NAV = [
-  { href: "/", Icon: House, label: "Feed" },
-  { href: "/live", Icon: Radio, label: "Live" },
-  { href: "/leaderboard", Icon: Trophy, label: "Top" },
-  { href: "/wallet", Icon: Wallet, label: "Wallet" },
-  { href: "/profile", Icon: User, label: "Profile" },
+  { href: "/", Icon: IconFeed, label: "Feed" },
+  { href: "/live", Icon: IconLive, label: "Live" },
+  { href: "/leaderboard", Icon: IconTop, label: "Top" },
+  { href: "/wallet", Icon: IconWallet, label: "Wallet" },
+  { href: "/profile", Icon: IconUser, label: "Profile" },
 ];
 
 // Desktop rail: the same pages plus Notifications (on mobile it is the bell in
 // the top bar, the bottom nav has no room left).
-const RAIL = [...NAV.slice(0, 3), { href: "/notifications", Icon: Bell, label: "Notifications" }, ...NAV.slice(3)];
+const RAIL = [...NAV.slice(0, 3), { href: "/notifications", Icon: IconBell, label: "Notifications" }, ...NAV.slice(3)];
 
 /** Unread count on an icon; nothing when there is nothing new. */
 function UnreadBadge({ count }: { count: number }) {
@@ -78,7 +78,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <span className="logo-text">ZAPR</span>
         </Link>
         <Link href="/explore" className="icon-btn tb-search-btn" aria-label="Search" title="Search">
-          <Search />
+          <IconSearch />
         </Link>
         <div className="tb-actions">
           {user && (
@@ -88,7 +88,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               aria-label="Notifications"
               title="Notifications"
             >
-              <Bell />
+              <IconBell />
               <UnreadBadge count={unread} />
             </Link>
           )}
@@ -96,7 +96,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {CLUSTER}
           </span>
           <button className="icon-btn tb-theme" onClick={toggleTheme} aria-label="Switch theme" title="Switch theme">
-            {theme === "dark" ? <Moon /> : <Sun />}
+            {theme === "dark" ? <IconMoon /> : <IconSun />}
           </button>
           <button
             className={`btn btn-sm${user ? " btn-accent-soft tb-wallet" : " btn-primary"}`}
@@ -125,11 +125,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </Link>
           ))}
           <Link href="/settings" className={`rail-item${isActive("/settings", pathname) ? " active" : ""}`} title="Settings">
-            <Settings />
+            <IconSettings />
             <span>Settings</span>
           </Link>
           <button className="rail-post" onClick={onPost} aria-label="Post" title="Post">
-            <Plus />
+            <IconPlus />
           </button>
         </nav>
 
@@ -140,7 +140,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Mobile */}
       <button className="fab" onClick={onPost} aria-label="Post">
-        <Plus />
+        <IconPlus />
       </button>
       <nav className="bottom-nav" aria-label="Navigation">
         {NAV.map(({ href, Icon, label }) => (

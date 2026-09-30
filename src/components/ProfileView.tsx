@@ -1,10 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, EyeOff, UserCheck, UserPlus, Wallet } from "lucide-react";
+import { IconBack, IconEyeOff, IconUserCheck, IconUserPlus, IconWallet, IconZap } from "@/components/icons";
 import { PostCard } from "./PostCard";
 import { Avatar } from "./Avatar";
-import { ZapIcon, ZaprEmpty, ZaprLoader } from "./ZaprMark";
+import { ZaprEmpty, ZaprLoader } from "./ZaprMark";
 import { api } from "@/lib/api";
 import { useSession } from "@/context/SessionContext";
 import { useUI } from "@/context/UIContext";
@@ -73,7 +73,7 @@ export function ProfileView({ handle }: { handle: string }) {
     <section>
       <div className="subbar">
         <button className="icon-btn" onClick={() => router.back()} aria-label="Retour">
-          <ArrowLeft />
+          <IconBack />
         </button>
         <div>
           <div className="page-title">{u.handle}</div>
@@ -84,7 +84,7 @@ export function ProfileView({ handle }: { handle: string }) {
       </div>
 
       <div className="profile-cover">
-        <ZapIcon className="cover-mark" />
+        <IconZap className="cover-mark" />
       </div>
       <div className="profile-head">
         <div className="profile-top-row">
@@ -101,11 +101,11 @@ export function ProfileView({ handle }: { handle: string }) {
                 disabled={followBusy}
                 aria-pressed={follow.isFollowing}
               >
-                {follow.isFollowing ? <UserCheck /> : <UserPlus />}
+                {follow.isFollowing ? <IconUserCheck /> : <IconUserPlus />}
                 {follow.isFollowing ? "Following" : "Follow"}
               </button>
               <button className="btn btn-primary" onClick={zapCreator}>
-                <ZapIcon /> Zap this creator
+                <IconZap /> Zap this creator
               </button>
             </div>
           )}
@@ -122,21 +122,21 @@ export function ProfileView({ handle }: { handle: string }) {
           </span>
         </div>
         <div className="profile-wallet">
-          <Wallet /> {shortWallet(u.wallet)}
+          <IconWallet /> {shortWallet(u.wallet)}
         </div>
       </div>
 
       <div className="stats-grid">
         <div className="stat-box">
           <div className="sb-val accent">
-            <ZapIcon />
+            <IconZap />
             {fmtSol(u.received)}
           </div>
           <div className="sb-label">SOL received</div>
         </div>
         <div className="stat-box">
           <div className="sb-val accent">
-            <ZapIcon />
+            <IconZap />
             {fmtSol(u.zapped)}
           </div>
           <div className="sb-label">SOL zapped to creator</div>
@@ -145,7 +145,7 @@ export function ProfileView({ handle }: { handle: string }) {
           <div className="sb-val">
             {showGiven ? (
               <>
-                <ZapIcon />
+                <IconZap />
                 {fmtSol(u.given)}
               </>
             ) : (
@@ -161,7 +161,7 @@ export function ProfileView({ handle }: { handle: string }) {
       </div>
       {!showGiven && (
         <p className="faint hint-line">
-          <EyeOff /> Zap history hidden.
+          <IconEyeOff /> Zap history hidden.
         </p>
       )}
 

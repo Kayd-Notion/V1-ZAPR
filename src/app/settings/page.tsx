@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, LogOut } from "lucide-react";
+import { IconBack, IconLogOut } from "@/components/icons";
 import { ZaprEmpty } from "@/components/ZaprMark";
 import { useSession } from "@/context/SessionContext";
 import { useUI } from "@/context/UIContext";
@@ -63,7 +63,7 @@ export default function SettingsPage() {
     <section>
       <div className="subbar">
         <button className="icon-btn" onClick={() => router.push("/profile")} aria-label="Back">
-          <ArrowLeft />
+          <IconBack />
         </button>
         <div className="page-title">Settings</div>
       </div>
@@ -137,7 +137,7 @@ export default function SettingsPage() {
             Disconnect wallet
             <small>{shortWallet(user.wallet)}</small>
           </div>
-          <LogOut className="sr-ico" />
+          <IconLogOut className="sr-ico" />
         </div>
       </div>
     </section>

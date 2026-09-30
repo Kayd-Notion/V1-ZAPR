@@ -1,7 +1,7 @@
 "use client";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Flame, Search } from "lucide-react";
+import { IconFlame, IconSearch } from "@/components/icons";
 import { PostCard } from "@/components/PostCard";
 import { ZaprEmpty, ZaprLoader } from "@/components/ZaprMark";
 import { api } from "@/lib/api";
@@ -42,7 +42,7 @@ function ExploreInner() {
     <section>
       <div className="search-wrap">
         <div className="search-box">
-          <Search className="s-ico" />
+          <IconSearch className="s-ico" />
           <input
             className="field"
             value={q}
@@ -72,7 +72,7 @@ function ExploreInner() {
       ) : (
         <>
           <div className="section-title">
-            <Flame /> On fire
+            <IconFlame /> On fire
           </div>
           {trending.map((p) => (
             <PostCard key={p.id} post={p} />

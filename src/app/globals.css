@@ -171,8 +171,8 @@ a { color: var(--accent-text); text-decoration: none; }
 .notif-amount, .stat-box .sb-val, .balance-card .bc-value { letter-spacing: -0.02em; }
 
 /* -------- 3. Layout applicatif (plein écran, style pump.fun) ---------- */
-/* Icônes lucide : taille du texte par défaut, trait 2px. */
-svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em; }
+/* ZAPR icons (src/components/icons): text size by default, 2.25px stroke. */
+svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em; }
 /* Logo ZAPR : l'éclair seul (ratio 2:3), posé directement sur la page. */
 .zmark { display: block; flex-shrink: 0; aspect-ratio: 2 / 3; height: 1em; width: auto; filter: var(--logo-glow); overflow: visible; }
 
@@ -226,7 +226,7 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
   color: var(--text-faint); font-size: 10.5px; font-weight: 600;
   transition: background var(--dur-fast) ease, color var(--dur-fast) ease;
 }
-.rail-item svg.lucide { width: 22px; height: 22px; }
+.rail-item svg.icon { width: 22px; height: 22px; }
 .rail-ico { position: relative; display: flex; }
 /* Unread count on the Notifications icon (rail and mobile top bar). */
 .unread-badge {
@@ -245,7 +245,7 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
   box-shadow: var(--glow-sm);
 }
 .rail-post:hover { background: var(--accent-strong); }
-.rail-post svg.lucide { width: 24px; height: 24px; }
+.rail-post svg.icon { width: 24px; height: 24px; }
 
 .main { min-width: 0; padding-bottom: 60px; border-right: 1px solid var(--border-soft); }
 
@@ -273,7 +273,7 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
 }
 .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
 .panel-head h4 { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 900; }
-.panel-head h4 svg.lucide, .panel-head h4 .zap-ico { color: var(--accent-text); }
+.panel-head h4 svg.icon, .panel-head h4 .zap-ico { color: var(--accent-text); }
 .panel-empty { font-size: 13px; padding: 8px 2px 14px; }
 .panel-more { margin-top: 12px; }
 .seg-sm .chip { padding: 4px 10px; font-size: 12px; }
@@ -361,7 +361,7 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
   background: var(--accent); color: var(--on-accent);
   box-shadow: var(--shadow-sm);
 }
-.fab svg.lucide { width: 26px; height: 26px; }
+.fab svg.icon { width: 26px; height: 26px; }
 .bottom-nav {
   display: none;
   position: fixed;
@@ -378,7 +378,7 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
   color: var(--text-faint); font-size: 10.5px; font-weight: 600;
   padding: 6px 8px; border-radius: var(--radius-sm); flex: 1; position: relative;
 }
-.bn-item svg.lucide { width: 22px; height: 22px; }
+.bn-item svg.icon { width: 22px; height: 22px; }
 .bn-item.active { color: var(--accent-text); }
 
 /* -------- 4. Composants génériques ------------------------------------ */
@@ -406,7 +406,7 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
   color: var(--text-dim);
   border: 1px solid var(--border);
 }
-.icon-btn svg.lucide { width: 18px; height: 18px; }
+.icon-btn svg.icon { width: 18px; height: 18px; }
 .icon-btn:hover { background: var(--bg-hover); color: var(--text); }
 
 .avatar {
@@ -419,7 +419,7 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
 .avatar.xs { width: 20px; height: 20px; font-size: 9px; }
 .avatar.sm { width: 34px; height: 34px; font-size: 13px; }
 .avatar.anon { background: var(--bg-hover); color: var(--text-faint); }
-.avatar.anon svg.lucide { width: 55%; height: 55%; }
+.avatar.anon svg.icon { width: 55%; height: 55%; }
 .avatar.lg { width: 84px; height: 84px; font-size: 30px; }
 
 .chip {
@@ -445,7 +445,7 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
 .hint-line { padding: 0 20px 16px; }
 .tip-line { margin-top: 12px; }
 .warn-line { color: var(--danger); margin-bottom: 12px; font-weight: 600; }
-.hint-line svg.lucide, .tip-line svg.lucide, .warn-line svg.lucide { margin-top: 1px; }
+.hint-line svg.icon, .tip-line svg.icon, .warn-line svg.icon { margin-top: 1px; }
 
 .tabs {
   display: flex; border-bottom: 1px solid var(--border-soft);
@@ -497,7 +497,7 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
   content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
   width: 56px; height: 3px; border-radius: var(--radius-bar); background: var(--accent);
 }
-.feed-tab.active svg.lucide { color: var(--accent-text); }
+.feed-tab.active svg.icon { color: var(--accent-text); }
 
 .post {
   display: flex; gap: 14px;
@@ -570,7 +570,7 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
   padding: 6px; border-radius: var(--radius-sm);
 }
 .pa-btn:hover { color: var(--text); background: var(--bg-hover); }
-.pa-btn svg.lucide { width: 17px; height: 17px; }
+.pa-btn svg.icon { width: 17px; height: 17px; }
 .pump-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 5px;
   background: var(--accent); color: var(--on-accent);
@@ -580,8 +580,10 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
 .pump-btn:hover { background: var(--accent-strong); }
 .pump-btn-lg { width: 100%; max-width: 560px; padding: 12px; font-size: 15px; }
 .feed-end { text-align: center; padding: 24px; font-size: 13px; color: var(--text-faint); }
-/* Bolt drawn in the text color (ZapIcon), for yellow buttons. */
+/* The zap bolt (IconZap), drawn in the text color. */
 .zap-ico { width: 0.72em; height: 1.1em; vertical-align: -0.2em; fill: currentColor; flex-shrink: 0; }
+/* On yellow buttons the bolt is white (not dark), like a spark on the logo. */
+.pump-btn .zap-ico, .lc-zap .zap-ico, .btn-primary .zap-ico { color: var(--on-accent-icon); }
 
 /* -------- 6. Modales -------------------------------------------------- */
 .modal-overlay {
@@ -630,7 +632,7 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
   padding: 12px 14px; margin-bottom: 16px; font-size: 13.5px; line-height: 1.5;
 }
 .notice-title { display: inline-flex; align-items: center; gap: 6px; }
-.notice-title svg.lucide { color: var(--warn); }
+.notice-title svg.icon { color: var(--warn); }
 .field-invalid { border-color: var(--danger); }
 .field-error { color: var(--danger); font-size: 12.5px; font-weight: 600; margin-top: 6px; }
 .self-pump-tag {
@@ -644,7 +646,7 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
 }
 .split-row { display: flex; justify-content: space-between; font-size: 14px; padding: 4px 0; }
 .split-row span { display: inline-flex; align-items: center; gap: 7px; }
-.split-row span svg.lucide { color: var(--text-faint); }
+.split-row span svg.icon { color: var(--text-faint); }
 .split-row b { font-weight: 700; }
 .split-row.creator b { color: var(--accent-text); }
 .split-bar { display: flex; height: 8px; border-radius: var(--radius-xs); overflow: hidden; margin: 10px 0 4px; }
@@ -739,7 +741,7 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
 .search-box .field { padding-left: 42px; }
 .search-box .s-ico { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-faint); }
 .section-title { display: flex; align-items: center; gap: 8px; padding: 18px 20px 8px; font-size: 15px; font-weight: 900; }
-.section-title svg.lucide { color: var(--accent-text); }
+.section-title svg.icon { color: var(--accent-text); }
 
 /* -------- 9. Détail de post ------------------------------------------ */
 .detail-grid { display: grid; grid-template-columns: minmax(0, 1fr) 360px; }

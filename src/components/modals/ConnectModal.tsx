@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletReadyState } from "@solana/wallet-adapter-base";
-import { Info } from "lucide-react";
+import { IconInfo } from "@/components/icons";
 import { Modal } from "../Modal";
 import { ZaprLoader, ZaprMark } from "../ZaprMark";
 import { useUI } from "@/context/UIContext";
@@ -99,7 +99,7 @@ export function ConnectModal() {
 
       {!connecting && detected.length > 0 && notInstalled.length > 0 && (
         <p className="faint tip-line">
-          <Info /> Phantom installed but not in the list? In Brave: <b>Settings → Web3 →
+          <IconInfo /> Phantom installed but not in the list? In Brave: <b>Settings → Web3 →
           Default wallet</b> → pick <b>&ldquo;Extensions (Phantom)&rdquo;</b>, then reload the page.
         </p>
       )}

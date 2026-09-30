@@ -1,9 +1,9 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { Link2, MessageCircle } from "lucide-react";
+import { IconComment, IconLink, IconZap } from "@/components/icons";
 import { Avatar } from "./Avatar";
 import { TimeGauge } from "./TimeGauge";
-import { ZapIcon } from "./ZaprMark";
+
 import { useUI } from "@/context/UIContext";
 import { useSession } from "@/context/SessionContext";
 import { useNow } from "@/context/LiveContext";
@@ -65,7 +65,7 @@ export function PostCard({ post, fresh = false }: { post: ClientPost; fresh?: bo
           <TimeGauge createdAt={post.createdAt} pumped={post.pumped} />
           <div className="pumped-badge">
             <span className="pb-amount">
-              <ZapIcon />
+              <IconZap />
               {fmtSol(post.pumped)}
             </span>
             <span className="pb-label">SOL zapped</span>
@@ -74,15 +74,15 @@ export function PostCard({ post, fresh = false }: { post: ClientPost; fresh?: bo
 
         <div className="post-actions" onClick={stop}>
           <button className="pa-btn" onClick={go} title="Comments">
-            <MessageCircle />
+            <IconComment />
             <span>{post.comments}</span>
           </button>
           <button className="pa-btn" onClick={copyLink} title="Copy link">
-            <Link2 />
+            <IconLink />
           </button>
           {!post.deleted && (
             <button className="pump-btn" onClick={doPump}>
-              <ZapIcon /> Zap
+              <IconZap /> Zap
             </button>
           )}
         </div>

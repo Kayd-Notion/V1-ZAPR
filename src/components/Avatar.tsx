@@ -1,4 +1,4 @@
-import { Ghost } from "lucide-react";
+import { IconGhost } from "@/components/icons";
 import { avColor, initials } from "@/lib/format";
 
 export function Avatar({
@@ -15,7 +15,7 @@ export function Avatar({
   if (anonymous) {
     return (
       <div className={`avatar anon ${size}`.trim()} aria-label="Anonymous">
-        <Ghost />
+        <IconGhost />
       </div>
     );
   }

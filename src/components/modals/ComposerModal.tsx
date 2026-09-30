@@ -1,10 +1,10 @@
 "use client";
 import { useRef, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { ImagePlus, X } from "lucide-react";
+import { IconClose, IconImagePlus, IconZap } from "@/components/icons";
 import { Modal } from "../Modal";
 import { Avatar } from "../Avatar";
-import { ZapIcon } from "../ZaprMark";
+
 import { useUI } from "@/context/UIContext";
 import { useSession } from "@/context/SessionContext";
 import { usePump } from "@/hooks/usePump";
@@ -142,7 +142,7 @@ export function ComposerModal() {
               setPreview(null);
             }}
           >
-            <X /> Remove
+            <IconClose /> Remove
           </button>
         </div>
       )}
@@ -156,7 +156,7 @@ export function ComposerModal() {
           onChange={pickFile}
         />
         <button className="btn btn-sm" onClick={() => fileInput.current?.click()} disabled={busy}>
-          <ImagePlus /> Photo / video
+          <IconImagePlus /> Photo / video
         </button>
         <span className="faint" style={{ fontSize: 12, alignSelf: "center" }}>
           Arweave upload, paid in SOL
@@ -192,7 +192,7 @@ export function ComposerModal() {
           </>
         ) : (
           <>
-            <ZapIcon /> Post
+            <IconZap /> Post
           </>
         )}
       </button>

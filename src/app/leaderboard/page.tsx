@@ -1,9 +1,9 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Globe, MapPin } from "lucide-react";
+import { IconGlobe, IconPin, IconZap } from "@/components/icons";
 import { Avatar } from "@/components/Avatar";
-import { ZapIcon, ZaprEmpty, ZaprLoader } from "@/components/ZaprMark";
+import { ZaprEmpty, ZaprLoader } from "@/components/ZaprMark";
 import { api } from "@/lib/api";
 import { useUI } from "@/context/UIContext";
 import { KNOWN_COUNTRIES } from "@/lib/geo-client";
@@ -140,10 +140,10 @@ export default function LeaderboardPage() {
         <div className="lb-filters">
           <div className="seg">
             <button className={`chip${scope === "world" ? " active" : ""}`} onClick={() => setScope("world")}>
-              <Globe /> World
+              <IconGlobe /> World
             </button>
             <button className={`chip${scope === "country" ? " active" : ""}`} onClick={() => setScope("country")}>
-              <MapPin /> By country
+              <IconPin /> By country
             </button>
           </div>
           <div className="seg" role="group" aria-label="Period">
@@ -208,7 +208,7 @@ export default function LeaderboardPage() {
               </div>
               <div className="lb-amount">
                 <span>
-                  <ZapIcon />
+                  <IconZap />
                   {fmtSol(it.total)}
                 </span>
                 <small>{short ? `SOL · ${short}` : "SOL"}</small>
@@ -231,7 +231,7 @@ export default function LeaderboardPage() {
             </div>
             <div className="lb-amount">
               <span>
-                <ZapIcon />
+                <IconZap />
                 {fmtSol(total)}
               </span>
               <small>

@@ -373,26 +373,22 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
 }
 
 /* -------- 5. Feed & PostCard ------------------------------------------ */
-/* Bandeau visiteur : l'éclair est éteint (gris) tant que le wallet n'est pas
-   connecté, et s'allume au survol du bandeau. */
+/* Bandeau visiteur : l'éclair reste éteint (gris) tant que le wallet n'est
+   pas connecté ; le bandeau disparaît une fois connecté. */
 .visitor-banner {
   display: flex; align-items: center; gap: 14px;
   margin: 14px 16px 4px; padding: 14px 16px;
   background: var(--bg-elev-2);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  transition: border-color 0.25s ease, background 0.25s ease;
 }
 .visitor-banner .vb-text { flex: 1; font-size: 13.5px; color: var(--text-dim); }
 .visitor-banner .vb-text b { display: block; margin-bottom: 2px; font-size: 15px; font-weight: 900; color: var(--text); }
-.vb-mark { height: 42px; margin: 0 4px; transform: rotate(-8deg); transition: filter 0.25s ease; }
-.visitor-banner:not(:hover) .vb-mark {
+.vb-mark {
+  height: 42px; margin: 0 4px; transform: rotate(-8deg);
   --logo-top: #55555c; --logo-bottom: #3a3a40; --logo-outline: #3a3a40; --logo-glow: none;
 }
-:root[data-theme="light"] .visitor-banner:not(:hover) .vb-mark {
-  --logo-top: #cfcabb; --logo-bottom: #b3ae9f; --logo-outline: #b3ae9f;
-}
-.visitor-banner:hover { border-color: var(--accent-text); background: linear-gradient(135deg, var(--accent-soft), transparent); }
+:root[data-theme="light"] .vb-mark { --logo-top: #cfcabb; --logo-bottom: #b3ae9f; --logo-outline: #b3ae9f; }
 
 .composer-trigger {
   display: flex; align-items: center; gap: 12px;

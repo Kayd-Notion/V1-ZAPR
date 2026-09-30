@@ -18,6 +18,7 @@
      Zap buttons carry a white bolt: --on-accent-icon. */
   --accent: var(--zapr-yellow);
   --accent-strong: #e8bf00;
+  --accent-hot: #ffdf33;
   --accent-deep: #e0a800;
   --on-accent: #111111;
   --on-accent-icon: #ffffff;
@@ -41,6 +42,8 @@
   --radius-pill: 999px;
   --radius: var(--radius-lg);
   --cut: 9px;
+  /* The bolt-cut shape: two diagonal corners (top-right, bottom-left). */
+  --cut-shape: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, var(--cut) 100%, 0 calc(100% - var(--cut)));
 
   /* Spacing scale (4px grid). */
   --space-1: 4px;
@@ -55,6 +58,8 @@
   --glow-sm: 0 6px 20px rgba(var(--zapr-yellow-rgb), 0.25);
   --glow: 0 0 0 3px rgba(var(--zapr-yellow-rgb), 0.25), 0 6px 20px rgba(var(--zapr-yellow-rgb), 0.35);
   --glow-drop: drop-shadow(0 0 24px rgba(var(--zapr-yellow-rgb), 0.6));
+  --glow-hover: drop-shadow(0 0 10px rgba(var(--zapr-yellow-rgb), 0.55));
+  --glow-line: 0 0 10px rgba(var(--zapr-yellow-rgb), 0.6);
   --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
 
   /* Motion. */
@@ -145,6 +150,9 @@ body {
 button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
 input, textarea, select { font-family: inherit; }
 a { color: var(--accent-text); text-decoration: none; }
+::selection { background: var(--accent); color: var(--on-accent); }
+/* Keyboard focus: a crisp yellow ring (mouse clicks don't show it). */
+:where(a, button, input, textarea, select, [tabindex]):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: var(--radius-sm); }
 
@@ -222,7 +230,9 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
   padding: 12px 8px;
   border-right: 1px solid var(--border-soft);
 }
+/* Rail: the active page gets a yellow slanted marker on the left edge. */
 .rail-item {
+  position: relative;
   width: 68px; padding: 9px 0 7px; border-radius: var(--radius-md);
   display: flex; flex-direction: column; align-items: center; gap: 4px;
   color: var(--text-faint); font-size: 10.5px; font-weight: 600;
@@ -239,14 +249,23 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
   font-size: 10.5px; font-weight: 800; line-height: 14px; text-align: center;
 }
 .rail-item:hover { background: var(--bg-hover); color: var(--text); }
+.rail-item:hover svg.icon { transform: translateY(-1px); }
+.rail-item svg.icon { transition: transform var(--dur-fast) var(--ease-snap); }
 .rail-item.active { color: var(--accent-text); background: var(--accent-soft); }
+.rail-item.active::before {
+  content: ''; position: absolute; left: -8px; top: 50%; width: 4px; height: 28px; margin-top: -14px;
+  background: var(--accent); box-shadow: var(--glow-line);
+  clip-path: polygon(0 0, 100% 5px, 100% calc(100% - 5px), 0 100%);
+}
 .rail-post {
   margin-top: 10px; width: 46px; height: 46px; border-radius: var(--radius-md);
   display: flex; align-items: center; justify-content: center;
   background: var(--accent); color: var(--on-accent);
   box-shadow: var(--glow-sm);
 }
-.rail-post:hover { background: var(--accent-strong); }
+.rail-post { transition: background var(--dur-fast) ease, box-shadow var(--dur-fast) ease, transform var(--dur-fast) var(--ease-snap); }
+.rail-post:hover { background: var(--accent-hot); box-shadow: var(--glow); transform: translateY(-1px) rotate(-3deg); }
+.rail-post:active { transform: scale(0.94); }
 .rail-post svg.icon { width: 24px; height: 24px; }
 
 .main { min-width: 0; padding-bottom: 60px; border-right: 1px solid var(--border-soft); }
@@ -284,8 +303,7 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
   padding: 8px 6px; border-radius: var(--radius-sm); color: var(--text);
 }
 .td-row:hover { background: var(--bg-hover); }
-.td-rank { width: 20px; text-align: center; font-weight: 800; font-size: 13px; color: var(--text-faint); }
-.td-row.top1 .td-rank { color: var(--accent-text); }
+.td-rank { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: var(--text-faint); flex-shrink: 0; }
 .td-handle { flex: 1; min-width: 0; font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .td-amount { display: inline-flex; align-items: center; gap: 3px; font-weight: 800; font-size: 13.5px; color: var(--accent-text); }
 
@@ -313,6 +331,8 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
   padding: 6px 11px; border-radius: var(--radius-sm); font-size: 12.5px; font-weight: 700;
   background: var(--bg-elev-2); color: var(--text-dim); border: 1px solid var(--border);
 }
+.live-tab { transition: background var(--dur-fast) ease, color var(--dur-fast) ease, border-color var(--dur-fast) ease; }
+.live-tab:hover { color: var(--text); border-color: var(--text-faint); }
 .live-tab.active { background: var(--accent-soft); color: var(--accent-text); border-color: var(--accent-text); }
 .live-list { flex: 1; overflow-y: auto; }
 .live-col.wide .live-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
@@ -340,10 +360,9 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
 .lc-amount { display: inline-flex; align-items: center; gap: 2px; font-weight: 900; font-size: 13.5px; color: var(--accent-text); }
 .lc-zap {
   display: inline-flex; align-items: center; gap: 4px;
-  padding: 5px 10px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 800;
-  background: var(--accent); color: var(--on-accent);
+  padding: 5px 10px; font-size: 12px; font-weight: 800;
+  transition: filter var(--dur-fast) ease, transform var(--dur-fast) var(--ease-snap);
 }
-.lc-zap:hover { background: var(--accent-strong); }
 
 /* Chargement et états vides avec le logo */
 .zloader { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 48px 20px; color: var(--text-faint); font-size: 13.5px; }
@@ -364,6 +383,7 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
   box-shadow: var(--shadow-sm);
 }
 .fab svg.icon { width: 26px; height: 26px; }
+.fab:active { transform: scale(0.94); }
 .bottom-nav {
   display: none;
   position: fixed;
@@ -382,22 +402,48 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
 }
 .bn-item svg.icon { width: 22px; height: 22px; }
 .bn-item.active { color: var(--accent-text); }
+.bn-item.active::before {
+  content: ''; position: absolute; top: -6px; left: 50%; width: 26px; height: 3px; margin-left: -13px;
+  background: var(--accent); box-shadow: var(--glow-line); transform: skewX(-24deg);
+}
 
 /* -------- 4. Composants génériques ------------------------------------ */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   padding: 9px 16px; border-radius: var(--radius-sm);
-  font-weight: 700; font-size: 14px;
+  font-weight: 700; font-size: 14px; letter-spacing: 0.02em;
   background: var(--bg-elev-2); color: var(--text);
   border: 1px solid var(--border);
-  transition: background var(--dur-fast) ease, transform 0.05s ease;
+  transition: background var(--dur-fast) ease, border-color var(--dur-fast) ease, color var(--dur-fast) ease,
+    filter var(--dur-fast) ease, transform var(--dur-fast) var(--ease-snap);
 }
-.btn:hover { background: var(--bg-hover); }
+.btn:hover { background: var(--bg-hover); border-color: var(--text-faint); }
 .btn:active { transform: scale(0.97); }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-primary { background: var(--accent); color: var(--on-accent); border-color: transparent; }
-.btn-primary:hover { background: var(--accent-strong); }
+
+/* Yellow buttons (Connect, Zap, Send it…) take the bolt's cut shape. The
+   shape is painted by ::before, so the glow (a drop-shadow on the button)
+   follows the cut corners instead of a rectangle. */
+.btn-primary, .pump-btn, .lc-zap {
+  --btn-bg: var(--accent);
+  position: relative; isolation: isolate;
+  background: transparent; border-color: transparent; color: var(--on-accent);
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.btn-primary::before, .pump-btn::before, .lc-zap::before {
+  content: ''; position: absolute; inset: 0; z-index: -1;
+  background: var(--btn-bg); clip-path: var(--cut-shape);
+  transition: background var(--dur-fast) ease;
+}
+.btn-primary:hover:not(:disabled), .pump-btn:hover, .lc-zap:hover {
+  --btn-bg: var(--accent-hot);
+  background: transparent; border-color: transparent;
+  filter: var(--glow-hover); transform: translateY(-1px);
+}
+.btn-primary:active:not(:disabled), .pump-btn:active, .lc-zap:active { transform: translateY(0) scale(0.96); filter: none; }
+.btn-sm, .lc-zap { --cut: 6px; }
 .btn-accent-soft { background: var(--accent-soft); color: var(--accent-text); border-color: transparent; }
+.btn-accent-soft:hover { background: var(--accent-soft); border-color: var(--accent-text); }
 .btn-ghost { background: transparent; border-color: transparent; }
 .btn-ghost:hover { background: var(--bg-hover); }
 .btn-sm { padding: 6px 12px; font-size: 13px; }
@@ -409,12 +455,16 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
   border: 1px solid var(--border);
 }
 .icon-btn svg.icon { width: 18px; height: 18px; }
-.icon-btn:hover { background: var(--bg-hover); color: var(--text); }
+.icon-btn { transition: background var(--dur-fast) ease, color var(--dur-fast) ease, border-color var(--dur-fast) ease; }
+.icon-btn:hover { background: var(--bg-hover); color: var(--accent-text); border-color: var(--text-faint); }
 
 .avatar {
-  border-radius: 50%;
+  /* Rounded square, like the logo's tile. */
+  border-radius: 30%;
   display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
   font-weight: 700; color: var(--white); flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px rgba(var(--white-rgb), 0.1);
   font-size: 15px; width: 44px; height: 44px;
   user-select: none;
 }
@@ -429,15 +479,18 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
   padding: 7px 14px; border-radius: var(--radius-sm);
   background: var(--bg-elev-2); border: 1px solid var(--border);
   font-size: 13px; font-weight: 700; color: var(--text-dim);
+  transition: background var(--dur-fast) ease, color var(--dur-fast) ease, border-color var(--dur-fast) ease;
 }
-.chip.active { background: var(--accent); color: var(--on-accent); border-color: transparent; }
+.chip:hover { color: var(--text); border-color: var(--text-faint); }
+.chip.active { background: var(--accent); color: var(--on-accent); border-color: transparent; box-shadow: var(--glow-sm); }
 
 .field {
   width: 100%; background: var(--bg-elev-2);
   border: 1px solid var(--border); border-radius: var(--radius-sm);
   padding: 12px 14px; color: var(--text); font-size: 15px;
 }
-.field:focus { outline: none; border-color: var(--accent-text); }
+.field { transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease; }
+.field:focus, .field:focus-visible { outline: none; border-color: var(--accent-text); box-shadow: 0 0 0 3px rgba(var(--zapr-yellow-rgb), 0.16); }
 .field-label { display: block; font-size: 13px; color: var(--text-dim); margin-bottom: 6px; font-weight: 600; }
 
 .muted { color: var(--text-dim); }
@@ -463,8 +516,8 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
 .tab:hover { background: var(--bg-hover); }
 .tab.active { color: var(--text); font-weight: 700; }
 .tab.active::after {
-  content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-  width: 44px; height: 3px; border-radius: var(--radius-bar); background: var(--accent);
+  content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%) skewX(-24deg);
+  width: 44px; height: 3px; background: var(--accent); box-shadow: var(--glow-line);
 }
 
 /* -------- 5. Feed & PostCard ------------------------------------------ */
@@ -496,8 +549,8 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
 .feed-tab:hover { background: var(--bg-hover); }
 .feed-tab.active { color: var(--text); }
 .feed-tab.active::after {
-  content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-  width: 56px; height: 3px; border-radius: var(--radius-bar); background: var(--accent);
+  content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%) skewX(-24deg);
+  width: 56px; height: 3px; background: var(--accent); box-shadow: var(--glow-line);
 }
 .feed-tab.active svg.icon { color: var(--accent-text); }
 
@@ -509,12 +562,13 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
   transition: background 0.12s ease;
 }
 .post:hover { background: var(--bg-elev); }
+.post:hover .post-stats { border-color: var(--border); }
 .post-body { flex: 1; min-width: 0; }
 .post-head { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .post-head .name { font-weight: 700; font-size: 15px; }
 .post-head .name { font-weight: 800; }
 .post-head .time { color: var(--text-faint); font-size: 13px; }
-.avatar-link { border-radius: 50%; }
+.avatar-link { border-radius: 30%; }
 .post-text { margin: 4px 0 10px; font-size: 15px; white-space: pre-wrap; word-wrap: break-word; max-width: 760px; }
 
 .post-media {
@@ -574,18 +628,31 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
 .pa-btn:hover { color: var(--text); background: var(--bg-hover); }
 .pa-btn svg.icon { width: 17px; height: 17px; }
 .pump-btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 5px;
-  background: var(--accent); color: var(--on-accent);
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   font-weight: 800; font-size: 13.5px;
-  padding: 7px 18px; border-radius: var(--radius-sm);
+  padding: 8px 18px;
+  transition: filter var(--dur-fast) ease, transform var(--dur-fast) var(--ease-snap);
 }
-.pump-btn:hover { background: var(--accent-strong); }
 .pump-btn-lg { width: 100%; max-width: 560px; padding: 12px; font-size: 15px; }
 .feed-end { text-align: center; padding: 24px; font-size: 13px; color: var(--text-faint); }
 /* The zap bolt (IconZap), drawn in the text color. */
 .zap-ico { width: 0.72em; height: 1.1em; vertical-align: -0.2em; fill: currentColor; flex-shrink: 0; }
 /* On yellow buttons the bolt is white (not dark), like a spark on the logo. */
 .pump-btn .zap-ico, .lc-zap .zap-ico, .btn-primary .zap-ico { color: var(--on-accent-icon); }
+/* Zap animation: the bolt jolts on hover and strikes on click. */
+@keyframes bolt-jolt {
+  0% { transform: none; }
+  25% { transform: rotate(-16deg) scale(1.3); }
+  55% { transform: rotate(10deg) scale(0.92); }
+  100% { transform: none; }
+}
+@keyframes bolt-strike {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.45) rotate(-10deg); filter: drop-shadow(0 0 6px var(--white)); }
+  100% { transform: scale(1); }
+}
+.pump-btn:hover .zap-ico, .lc-zap:hover .zap-ico, .btn-primary:hover .zap-ico { animation: bolt-jolt 0.5s var(--ease-snap); }
+.pump-btn:active .zap-ico, .lc-zap:active .zap-ico, .btn-primary:active .zap-ico { animation: bolt-strike 0.35s ease-out; }
 
 /* -------- 6. Modales -------------------------------------------------- */
 .modal-overlay {
@@ -596,6 +663,7 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
 }
 .modal {
   background: var(--bg-elev); border: 1px solid var(--border);
+  border-top: 2px solid var(--accent);
   border-radius: var(--radius-xl); width: 100%; max-width: 440px;
   max-height: 90vh; overflow-y: auto;
   box-shadow: var(--shadow);
@@ -624,7 +692,9 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
   background: var(--bg-elev-2); border: 1px solid var(--border);
   font-weight: 700; font-size: 14px; text-align: center;
 }
-.qa-btn.active { background: var(--accent-soft); border-color: var(--accent-text); color: var(--accent-text); }
+.qa-btn { transition: border-color var(--dur-fast) ease, color var(--dur-fast) ease; }
+.qa-btn:hover:not(:disabled) { border-color: var(--text-faint); }
+.qa-btn.active { background: var(--accent-soft); border-color: var(--accent-text); color: var(--accent-text); box-shadow: var(--glow-sm); }
 .qa-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 /* Pump rules: expired-post notice, amount validation, self-pump badge */
 .pump-notice {
@@ -679,7 +749,8 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
   background: var(--bg-elev-2); border: 1px solid var(--border);
   font-weight: 600; font-size: 15px; text-align: left; width: 100%;
 }
-.wallet-option:hover { background: var(--bg-hover); }
+.wallet-option { transition: background var(--dur-fast) ease, border-color var(--dur-fast) ease; }
+.wallet-option:hover { background: var(--bg-hover); border-color: var(--accent-text); }
 .wallet-option img { width: 26px; height: 26px; border-radius: var(--radius-xs); }
 .wallet-option .wo-tag { margin-left: auto; font-size: 12px; color: var(--text-faint); font-weight: 500; }
 
@@ -695,8 +766,14 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
   cursor: pointer;
 }
 .lb-row:hover { background: var(--bg-elev); }
-.lb-rank { width: 30px; text-align: center; font-weight: 800; font-size: 16px; color: var(--text-faint); flex-shrink: 0; }
-.lb-row.top1 .lb-rank, .lb-row.top2 .lb-rank, .lb-row.top3 .lb-rank { color: var(--accent-text); }
+.lb-rank { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; color: var(--text-faint); flex-shrink: 0; }
+/* Podium ranks: bolt-cut tiles (gold, then soft yellow, then dark). */
+.lb-row.top1 .lb-rank, .lb-row.top2 .lb-rank, .lb-row.top3 .lb-rank,
+.td-row.top1 .td-rank, .td-row.top2 .td-rank, .td-row.top3 .td-rank { --cut: 6px; clip-path: var(--cut-shape); color: var(--accent-text); }
+.lb-row.top1 .lb-rank, .td-row.top1 .td-rank { background: var(--accent); color: var(--on-accent); }
+.lb-row.top2 .lb-rank, .td-row.top2 .td-rank { background: var(--accent-soft); }
+.lb-row.top3 .lb-rank, .td-row.top3 .td-rank { background: var(--bg-hover); }
+.lb-row { transition: background var(--dur-fast) ease; }
 .lb-row.top1, .lb-row.top2, .lb-row.top3 { background: linear-gradient(90deg, var(--accent-soft), transparent); }
 .lb-info { flex: 1; min-width: 0; }
 .lb-info .lb-name { font-weight: 700; font-size: 14.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -716,7 +793,7 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
 .notif-avatar { position: relative; flex-shrink: 0; }
 .notif-kind {
   position: absolute; right: -5px; bottom: -4px;
-  width: 20px; height: 20px; border-radius: var(--radius-pill);
+  width: 20px; height: 20px; border-radius: var(--radius-xs);
   display: flex; align-items: center; justify-content: center;
   border: 2px solid var(--bg); background: var(--bg-elev-2); color: var(--text-dim);
 }
@@ -772,11 +849,13 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
 /* -------- 10. Profil & Paramètres ------------------------------------ */
 .profile-cover {
   height: 140px; position: relative; overflow: hidden;
-  background: linear-gradient(120deg, var(--accent), var(--accent-deep) 55%, var(--bg-elev-2));
+  /* Flat logo yellow, fine diagonal hatching, bottom edge cut on a diagonal. */
+  background: repeating-linear-gradient(-45deg, rgba(var(--black-rgb), 0.06) 0 2px, transparent 2px 16px), var(--accent);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 calc(100% - 26px));
 }
 .cover-mark { position: absolute; right: 8%; top: -24px; height: 200px; width: auto; color: var(--on-accent); opacity: 0.18; transform: rotate(-12deg); }
 .profile-head { padding: 0 20px 16px; position: relative; }
-.profile-head .avatar { margin-top: -42px; border: 4px solid var(--bg); }
+.profile-head .avatar { margin-top: -42px; border: 4px solid var(--bg); position: relative; }
 .profile-top-row { display: flex; justify-content: space-between; align-items: flex-start; }
 .profile-name { font-size: 21px; font-weight: 800; margin-top: 10px; }
 .profile-handle { color: var(--text-faint); font-size: 14px; }
@@ -787,7 +866,8 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
 .profile-follow { display: flex; gap: 16px; font-size: 14px; color: var(--text-faint); margin-bottom: 10px; }
 .profile-follow b { color: var(--text); font-weight: 800; }
 .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 4px 20px 12px; max-width: 760px; }
-.stat-box { background: var(--bg-elev-2); border: 1px solid var(--border-soft); border-radius: var(--radius-sm); padding: 12px; text-align: center; }
+.stat-box { background: var(--bg-elev-2); border: 1px solid var(--border-soft); border-radius: var(--radius-sm); padding: 12px; text-align: center; transition: border-color var(--dur-fast) ease; }
+.stat-box:hover { border-color: var(--border); }
 .stat-box .sb-val { display: flex; align-items: center; justify-content: center; gap: 3px; font-size: 18px; font-weight: 900; }
 .stat-box .sb-val.accent { color: var(--accent-text); }
 .stat-box .sb-label { font-size: 11.5px; color: var(--text-faint); margin-top: 2px; }
@@ -801,10 +881,12 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
 
 /* -------- 11. Wallet ------------------------------------------------- */
 .balance-card {
+  --cut: 22px;
   margin: 20px; padding: 24px; max-width: 720px;
   position: relative; overflow: hidden;
-  background: linear-gradient(135deg, var(--accent), var(--accent-deep));
-  border-radius: var(--radius-xl); color: var(--on-accent);
+  /* Same treatment as the profile cover, in the bolt-cut shape. */
+  background: repeating-linear-gradient(-45deg, rgba(var(--black-rgb), 0.06) 0 2px, transparent 2px 16px), var(--accent);
+  clip-path: var(--cut-shape); color: var(--on-accent);
 }
 .bc-mark { position: absolute; right: 24px; bottom: -36px; height: 190px; width: auto; color: var(--on-accent); opacity: 0.16; transform: rotate(-12deg); }
 .balance-card > *:not(.bc-mark) { position: relative; }
@@ -812,13 +894,20 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
 .balance-card .bc-value { font-size: 38px; font-weight: 900; margin: 4px 0; }
 .balance-card .bc-actions { display: flex; gap: 10px; margin-top: 16px; }
 .balance-card .bc-actions .btn { flex: 1; background: rgba(var(--black-rgb), 0.1); color: var(--on-accent); border: none; }
+/* Network badge (DEVNET): mono, angular, with a diamond status light. */
 .net-badge {
   display: inline-flex; align-items: center; gap: 6px;
-  font-size: 11px; font-weight: 700; letter-spacing: 0.03em;
-  padding: 3px 9px; border-radius: var(--radius-pill); text-transform: uppercase;
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em;
+  padding: 4px 9px 4px 8px; border-radius: var(--radius-xs); text-transform: uppercase;
 }
-.net-badge.safe { background: var(--accent-soft); color: var(--accent-text); }
-.net-badge.danger { background: rgba(var(--danger-rgb), 0.16); color: var(--danger); }
+.net-badge::before {
+  content: ''; width: 6px; height: 6px; background: currentColor;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  animation: net-blink 2.4s ease-in-out infinite;
+}
+@keyframes net-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+.net-badge.safe { background: var(--accent-soft); color: var(--accent-text); box-shadow: inset 0 0 0 1px rgba(var(--zapr-yellow-rgb), 0.35); }
+.net-badge.danger { background: rgba(var(--danger-rgb), 0.16); color: var(--danger); box-shadow: inset 0 0 0 1px rgba(var(--danger-rgb), 0.45); }
 
 /* -------- 12. Onboarding --------------------------------------------- */
 .onboard {
@@ -837,7 +926,8 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
 .hidden { display: none !important; }
 .toast {
   position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
-  background: var(--text); color: var(--bg);
+  background: var(--bg-elev-2); color: var(--text);
+  border: 1px solid var(--border); border-left: 3px solid var(--accent);
   padding: 12px 20px; border-radius: var(--radius-md); font-size: 14px; font-weight: 700;
   z-index: 300; opacity: 0; pointer-events: none; transition: all 0.25s ease;
   box-shadow: var(--shadow); max-width: min(90vw, 520px); text-align: center;
@@ -882,4 +972,13 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
 }
 @media (max-width: 400px) {
   .net-badge { display: none; }
+}
+
+/* Respect "reduce motion" system settings: no jolts, pulses or slides. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

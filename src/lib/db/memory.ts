@@ -20,6 +20,7 @@ import type {
   PostRankEntry,
   FeedQuery,
   LeaderboardQuery,
+  Notification,
   Post,
   PostWithAuthor,
   Pump,
@@ -41,6 +42,8 @@ interface DbShape {
   pumps: Pump[];
   follows: Follow[];
   creatorZaps: CreatorZap[];
+  /** userId → when they last opened their notifications (ms epoch). */
+  notificationsSeenAt: Record<string, number>;
 }
 
 // On serverless/read-only filesystems (e.g. Vercel) `process.cwd()` isn't
@@ -70,10 +73,11 @@ async function load(): Promise<DbShape> {
       // Snapshots written before follows / creator zaps existed.
       db.follows ??= [];
       db.creatorZaps ??= [];
+      db.notificationsSeenAt ??= {};
       for (const u of db.users) u.zapped ??= 0;
       if (backfillPumpSnapshots(db)) await persistNow(db);
     } catch {
-      db = { ...buildSeed(), follows: [], creatorZaps: [] };
+      db = { ...buildSeed(), follows: [], creatorZaps: [], notificationsSeenAt: {} };
       await persistNow(db); // best-effort; safe if the FS is read-only
     }
     return db;
@@ -126,6 +130,52 @@ function persist(): void {
 
 function authorOf(u: User) {
   return { id: u.id, handle: u.handle, wallet: u.wallet, bio: u.bio };
+}
+
+/** Everything that happened to `userId`, newest first (own actions left out). */
+function notificationEvents(d: DbShape, userId: string, now: number): Notification[] {
+  const actor = (id: string) => {
+    const u = d.users.find((x) => x.id === id);
+    return u ? { id: u.id, handle: u.handle } : null;
+  };
+  const livePost = (id: string) => d.posts.find((p) => p.id === id && isAlive(p, now)) ?? null;
+  const out: Notification[] = [];
+  for (const pm of d.pumps) {
+    if (pm.creatorUserId !== userId || pm.pumperUserId === userId) continue;
+    const post = livePost(pm.postId);
+    out.push({
+      id: `z:${pm.id}`, kind: "post_zap", createdAt: pm.createdAt,
+      actor: pm.anonymous ? null : actor(pm.pumperUserId), amount: pm.creatorAmount,
+      postId: post?.id ?? null, postText: post?.text ?? null, text: null,
+    });
+  }
+  for (const z of d.creatorZaps) {
+    if (z.creatorUserId !== userId) continue;
+    out.push({
+      id: `c:${z.id}`, kind: "creator_zap", createdAt: z.createdAt,
+      actor: z.anonymous ? null : actor(z.zapperUserId), amount: z.creatorAmount,
+      postId: null, postText: null, text: null,
+    });
+  }
+  for (const f of d.follows) {
+    if (f.followeeId !== userId) continue;
+    out.push({
+      id: `f:${f.followerId}`, kind: "follow", createdAt: f.createdAt,
+      actor: actor(f.followerId), amount: null, postId: null, postText: null, text: null,
+    });
+  }
+  for (const c of d.comments) {
+    if (c.userId === userId) continue;
+    const post = d.posts.find((p) => p.id === c.postId);
+    if (!post || post.userId !== userId) continue;
+    const live = isAlive(post, now);
+    out.push({
+      id: `m:${c.id}`, kind: "comment", createdAt: c.createdAt,
+      actor: actor(c.userId), amount: null,
+      postId: live ? post.id : null, postText: live ? post.text : null, text: c.text,
+    });
+  }
+  return out.sort((a, b) => b.createdAt - a.createdAt || (a.id < b.id ? 1 : a.id > b.id ? -1 : 0));
 }
 
 /** Still alive at `now` (expired posts appear nowhere). */
@@ -358,6 +408,26 @@ export function createMemoryStore(): Store {
     async getCreatorZapBySignature(signature) {
       const d = await load();
       return d.creatorZaps.find((z) => z.signature === signature) || null;
+    },
+
+    async listNotifications(userId, { limit, before }) {
+      const d = await load();
+      return notificationEvents(d, userId, Date.now())
+        .filter((n) => !before || n.createdAt < before.createdAt || (n.createdAt === before.createdAt && n.id < before.id))
+        .slice(0, limit);
+    },
+    async countNotificationsSince(userId, after) {
+      const d = await load();
+      return Math.min(100, notificationEvents(d, userId, Date.now()).filter((n) => n.createdAt > after).length);
+    },
+    async getNotificationsSeenAt(userId) {
+      const d = await load();
+      return d.notificationsSeenAt[userId] ?? 0;
+    },
+    async setNotificationsSeenAt(userId, at) {
+      const d = await load();
+      d.notificationsSeenAt[userId] = Math.max(d.notificationsSeenAt[userId] ?? 0, at);
+      persist();
     },
 
     async leaderboardPosts(q: LeaderboardQuery) {

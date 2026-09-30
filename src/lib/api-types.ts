@@ -1,6 +1,7 @@
 /** Contract between the UI and the app's API routes (implemented in lib/api.ts). */
 import type {
   ClientComment,
+  ClientNotification,
   ClientPost,
   ClientPumper,
   ClientUser,
@@ -69,6 +70,13 @@ export interface ProfilePage {
   follow: FollowStats;
 }
 
+export interface NotificationsPage {
+  items: ClientNotification[];
+  /** When the user last opened their notifications (items after it are new). */
+  seenAt: number;
+  nextCursor: string | null;
+}
+
 export interface Api {
   // Auth
   nonce(wallet: string): Promise<{ message: string }>;
@@ -95,6 +103,12 @@ export interface Api {
   follow(handle: string): Promise<FollowStats>;
   unfollow(handle: string): Promise<FollowStats>;
   followingIds(): Promise<{ ids: string[] }>;
+
+  // Notifications (signed-in users)
+  notifications(cursor?: string | null): Promise<NotificationsPage>;
+  /** 0 for visitors. */
+  unreadNotifications(): Promise<{ unread: number }>;
+  markNotificationsSeen(): Promise<{ unread: number }>;
 
   // Creator zaps (90/10 by default; no effect on posts)
   /** Server re-check before signing (auth, not self, minimum). Throws ApiError → nothing is signed. */

@@ -20,6 +20,8 @@ alter table users add column if not exists zapped double precision not null defa
 create index if not exists users_received_idx on users (received desc);
 create index if not exists users_zapped_id_idx on users (zapped desc, id);
 create index if not exists users_country_idx on users (country);
+-- When the user last opened their notifications (ms epoch, 0 = never).
+alter table users add column if not exists notifications_seen_at bigint not null default 0;
 
 create table if not exists posts (
   id          uuid primary key default gen_random_uuid(),
@@ -40,6 +42,8 @@ create index if not exists posts_expires_idx on posts (expires_at);
 create index if not exists posts_created_idx on posts (created_at desc);
 create index if not exists posts_pumped_idx on posts (pumped desc);
 create index if not exists posts_country_idx on posts (country);
+-- A creator's posts (profile, notifications for comments on them).
+create index if not exists posts_user_idx on posts (user_id);
 
 -- One row per pump (the per-pump log). It is the source for period
 -- leaderboards, so it must outlive post content: post_id deliberately has NO

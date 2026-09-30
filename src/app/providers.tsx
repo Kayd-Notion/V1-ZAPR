@@ -9,6 +9,7 @@ import { rpcEndpoint } from "@/lib/solana";
 import { UIProvider } from "@/context/UIContext";
 import { SessionProvider } from "@/context/SessionContext";
 import { LiveProvider } from "@/context/LiveContext";
+import { NotificationsProvider } from "@/context/NotificationsContext";
 import { AppShell } from "@/components/AppShell";
 
 // Only silently reconnect the wallet for people who already have a session;
@@ -33,7 +34,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <UIProvider>
           <SessionProvider>
             <LiveProvider>
-              <AppShell>{children}</AppShell>
+              <NotificationsProvider>
+                <AppShell>{children}</AppShell>
+              </NotificationsProvider>
             </LiveProvider>
           </SessionProvider>
         </UIProvider>

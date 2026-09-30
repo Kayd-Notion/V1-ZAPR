@@ -8,9 +8,9 @@ import {
   useRef,
   useState,
 } from "react";
-import type { ClientPost } from "@/lib/client-types";
+import type { ClientPost, ClientUser } from "@/lib/client-types";
 
-type ModalKind = "connect" | "composer" | "pump" | "onboard" | null;
+type ModalKind = "connect" | "composer" | "pump" | "creatorZap" | "onboard" | null;
 
 interface UIContextValue {
   // Toast
@@ -21,10 +21,13 @@ interface UIContextValue {
   // Modals
   activeModal: ModalKind;
   pumpTarget: ClientPost | null;
+  /** Creator receiving a creator zap (profile "Zap ce créateur"). */
+  creatorZapTarget: ClientUser | null;
   connectMessage: string;
   openConnect: (msg?: string) => void;
   openComposer: () => void;
   openPump: (post: ClientPost) => void;
+  openCreatorZap: (user: ClientUser) => void;
   openOnboard: () => void;
   closeModal: () => void;
   // Cross-view data invalidation (feed/leaderboard re-fetch on change)
@@ -38,6 +41,7 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [activeModal, setActiveModal] = useState<ModalKind>(null);
   const [pumpTarget, setPumpTarget] = useState<ClientPost | null>(null);
+  const [creatorZapTarget, setCreatorZapTarget] = useState<ClientUser | null>(null);
   const [connectMessage, setConnectMessage] = useState("");
   const [toastMsg, setToastMsg] = useState("");
   const [toastShown, setToastShown] = useState(false);
@@ -87,6 +91,10 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
     setPumpTarget(post);
     setActiveModal("pump");
   }, []);
+  const openCreatorZap = useCallback((user: ClientUser) => {
+    setCreatorZapTarget(user);
+    setActiveModal("creatorZap");
+  }, []);
   const openOnboard = useCallback(() => setActiveModal("onboard"), []);
   const closeModal = useCallback(() => setActiveModal(null), []);
   const bumpData = useCallback(() => setDataVersion((v) => v + 1), []);
@@ -98,10 +106,12 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
       toggleTheme,
       activeModal,
       pumpTarget,
+      creatorZapTarget,
       connectMessage,
       openConnect,
       openComposer,
       openPump,
+      openCreatorZap,
       openOnboard,
       closeModal,
       dataVersion,
@@ -113,10 +123,12 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
       toggleTheme,
       activeModal,
       pumpTarget,
+      creatorZapTarget,
       connectMessage,
       openConnect,
       openComposer,
       openPump,
+      openCreatorZap,
       openOnboard,
       closeModal,
       dataVersion,

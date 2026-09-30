@@ -31,6 +31,18 @@ export function resolvedSplitBps(): { creatorBps: number; founderBps: number } {
 }
 
 /**
+ * Creator zaps (SOL sent straight to a creator, not to a post): their own
+ * split, 90/10 by default, set by NEXT_PUBLIC_CREATOR_ZAP_CREATOR_BPS. The
+ * platform share is always the remainder, so the two always sum to 100%.
+ */
+const DEFAULT_CREATOR_ZAP_CREATOR_BPS = 9000; // 90.00%
+const creatorZapCreatorBps = readBps(process.env.NEXT_PUBLIC_CREATOR_ZAP_CREATOR_BPS, DEFAULT_CREATOR_ZAP_CREATOR_BPS);
+export const CREATOR_ZAP_SPLIT = {
+  creatorBps: creatorZapCreatorBps,
+  founderBps: 10000 - creatorZapCreatorBps,
+} as const;
+
+/**
  * Split a lamports amount into the creator and founder shares.
  * Uses integer lamports arithmetic; the creator absorbs any rounding remainder
  * so the two parts always sum exactly to the input (no lamports created/lost).
@@ -61,6 +73,9 @@ export const FOUNDER_WALLET =
 // rent-exempt minimum for an empty recipient wallet. Do not hard-code the rent
 // value elsewhere: adjust this constant instead.
 export const MIN_PUMP_SOL = 0.005;
+// Creator zaps: with a 10% platform share, 0.01 SOL keeps both shares above
+// the rent-exempt minimum of an empty recipient wallet.
+export const MIN_CREATOR_ZAP_SOL = 0.01;
 // Rule 2: saving an expired post must give it at least this much life.
 export const PUMP_SAVE_MIN_LIFETIME_SECONDS = 3600;
 // Rule 2: extra margin on the amount shown in the modal, so it is still

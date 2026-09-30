@@ -15,6 +15,8 @@ export interface VerifyPumpArgs {
   pumperWallet: string;
   creatorWallet: string;
   amountSol: number;
+  /** Platform share in bps (defaults to the post-zap split). */
+  founderBps?: number;
 }
 
 export interface VerifyResult {
@@ -26,7 +28,7 @@ export interface VerifyResult {
 const TOLERANCE_LAMPORTS = 10;
 
 export async function verifyPumpTransaction(args: VerifyPumpArgs): Promise<VerifyResult> {
-  const { signature, pumperWallet, creatorWallet, amountSol } = args;
+  const { signature, pumperWallet, creatorWallet, amountSol, founderBps } = args;
   if (!FOUNDER_WALLET) return { ok: false, reason: "Founder wallet non configuré." };
 
   const conn = getConnection();
@@ -37,7 +39,7 @@ export async function verifyPumpTransaction(args: VerifyPumpArgs): Promise<Verif
   if (!tx) return { ok: false, reason: "Transaction introuvable on-chain." };
   if (tx.meta?.err) return { ok: false, reason: "Transaction en échec on-chain." };
 
-  const expected = splitLamports(solToLamports(amountSol));
+  const expected = splitLamports(solToLamports(amountSol), founderBps);
   let toCreator = 0;
   let toFounder = 0;
   let fromPayer = false;

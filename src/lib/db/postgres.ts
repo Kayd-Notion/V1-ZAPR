@@ -12,6 +12,7 @@ import { expiresAt } from "../lifespan";
 import type {
   CommentWithAuthor,
   CreatorRankEntry,
+  CreatorZap,
   FeedQuery,
   LeaderboardQuery,
   PostRankEntry,
@@ -79,6 +80,7 @@ function rowToUser(r: Row): User {
     createdAt: Number(r.created_at),
     received: Number(r.received),
     given: Number(r.given),
+    zapped: Number(r.zapped ?? 0),
     hidePumpHistory: r.hide_pump_history,
     anonymizePumps: r.anonymize_pumps,
   };
@@ -113,6 +115,20 @@ function rowToPump(r: Row): Pump {
     createdAt: Number(r.created_at),
     creatorUserId: r.creator_user_id,
     postCountry: r.post_country,
+  };
+}
+
+function rowToCreatorZap(r: Row): CreatorZap {
+  return {
+    id: r.id,
+    creatorUserId: r.creator_user_id,
+    zapperUserId: r.zapper_user_id,
+    amount: Number(r.amount),
+    creatorAmount: Number(r.creator_amount),
+    founderAmount: Number(r.founder_amount),
+    signature: r.signature,
+    anonymous: r.anonymous,
+    createdAt: Number(r.created_at),
   };
 }
 
@@ -214,6 +230,7 @@ export function createPostgresStore(): Store {
         from posts p join users u on u.id = p.user_id
         where p.expires_at > ${Date.now()}
           ${q.authorId ? db`and p.user_id = ${q.authorId}` : db``}
+          ${q.authorIds ? db`and p.user_id = any(${db.array(q.authorIds)}::uuid[])` : db``}
           ${q.before ? db`and p.created_at < ${q.before}` : db``}
         order by p.created_at desc
         limit ${q.limit}`;
@@ -321,6 +338,52 @@ export function createPostgresStore(): Store {
       );
     },
 
+    async follow(followerId, followeeId) {
+      const db = await getSql();
+      await db`
+        insert into follows (follower_id, followee_id, created_at)
+        values (${followerId}, ${followeeId}, ${Date.now()})
+        on conflict do nothing`;
+    },
+    async unfollow(followerId, followeeId) {
+      const db = await getSql();
+      await db`delete from follows where follower_id = ${followerId} and followee_id = ${followeeId}`;
+    },
+    async followStats(userId, viewerId) {
+      const db = await getSql();
+      const [r] = await db`
+        select
+          (select count(*) from follows where followee_id = ${userId})::int as followers,
+          (select count(*) from follows where follower_id = ${userId})::int as following,
+          ${viewerId ? db`exists(select 1 from follows where follower_id = ${viewerId} and followee_id = ${userId})` : db`false`} as is_following`;
+      return { followers: r.followers, following: r.following, isFollowing: r.is_following };
+    },
+    async listFollowingIds(userId) {
+      const db = await getSql();
+      const rows = await db`select followee_id from follows where follower_id = ${userId}`;
+      return rows.map((r) => r.followee_id as string);
+    },
+
+    async recordCreatorZap({ creatorUserId, zapperUserId, amount, creatorAmount, founderAmount, signature, anonymous }) {
+      const db = await getSql();
+      return db.begin(async (tx) => {
+        const rows = await tx`
+          insert into creator_zaps (id, creator_user_id, zapper_user_id, amount, creator_amount, founder_amount,
+                                    signature, anonymous, created_at)
+          values (${randomUUID()}, ${creatorUserId}, ${zapperUserId}, ${amount}, ${creatorAmount}, ${founderAmount},
+                  ${signature}, ${anonymous}, ${Date.now()})
+          returning *`;
+        await tx`update users set zapped = zapped + ${amount} where id = ${creatorUserId}`;
+        await tx`update users set given = given + ${amount} where id = ${zapperUserId}`;
+        return rowToCreatorZap(rows[0]);
+      });
+    },
+    async getCreatorZapBySignature(signature) {
+      const db = await getSql();
+      const rows = await db`select * from creator_zaps where signature = ${signature} limit 1`;
+      return rows[0] ? rowToCreatorZap(rows[0]) : null;
+    },
+
     async leaderboardPosts(q: LeaderboardQuery) {
       const db = await getSql();
       if (!cursorIsUsable(q.cursor)) return [];
@@ -400,6 +463,39 @@ export function createPostgresStore(): Store {
           total: Number(r.rank_total),
           cursorTotal: String(r.rank_total),
         }),
+      );
+    },
+    async leaderboardZapped(q: LeaderboardQuery) {
+      const db = await getSql();
+      if (!cursorIsUsable(q.cursor)) return [];
+      const country = q.scope === "country" && q.country ? q.country : null;
+      const c = q.cursor;
+      const rows =
+        q.since === undefined
+          ? await db`
+              select u.*, u.zapped as rank_total
+              from users u
+              where u.zapped > 0
+                ${country ? db`and u.country = ${country}` : db``}
+                ${c ? db`and (u.zapped < ${c.total}::float8 or (u.zapped = ${c.total}::float8 and u.id > ${c.id}::uuid))` : db``}
+              order by u.zapped desc, u.id asc
+              limit ${q.limit}`
+          : await db`
+              with agg as (
+                select cz.creator_user_id, sum(cz.amount::numeric) as total
+                from creator_zaps cz
+                where cz.created_at >= ${q.since}
+                group by cz.creator_user_id
+              )
+              select u.*, agg.total::text as rank_total
+              from agg join users u on u.id = agg.creator_user_id
+              where true
+                ${country ? db`and u.country = ${country}` : db``}
+                ${c ? db`and (agg.total < ${c.total}::numeric or (agg.total = ${c.total}::numeric and u.id > ${c.id}::uuid))` : db``}
+              order by agg.total desc, u.id asc
+              limit ${q.limit}`;
+      return rows.map(
+        (r): CreatorRankEntry => ({ user: rowToUser(r), total: Number(r.rank_total), cursorTotal: String(r.rank_total) }),
       );
     },
   };

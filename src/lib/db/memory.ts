@@ -15,6 +15,7 @@ import type {
   Comment,
   CommentWithAuthor,
   CreatorRankEntry,
+  CreatorZap,
   LeaderboardCursor,
   PostRankEntry,
   FeedQuery,
@@ -27,11 +28,19 @@ import type {
   User,
 } from "./types";
 
+interface Follow {
+  followerId: string;
+  followeeId: string;
+  createdAt: number;
+}
+
 interface DbShape {
   users: User[];
   posts: Post[];
   comments: Comment[];
   pumps: Pump[];
+  follows: Follow[];
+  creatorZaps: CreatorZap[];
 }
 
 // On serverless/read-only filesystems (e.g. Vercel) `process.cwd()` isn't
@@ -58,9 +67,13 @@ async function load(): Promise<DbShape> {
     try {
       const raw = await fs.readFile(DATA_FILE, "utf8");
       db = JSON.parse(raw) as DbShape;
+      // Snapshots written before follows / creator zaps existed.
+      db.follows ??= [];
+      db.creatorZaps ??= [];
+      for (const u of db.users) u.zapped ??= 0;
       if (backfillPumpSnapshots(db)) await persistNow(db);
     } catch {
-      db = buildSeed();
+      db = { ...buildSeed(), follows: [], creatorZaps: [] };
       await persistNow(db); // best-effort; safe if the FS is read-only
     }
     return db;
@@ -148,6 +161,7 @@ export function createMemoryStore(): Store {
         createdAt: Date.now(),
         received: 0,
         given: 0,
+        zapped: 0,
         hidePumpHistory: false,
         anonymizePumps: false,
       };
@@ -195,6 +209,7 @@ export function createMemoryStore(): Store {
       const now = Date.now();
       let list = d.posts.filter((p) => isAlive(p, now));
       if (q.authorId) list = list.filter((p) => p.userId === q.authorId);
+      if (q.authorIds) list = list.filter((p) => q.authorIds!.includes(p.userId));
       if (q.before) list = list.filter((p) => p.createdAt < q.before!);
       list.sort((a, b) => b.createdAt - a.createdAt);
       list = list.slice(0, q.limit);
@@ -294,6 +309,57 @@ export function createMemoryStore(): Store {
         .filter((x): x is CommentWithAuthor => x !== null);
     },
 
+    async follow(followerId, followeeId) {
+      const d = await load();
+      if (d.follows.some((f) => f.followerId === followerId && f.followeeId === followeeId)) return;
+      d.follows.push({ followerId, followeeId, createdAt: Date.now() });
+      persist();
+    },
+    async unfollow(followerId, followeeId) {
+      const d = await load();
+      d.follows = d.follows.filter((f) => !(f.followerId === followerId && f.followeeId === followeeId));
+      persist();
+    },
+    async followStats(userId, viewerId) {
+      const d = await load();
+      return {
+        followers: d.follows.filter((f) => f.followeeId === userId).length,
+        following: d.follows.filter((f) => f.followerId === userId).length,
+        isFollowing: Boolean(viewerId && d.follows.some((f) => f.followerId === viewerId && f.followeeId === userId)),
+      };
+    },
+    async listFollowingIds(userId) {
+      const d = await load();
+      return d.follows.filter((f) => f.followerId === userId).map((f) => f.followeeId);
+    },
+
+    async recordCreatorZap({ creatorUserId, zapperUserId, amount, creatorAmount, founderAmount, signature, anonymous }) {
+      const d = await load();
+      if (d.creatorZaps.some((z) => z.signature === signature)) throw new Error("duplicate signature");
+      const zap: CreatorZap = {
+        id: randomUUID(),
+        creatorUserId,
+        zapperUserId,
+        amount,
+        creatorAmount,
+        founderAmount,
+        signature,
+        anonymous,
+        createdAt: Date.now(),
+      };
+      d.creatorZaps.push(zap);
+      const creator = findUser(d, creatorUserId);
+      if (creator) creator.zapped += amount;
+      const zapper = findUser(d, zapperUserId);
+      if (zapper) zapper.given += amount;
+      persist();
+      return zap;
+    },
+    async getCreatorZapBySignature(signature) {
+      const d = await load();
+      return d.creatorZaps.find((z) => z.signature === signature) || null;
+    },
+
     async leaderboardPosts(q: LeaderboardQuery) {
       const d = await load();
       const byCountry = q.scope === "country" && q.country ? q.country : null;
@@ -359,6 +425,31 @@ export function createMemoryStore(): Store {
         }
       }
 
+      return rows
+        .filter((r) => !byCountry || r.user.country === byCountry)
+        .filter((r) => afterCursor(r.total, r.id, q.cursor))
+        .sort(byTotalThenId)
+        .slice(0, q.limit)
+        .map((r): CreatorRankEntry => ({ user: r.user, total: r.total, cursorTotal: String(r.total) }));
+    },
+    async leaderboardZapped(q: LeaderboardQuery) {
+      const d = await load();
+      const byCountry = q.scope === "country" && q.country ? q.country : null;
+      let rows: { id: string; total: number; user: User }[];
+      if (q.since === undefined) {
+        rows = d.users.filter((u) => u.zapped > 0).map((u) => ({ id: u.id, total: u.zapped, user: u }));
+      } else {
+        const sums = new Map<string, number>();
+        for (const z of d.creatorZaps) {
+          if (z.createdAt < q.since) continue;
+          sums.set(z.creatorUserId, (sums.get(z.creatorUserId) ?? 0) + z.amount);
+        }
+        rows = [];
+        for (const [id, total] of sums) {
+          const user = findUser(d, id);
+          if (user) rows.push({ id, total, user });
+        }
+      }
       return rows
         .filter((r) => !byCountry || r.user.country === byCountry)
         .filter((r) => afterCursor(r.total, r.id, q.cursor))

@@ -24,7 +24,7 @@ const PERIODS: { key: LeaderboardPeriod; label: string; short: string }[] = [
 export default function LeaderboardPage() {
   const router = useRouter();
   const { dataVersion } = useUI();
-  const [kind, setKind] = useState<"posts" | "creators">("posts");
+  const [kind, setKind] = useState<"posts" | "creators" | "zapped">("posts");
   const [scope, setScope] = useState<"world" | "country">("world");
   const [period, setPeriod] = useState<LeaderboardPeriod>("all");
   const [country, setCountry] = useState("FR");
@@ -65,7 +65,7 @@ export default function LeaderboardPage() {
         setPosts(res.items);
         setCursor(res.nextCursor);
       } else {
-        const res = await api.leaderboard({ kind: "creators", ...params(null) });
+        const res = await api.leaderboard({ kind, ...params(null) });
         if (seq !== reqSeq.current) return;
         setCreators(res.items);
         setCursor(res.nextCursor);
@@ -95,7 +95,7 @@ export default function LeaderboardPage() {
         setPosts((prev) => [...prev, ...res.items]);
         setCursor(res.nextCursor);
       } else {
-        const res = await api.leaderboard({ kind: "creators", ...params(cursor) });
+        const res = await api.leaderboard({ kind, ...params(cursor) });
         if (seq !== reqSeq.current) return;
         setCreators((prev) => [...prev, ...res.items]);
         setCursor(res.nextCursor);
@@ -130,6 +130,9 @@ export default function LeaderboardPage() {
         </div>
         <div className={`tab${kind === "creators" ? " active" : ""}`} onClick={() => setKind("creators")}>
           Degens
+        </div>
+        <div className={`tab${kind === "zapped" ? " active" : ""}`} onClick={() => setKind("zapped")}>
+          Zappés
         </div>
       </div>
 
@@ -231,7 +234,10 @@ export default function LeaderboardPage() {
                 <ZapIcon />
                 {fmtSol(total)}
               </span>
-              <small>{short ? `SOL reçus · ${short}` : "SOL reçus"}</small>
+              <small>
+                {kind === "zapped" ? "SOL zappés" : "SOL reçus"}
+                {short ? ` · ${short}` : ""}
+              </small>
             </div>
           </div>
         ))

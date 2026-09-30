@@ -36,7 +36,7 @@ export interface PumpQuote {
   requiredMinSol: number;
 }
 
-export interface LeaderboardParams<K extends "posts" | "creators"> {
+export interface LeaderboardParams<K extends LeaderboardKind> {
   kind: K;
   scope: "world" | "country";
   period: LeaderboardPeriod;
@@ -45,18 +45,28 @@ export interface LeaderboardParams<K extends "posts" | "creators"> {
   limit?: number;
 }
 
-export interface LeaderboardPage<K extends "posts" | "creators"> {
+export interface LeaderboardPage<K extends LeaderboardKind> {
   kind: K;
   period: LeaderboardPeriod;
   country: string | null;
-  items: K extends "creators" ? LeaderboardCreatorItem[] : LeaderboardPostItem[];
+  items: K extends "posts" ? LeaderboardPostItem[] : LeaderboardCreatorItem[];
   nextCursor: string | null;
+}
+
+/** posts: by SOL zapped · creators: by SOL received from post zaps · zapped: by SOL zapped to them directly. */
+export type LeaderboardKind = "posts" | "creators" | "zapped";
+
+export interface FollowStats {
+  followers: number;
+  following: number;
+  isFollowing: boolean;
 }
 
 export interface ProfilePage {
   user: ClientUser;
   postsCount: number;
   active: ClientPost[];
+  follow: FollowStats;
 }
 
 export interface Api {
@@ -74,8 +84,25 @@ export interface Api {
   profile(handle: string): Promise<ProfilePage>;
 
   // Posts
-  /** Most recent posts first. */
-  feed(cursor?: string | null, limit?: number): Promise<{ posts: ClientPost[]; nextCursor: string | null }>;
+  /** Most recent posts first; `following` = only creators the user follows. */
+  feed(
+    cursor?: string | null,
+    limit?: number,
+    following?: boolean,
+  ): Promise<{ posts: ClientPost[]; nextCursor: string | null }>;
+
+  // Follows (free)
+  follow(handle: string): Promise<FollowStats>;
+  unfollow(handle: string): Promise<FollowStats>;
+  followingIds(): Promise<{ ids: string[] }>;
+
+  // Creator zaps (90/10 by default; no effect on posts)
+  /** Server re-check before signing (auth, not self, minimum). Throws ApiError → nothing is signed. */
+  prepareCreatorZap(handle: string, amountSol: number): Promise<void>;
+  recordCreatorZap(
+    handle: string,
+    input: { amount: number; signature: string; anonymous?: boolean },
+  ): Promise<{ user: ClientUser | null }>;
   /** Upload a media file; the result is passed to createPost. */
   uploadMedia(file: File, walletProvider?: unknown): Promise<UploadedMedia>;
   createPost(input: { text: string; media?: UploadedMedia | null }): Promise<{ post: ClientPost }>;
@@ -100,6 +127,6 @@ export interface Api {
   addComment(postId: string, text: string): Promise<{ comments: ClientComment[] }>;
 
   // Leaderboard
-  leaderboard<K extends "posts" | "creators">(params: LeaderboardParams<K>): Promise<LeaderboardPage<K>>;
+  leaderboard<K extends LeaderboardKind>(params: LeaderboardParams<K>): Promise<LeaderboardPage<K>>;
   geo(): Promise<{ country: string | null }>;
 }

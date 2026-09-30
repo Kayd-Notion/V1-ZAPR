@@ -11,8 +11,10 @@ export interface User {
   createdAt: number;
   /** Running total of creator shares received (SOL) — for creators leaderboard. */
   received: number;
-  /** Running total of SOL this user has sent as pumps. */
+  /** Running total of SOL this user has sent as zaps (posts and creators). */
   given: number;
+  /** Running total of SOL zapped directly to this creator (creator zaps). */
+  zapped: number;
   /** Privacy: hide "given" total on public profile. */
   hidePumpHistory: boolean;
   /** Privacy: appear anonymous in pumpers lists by default. */
@@ -52,6 +54,27 @@ export interface Pump {
   postCountry: string;
 }
 
+/** A zap sent straight to a creator (not to a post): no effect on posts. */
+export interface CreatorZap {
+  id: string;
+  creatorUserId: string;
+  zapperUserId: string;
+  amount: number; // total SOL
+  creatorAmount: number;
+  founderAmount: number;
+  signature: string;
+  anonymous: boolean;
+  createdAt: number;
+}
+
+/** Social graph: follower follows followee (free, no money involved). */
+export interface FollowStats {
+  followers: number;
+  following: number;
+  /** Whether the viewer follows this user (false for visitors). */
+  isFollowing: boolean;
+}
+
 export interface Comment {
   id: string;
   postId: string;
@@ -60,7 +83,7 @@ export interface Comment {
   createdAt: number;
 }
 
-export type LeaderboardKind = "posts" | "creators";
+export type LeaderboardKind = "posts" | "creators" | "zapped";
 export type LeaderboardScope = "world" | "country";
 
 export interface FeedQuery {
@@ -68,6 +91,8 @@ export interface FeedQuery {
   /** Cursor: return items created strictly before this ms timestamp. */
   before?: number;
   authorId?: string;
+  /** Only posts by these authors (the "Abonnements" feed). */
+  authorIds?: string[];
 }
 
 export type LeaderboardPeriod = "all" | "24h" | "7d" | "30d";
@@ -180,7 +205,27 @@ export interface Store {
   addComment(input: { postId: string; userId: string; text: string }): Promise<Comment>;
   listComments(postId: string): Promise<CommentWithAuthor[]>;
 
+  // Follows (free)
+  follow(followerId: string, followeeId: string): Promise<void>;
+  unfollow(followerId: string, followeeId: string): Promise<void>;
+  followStats(userId: string, viewerId: string | null): Promise<FollowStats>;
+  listFollowingIds(userId: string): Promise<string[]>;
+
+  // Creator zaps (money straight to a creator; no effect on posts)
+  recordCreatorZap(input: {
+    creatorUserId: string;
+    zapperUserId: string;
+    amount: number;
+    creatorAmount: number;
+    founderAmount: number;
+    signature: string;
+    anonymous: boolean;
+  }): Promise<CreatorZap>;
+  getCreatorZapBySignature(signature: string): Promise<CreatorZap | null>;
+
   // Leaderboards
   leaderboardPosts(q: LeaderboardQuery): Promise<PostRankEntry[]>;
   leaderboardCreators(q: LeaderboardQuery): Promise<CreatorRankEntry[]>;
+  /** Creators ranked by SOL zapped to them directly (all time or period). */
+  leaderboardZapped(q: LeaderboardQuery): Promise<CreatorRankEntry[]>;
 }

@@ -9,6 +9,8 @@ export interface ClientUser {
   country: string;
   received: number;
   given: number;
+  /** SOL zapped directly to this creator. */
+  zapped: number;
   hidePumpHistory: boolean;
   anonymizePumps: boolean;
   createdAt: number;

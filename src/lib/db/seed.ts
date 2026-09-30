@@ -30,6 +30,7 @@ export function buildSeed(now: number = Date.now()): {
     createdAt: now - 30 * 24 * H,
     received,
     given,
+    zapped: 0,
     hidePumpHistory: false,
     anonymizePumps: false,
   });

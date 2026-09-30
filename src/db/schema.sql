@@ -15,7 +15,10 @@ create table if not exists users (
   hide_pump_history  boolean not null default false,
   anonymize_pumps    boolean not null default false
 );
+-- Total SOL zapped directly to this creator (creator zaps).
+alter table users add column if not exists zapped double precision not null default 0;
 create index if not exists users_received_idx on users (received desc);
+create index if not exists users_zapped_id_idx on users (zapped desc, id);
 create index if not exists users_country_idx on users (country);
 
 create table if not exists posts (
@@ -82,3 +85,28 @@ create table if not exists comments (
   created_at  bigint not null
 );
 create index if not exists comments_post_idx on comments (post_id, created_at desc);
+
+-- Follows: free, one row per (follower, followee).
+create table if not exists follows (
+  follower_id  uuid not null references users(id) on delete cascade,
+  followee_id  uuid not null references users(id) on delete cascade,
+  created_at   bigint not null,
+  primary key (follower_id, followee_id)
+);
+create index if not exists follows_followee_idx on follows (followee_id);
+
+-- Zaps sent straight to a creator (not to a post). Append-only log of money
+-- that moved: source of the "Zappés" leaderboard over a period.
+create table if not exists creator_zaps (
+  id               uuid primary key default gen_random_uuid(),
+  creator_user_id  uuid not null references users(id) on delete cascade,
+  zapper_user_id   uuid not null references users(id) on delete cascade,
+  amount           double precision not null,
+  creator_amount   double precision not null,
+  founder_amount   double precision not null,
+  signature        text not null unique,
+  anonymous        boolean not null default false,
+  created_at       bigint not null
+);
+create index if not exists creator_zaps_created_idx on creator_zaps (created_at);
+create index if not exists creator_zaps_creator_idx on creator_zaps (creator_user_id, created_at);

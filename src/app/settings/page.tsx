@@ -25,12 +25,12 @@ export default function SettingsPage() {
 
   if (!user) {
     return (
-      <ZaprEmpty title="Connecte-toi pour régler ton compte.">
+      <ZaprEmpty title="Connect to manage your account.">
         <button
           className="btn btn-primary"
-          onClick={() => openConnect("Connecte ton wallet pour accéder aux réglages.")}
+          onClick={() => openConnect("Connect your wallet to open settings.")}
         >
-          Connecter
+          Connect
         </button>
       </ZaprEmpty>
     );
@@ -41,9 +41,9 @@ export default function SettingsPage() {
     try {
       const res = await api.updateMe({ bio, handle });
       setUser(res.user);
-      toast("Profil à jour.");
+      toast("Profile updated.");
     } catch (e) {
-      toast(e instanceof Error ? e.message : "Enregistrement impossible.");
+      toast(e instanceof Error ? e.message : "Couldn't save.");
     } finally {
       setSaving(false);
     }
@@ -53,25 +53,25 @@ export default function SettingsPage() {
     try {
       const res = await api.updateMe(patch);
       setUser(res.user);
-      toast("C'est noté.");
+      toast("Got it.");
     } catch {
-      toast("Mise à jour impossible.");
+      toast("Couldn't update.");
     }
   };
 
   return (
     <section>
       <div className="subbar">
-        <button className="icon-btn" onClick={() => router.push("/profile")} aria-label="Retour">
+        <button className="icon-btn" onClick={() => router.push("/profile")} aria-label="Back">
           <ArrowLeft />
         </button>
-        <div className="page-title">Réglages</div>
+        <div className="page-title">Settings</div>
       </div>
 
       <div className="settings-group">
-        <div className="sg-title">Profil</div>
+        <div className="sg-title">Profile</div>
         <div style={{ padding: "14px 16px" }}>
-          <label className="field-label">Ton blase</label>
+          <label className="field-label">Username</label>
           <input className="field" value={handle} onChange={(e) => setHandle(e.target.value)} maxLength={20} />
         </div>
         <div style={{ padding: "0 16px 14px" }}>
@@ -87,17 +87,17 @@ export default function SettingsPage() {
         </div>
         <div style={{ padding: "0 16px 16px" }}>
           <button className="btn btn-primary btn-block" onClick={save} disabled={saving}>
-            {saving ? "Enregistrement…" : "Enregistrer"}
+            {saving ? "Saving…" : "Save"}
           </button>
         </div>
       </div>
 
       <div className="settings-group">
-        <div className="sg-title">Confidentialité</div>
+        <div className="sg-title">Privacy</div>
         <div className="settings-row">
           <div className="sr-text">
-            Masquer mon historique de zaps
-            <small>Cache le total « SOL envoyés » sur ton profil public</small>
+            Hide my zap history
+            <small>Hides the &ldquo;SOL sent&rdquo; total on your public profile</small>
           </div>
           <div
             className={`toggle${user.hidePumpHistory ? " on" : ""}`}
@@ -108,8 +108,8 @@ export default function SettingsPage() {
         </div>
         <div className="settings-row">
           <div className="sr-text">
-            Anonymiser mes zaps par défaut
-            <small>Apparaître comme « Zappeur anonyme » dans les historiques</small>
+            Make my zaps anonymous by default
+            <small>Show up as &ldquo;Anonymous zapper&rdquo; in zap histories</small>
           </div>
           <div
             className={`toggle${user.anonymizePumps ? " on" : ""}`}
@@ -121,9 +121,9 @@ export default function SettingsPage() {
       </div>
 
       <div className="settings-group">
-        <div className="sg-title">Apparence</div>
+        <div className="sg-title">Appearance</div>
         <div className="settings-row">
-          <div className="sr-text">Mode sombre</div>
+          <div className="sr-text">Dark mode</div>
           <div className={`toggle${theme === "dark" ? " on" : ""}`} onClick={toggleTheme}>
             <span className="tg-switch" />
           </div>
@@ -131,10 +131,10 @@ export default function SettingsPage() {
       </div>
 
       <div className="settings-group">
-        <div className="sg-title">Compte</div>
+        <div className="sg-title">Account</div>
         <div className="settings-row" style={{ cursor: "pointer" }} onClick={() => logout()}>
           <div className="sr-text">
-            Déconnecter le wallet
+            Disconnect wallet
             <small>{shortWallet(user.wallet)}</small>
           </div>
           <LogOut className="sr-ico" />

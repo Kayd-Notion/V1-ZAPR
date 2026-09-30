@@ -14,12 +14,12 @@ export default function MyProfilePage() {
 
   if (!user) {
     return (
-      <ZaprEmpty title="Pas de wallet, pas de profil.">
+      <ZaprEmpty title="No wallet, no profile.">
         <button
           className="btn btn-primary"
-          onClick={() => openConnect("Connecte ton wallet pour accéder à ton profil.")}
+          onClick={() => openConnect("Connect your wallet to see your profile.")}
         >
-          Connecter
+          Connect
         </button>
       </ZaprEmpty>
     );

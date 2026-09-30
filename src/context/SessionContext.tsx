@@ -89,7 +89,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const authenticate = useCallback(
     async (address: string) => {
       if (!signMessage) {
-        toast("Ce wallet ne supporte pas la signature de message.");
+        toast("This wallet can't sign messages.");
         return;
       }
       if (authInFlight.current) return;
@@ -114,7 +114,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       } catch (e) {
         setStatus("anonymous");
         authedFor.current = null;
-        toast(e instanceof Error ? e.message : "Échec de la connexion.");
+        toast(e instanceof Error ? e.message : "Connection failed.");
       } finally {
         authInFlight.current = false;
       }
@@ -166,7 +166,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     setStatus("anonymous");
     authedFor.current = null;
-    toast("Wallet déconnecté. À plus.");
+    toast("Wallet disconnected. See ya.");
   }, [disconnect, toast]);
 
   const refreshUser = useCallback(async () => {

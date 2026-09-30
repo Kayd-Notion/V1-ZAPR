@@ -11,8 +11,8 @@ import type { LeaderboardCreatorItem, LeaderboardPeriod } from "@/lib/client-typ
 
 const PERIODS: { key: LeaderboardPeriod; label: string }[] = [
   { key: "24h", label: "24h" },
-  { key: "7d", label: "7j" },
-  { key: "all", label: "Tout" },
+  { key: "7d", label: "7d" },
+  { key: "all", label: "All" },
 ];
 
 /** Home side panel: creators who received the most zaps (pump.fun "Top traders"). */
@@ -48,7 +48,7 @@ export function TopDegens() {
         </div>
       </div>
       {items === null ? null : items.length === 0 ? (
-        <p className="faint panel-empty">Personne sur le podium. La place est libre.</p>
+        <p className="faint panel-empty">Nobody on the podium. The spot is yours.</p>
       ) : (
         items.map(({ user: u, total }, i) => (
           <Link key={u.id} href={`/profile/${u.handle}`} className={`td-row${i < 3 ? " top" + (i + 1) : ""}`}>
@@ -62,7 +62,7 @@ export function TopDegens() {
         ))
       )}
       <Link href="/leaderboard" className="btn btn-block btn-sm panel-more">
-        Voir tout le classement
+        See the full leaderboard
       </Link>
     </aside>
   );

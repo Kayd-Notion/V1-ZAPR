@@ -37,14 +37,14 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const me = await currentUser();
   if (!me) {
-    return NextResponse.json({ error: "Connecte ton wallet pour poster." }, { status: 401 });
+    return NextResponse.json({ error: "Connect your wallet to post." }, { status: 401 });
   }
 
   const body = await req.json().catch(() => null);
   const text = typeof body?.text === "string" ? body.text.trim() : "";
-  if (!text) return NextResponse.json({ error: "Écris quelque chose." }, { status: 400 });
+  if (!text) return NextResponse.json({ error: "Write something." }, { status: 400 });
   if (text.length > MAX_TEXT) {
-    return NextResponse.json({ error: `Texte trop long (max ${MAX_TEXT}).` }, { status: 400 });
+    return NextResponse.json({ error: `Text too long (max ${MAX_TEXT}).` }, { status: 400 });
   }
 
   const mediaUrl = typeof body?.mediaUrl === "string" ? body.mediaUrl : null;

@@ -17,13 +17,13 @@ export async function POST(req: NextRequest) {
   const signature = body?.signature as string | undefined;
 
   if (!wallet || !isValidWallet(wallet) || !signature) {
-    return NextResponse.json({ error: "Requête invalide." }, { status: 400 });
+    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
 
   const challenge = await readNonceCookie();
   if (!challenge || challenge.wallet !== wallet) {
     return NextResponse.json(
-      { error: "Défi expiré ou introuvable. Réessaie." },
+      { error: "Challenge expired or not found. Try again." },
       { status: 401 },
     );
   }
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
   const ok = verifySignature({ wallet, message, signatureBase58: signature });
   await clearNonceCookie();
   if (!ok) {
-    return NextResponse.json({ error: "Signature invalide." }, { status: 401 });
+    return NextResponse.json({ error: "Invalid signature." }, { status: 401 });
   }
 
   const store = getStore();

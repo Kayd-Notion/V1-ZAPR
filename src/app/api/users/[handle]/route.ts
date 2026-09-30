@@ -12,7 +12,7 @@ export async function GET(
   const { handle } = await params;
   const store = getStore();
   const user = await store.getUserByHandle(handle);
-  if (!user) return NextResponse.json({ error: "Profil introuvable." }, { status: 404 });
+  if (!user) return NextResponse.json({ error: "Profile not found." }, { status: 404 });
 
   const [active, me] = await Promise.all([store.listPosts({ limit: 100, authorId: user.id }), currentUser()]);
   const follow = await store.followStats(user.id, me?.id ?? null);

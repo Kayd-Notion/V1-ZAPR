@@ -47,7 +47,9 @@ function ExploreInner() {
             className="field"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Chercher un post, un degen, un #tag…"
+            placeholder="Search posts, degens, #tags…"
+            aria-label="Search"
+            autoFocus
           />
         </div>
       </div>
@@ -56,21 +58,21 @@ function ExploreInner() {
         matched.length ? (
           <>
             <div className="section-title">
-              {matched.length} résultat(s) pour « {q} »
+              {matched.length} result{matched.length > 1 ? "s" : ""} for &ldquo;{q}&rdquo;
             </div>
             {matched.map((p) => (
               <PostCard key={p.id} post={p} />
             ))}
           </>
         ) : (
-          <ZaprEmpty title={`Rien pour « ${q} ».`}>
-            <span>Essaie un autre mot, ou un #tag.</span>
+          <ZaprEmpty title={`Nothing for "${q}".`}>
+            <span>Try another word, or a #tag.</span>
           </ZaprEmpty>
         )
       ) : (
         <>
           <div className="section-title">
-            <Flame /> En feu
+            <Flame /> On fire
           </div>
           {trending.map((p) => (
             <PostCard key={p.id} post={p} />

@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 export async function GET(req: NextRequest) {
   const wallet = req.nextUrl.searchParams.get("wallet") || "";
   if (!isValidWallet(wallet)) {
-    return NextResponse.json({ error: "Adresse wallet invalide." }, { status: 400 });
+    return NextResponse.json({ error: "Invalid wallet address." }, { status: 400 });
   }
   const nonce = generateNonce();
   const issuedAt = Date.now();

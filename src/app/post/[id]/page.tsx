@@ -51,24 +51,24 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
 
   if (notFound) {
     return (
-      <ZaprEmpty title="Post introuvable.">
-        <span>Il a peut-être été supprimé. Ou il n&apos;a jamais existé.</span>
+      <ZaprEmpty title="Post not found.">
+        <span>Maybe it was deleted. Or it never existed.</span>
       </ZaprEmpty>
     );
   }
-  if (!post) return <ZaprLoader label="Chargement…" />;
+  if (!post) return <ZaprLoader label="Loading…" />;
 
   // Expired posts are deleted: if it dies while open, say so.
   if (lifespanInfo(post.createdAt, post.pumped, now).expired) {
     return (
-      <ZaprEmpty title="Trop tard, ce post a expiré.">
-        <span>Il a été supprimé. Aucun zap ne l&apos;a sauvé à temps.</span>
+      <ZaprEmpty title="Too late, this post expired.">
+        <span>It was deleted. No zap saved it in time.</span>
       </ZaprEmpty>
     );
   }
 
   const submitComment = async () => {
-    if (!requireAuth("Connecte ton wallet pour commenter.")) return;
+    if (!requireAuth("Connect your wallet to comment.")) return;
     const v = commentText.trim();
     if (!v) return;
     try {
@@ -76,21 +76,21 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
       setComments(res.comments);
       setCommentText("");
       setPost({ ...post, comments: post.comments + 1 });
-      toast("Commentaire posté.");
+      toast("Comment posted.");
     } catch (e) {
-      toast(e instanceof Error ? e.message : "Envoi impossible.");
+      toast(e instanceof Error ? e.message : "Couldn't send.");
     }
   };
 
   const doPump = () => {
-    if (!requireAuth("Connecte ton wallet pour envoyer un zap.")) return;
+    if (!requireAuth("Connect your wallet to send a zap.")) return;
     openPump(post);
   };
 
   return (
     <section>
       <div className="subbar">
-        <button className="icon-btn" onClick={() => router.push("/")} aria-label="Retour">
+        <button className="icon-btn" onClick={() => router.push("/")} aria-label="Back">
           <ArrowLeft />
         </button>
         <div className="page-title">Post</div>
@@ -104,14 +104,14 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
               <div style={{ cursor: "pointer" }} onClick={() => router.push(`/profile/${post.author.handle}`)}>
                 <div className="name">{post.author.handle}</div>
                 <div className="faint">
-                  @{post.author.handle} · il y a {timeAgo(post.createdAt)}
+                  @{post.author.handle} · {timeAgo(post.createdAt)} ago
                 </div>
               </div>
             </div>
 
             {post.deleted ? (
               <div className="dp-text faint" style={{ fontStyle: "italic" }}>
-                Ce post a expiré et son contenu a été supprimé.
+                This post expired and its content was deleted.
               </div>
             ) : (
               <div className="dp-text">{post.text}</div>
@@ -136,7 +136,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                   <ZapIcon />
                   {fmtSol(post.pumped)}
                 </span>
-                <span className="pb-label">SOL en zaps</span>
+                <span className="pb-label">SOL zapped</span>
               </div>
             </div>
 
@@ -144,19 +144,19 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
               // Rule 2.1: a purged post can't be zapped — no Zap button at all.
               <div className="pump-notice" style={{ marginBottom: 0 }}>
                 <b className="notice-title">
-                  <Trash2 /> Post supprimé
+                  <Trash2 /> Post deleted
                 </b>
-                Il a expiré et son contenu a été supprimé : il ne peut plus recevoir de zaps.
+                It expired and its content was deleted: it can&apos;t get zaps anymore.
               </div>
             ) : (
               <button className="pump-btn pump-btn-lg" onClick={doPump}>
-                <ZapIcon /> Envoyer un zap
+                <ZapIcon /> Send a zap
               </button>
             )}
           </div>
 
           <div className="section-title">
-            <MessageCircle /> Commentaires ({comments.length})
+            <MessageCircle /> Comments ({comments.length})
           </div>
           <div className="comment-form">
             <input
@@ -164,11 +164,11 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && submitComment()}
-              placeholder="Dis un truc…"
+              placeholder="Say something…"
               maxLength={300}
             />
             <button className="btn btn-primary" onClick={submitComment}>
-              Envoyer
+              Send
             </button>
           </div>
           {comments.map((c) => (
@@ -177,7 +177,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
               <div className="c-body">
                 <div className="c-head">
                   <span className="name">{c.author.handle}</span>
-                  <span className="faint">il y a {timeAgo(c.createdAt)}</span>
+                  <span className="faint">{timeAgo(c.createdAt)} ago</span>
                 </div>
                 <div className="c-text">{c.text}</div>
               </div>
@@ -188,14 +188,14 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
         <aside className="panel zappers">
           <div className="panel-head">
             <h4>
-              <ZapIcon /> Zappeurs ({pumpers.length})
+              <ZapIcon /> Zappers ({pumpers.length})
             </h4>
           </div>
-          {pumpers.length === 0 && <p className="faint panel-empty">Aucun zap pour l&apos;instant. Ouvre le bal.</p>}
+          {pumpers.length === 0 && <p className="faint panel-empty">No zaps yet. Be the first.</p>}
           {pumpers.map((pp, i) => {
             const masked = pp.anonymous || !pp.author;
-            const name = masked ? `Zappeur anonyme #${i + 1}` : pp.author!.handle;
-            const sub = masked ? "wallet masqué" : `${shortWallet(pp.author!.wallet)} · il y a ${timeAgo(pp.createdAt)}`;
+            const name = masked ? `Anonymous zapper #${i + 1}` : pp.author!.handle;
+            const sub = masked ? "wallet hidden" : `${shortWallet(pp.author!.wallet)} · ${timeAgo(pp.createdAt)} ago`;
             return (
               <div className="pumper-row" key={pp.id}>
                 {masked ? (
@@ -207,8 +207,8 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                   <div className="pr-name">
                     {name}
                     {pp.isSelfPump && (
-                      <span className="self-pump-tag" title="Le créateur s'est envoyé un zap sur son propre post">
-                        auto-zap
+                      <span className="self-pump-tag" title="The creator zapped their own post">
+                        self-zap
                       </span>
                     )}
                   </div>

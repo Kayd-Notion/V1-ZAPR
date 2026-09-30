@@ -1,4 +1,4 @@
-// Free follows (Abonnements feed) and creator zaps (90/10, "Zappés" leaderboard).
+// Free follows ("Following" feed) and creator zaps (90/10, "Zapped" leaderboard).
 // Runs the demo (file) store on the seed data, in a throwaway data directory.
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -39,7 +39,7 @@ test("follow / unfollow drive the counts and the Abonnements feed", async () => 
   assert.equal((await store.followStats("u2", "u1")).isFollowing, false);
 });
 
-test("creator zaps update totals, rank in Zappés, and never touch posts", async () => {
+test("creator zaps update totals, rank in Zapped, and never touch posts", async () => {
   const { createMemoryStore } = await import("../src/lib/db/memory");
   const store = createMemoryStore();
 

@@ -24,7 +24,7 @@ export function ConnectModal() {
   // Auto-connect once a wallet is selected (we drive our own UI).
   useEffect(() => {
     if (wallet && !connected && !connecting) {
-      connect().catch((e) => toast(e instanceof Error ? e.message : "Connexion refusée."));
+      connect().catch((e) => toast(e instanceof Error ? e.message : "Connection refused."));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wallet]);
@@ -41,14 +41,14 @@ export function ConnectModal() {
   const notInstalled = KNOWN.filter((k) => !detectedNames.has(k.name.toLowerCase()));
 
   return (
-    <Modal title="Connecte ton wallet" onClose={closeModal}>
+    <Modal title="Connect your wallet" onClose={closeModal}>
       <div style={{ textAlign: "center", marginBottom: 18 }}>
         <ZaprMark className="connect-mark" />
         <p className="muted">{connectMessage}</p>
       </div>
 
       {connecting && (
-        <ZaprLoader label="Connexion…" />
+        <ZaprLoader label="Connecting…" />
       )}
 
       {!connecting && (
@@ -64,7 +64,7 @@ export function ConnectModal() {
                   // Already selected: select() is a no-op, so connect directly.
                   if (!connected) {
                     connect().catch((e) =>
-                      toast(e instanceof Error ? e.message : "Connexion refusée."),
+                      toast(e instanceof Error ? e.message : "Connection refused."),
                     );
                   }
                 } else {
@@ -77,7 +77,7 @@ export function ConnectModal() {
                 <img src={w.adapter.icon} alt="" />
               )}
               {w.adapter.name}
-              <span className="wo-tag">détecté</span>
+              <span className="wo-tag">detected</span>
             </button>
           ))}
 
@@ -85,7 +85,7 @@ export function ConnectModal() {
           {notInstalled.map((k) => (
             <a key={k.name} className="wallet-option" href={k.url} target="_blank" rel="noreferrer">
               {k.name}
-              <span className="wo-tag">installer</span>
+              <span className="wo-tag">install</span>
             </a>
           ))}
         </div>
@@ -93,20 +93,19 @@ export function ConnectModal() {
 
       {!connecting && detected.length === 0 && (
         <p className="faint" style={{ fontSize: 12.5, marginTop: 12, textAlign: "center" }}>
-          Aucun wallet détecté. Installe-en un ci-dessus, puis reviens.
+          No wallet detected. Install one above, then come back.
         </p>
       )}
 
       {!connecting && detected.length > 0 && notInstalled.length > 0 && (
         <p className="faint tip-line">
-          <Info /> Phantom installé mais absent de la liste ? Dans Brave : <b>Paramètres → Web3 →
-          Portefeuille par défaut</b> → choisis <b>« Extensions (Phantom) »</b>, puis recharge la
-          page.
+          <Info /> Phantom installed but not in the list? In Brave: <b>Settings → Web3 →
+          Default wallet</b> → pick <b>&ldquo;Extensions (Phantom)&rdquo;</b>, then reload the page.
         </p>
       )}
 
       <button className="btn btn-ghost btn-block" style={{ marginTop: 10 }} onClick={closeModal}>
-        Plus tard
+        Later
       </button>
     </Modal>
   );

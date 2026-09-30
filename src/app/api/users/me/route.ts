@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 /** Update the current user's profile / privacy settings. */
 export async function PATCH(req: NextRequest) {
   const me = await currentUser();
-  if (!me) return NextResponse.json({ error: "Non connecté." }, { status: 401 });
+  if (!me) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
 
   const body = await req.json().catch(() => null);
   const store = getStore();
@@ -21,11 +21,11 @@ export async function PATCH(req: NextRequest) {
   if (typeof body?.handle === "string" && body.handle.trim()) {
     const handle = normalizeHandle(body.handle);
     if (!handle) {
-      return NextResponse.json({ error: "Pseudo invalide." }, { status: 400 });
+      return NextResponse.json({ error: "Invalid username." }, { status: 400 });
     }
     if (handle.toLowerCase() !== me.handle.toLowerCase()) {
       const taken = await store.getUserByHandle(handle);
-      if (taken) return NextResponse.json({ error: "Ce pseudo est déjà pris." }, { status: 409 });
+      if (taken) return NextResponse.json({ error: "That username is taken." }, { status: 409 });
       patch.handle = handle;
     }
   }

@@ -36,10 +36,10 @@ export function buildSeed(now: number = Date.now()): {
   });
 
   const users: User[] = [
-    mkUser("u1", "satoshi_fan", "7xKp9aQ2Rt4mNvBc1sD8fGhJkLwXyZ0pQ93Qw", "Maxi Solana. J'envoie des zaps à ce qui le mérite. ⚡", "FR", 142.7, 38.2),
-    mkUser("u2", "crypto_lea", "3mNv8sD1fGh7JkLwXyZ0pQ2Rt4aQ9Kp5bC2xY", "Artiste NFT & degen à mes heures.", "US", 98.4, 64.1),
-    mkUser("u3", "devSol", "9pQ2Rt4mNvBc1sD8fGhJkLwXyZ0aQ7xKp3nH1", "Je build sur Solana. gm.", "JP", 210.3, 12.9),
-    mkUser("u4", "moon_hana", "5bC2xY7xKp9aQ2Rt4mNvBc1sD8fGhJkLw0pQ9", "To the moon, calmement. 🌙", "BR", 76.0, 88.5),
+    mkUser("u1", "satoshi_fan", "7xKp9aQ2Rt4mNvBc1sD8fGhJkLwXyZ0pQ93Qw", "Solana maxi. I zap what deserves it. ⚡", "FR", 142.7, 38.2),
+    mkUser("u2", "crypto_lea", "3mNv8sD1fGh7JkLwXyZ0pQ2Rt4aQ9Kp5bC2xY", "NFT artist & part-time degen.", "US", 98.4, 64.1),
+    mkUser("u3", "devSol", "9pQ2Rt4mNvBc1sD8fGhJkLwXyZ0aQ7xKp3nH1", "Building on Solana. gm.", "JP", 210.3, 12.9),
+    mkUser("u4", "moon_hana", "5bC2xY7xKp9aQ2Rt4mNvBc1sD8fGhJkLw0pQ9", "To the moon, calmly. 🌙", "BR", 76.0, 88.5),
     mkUser("u5", "ghostwhale", "1sD8fGhJkLwXyZ0pQ2Rt4mNvBc7xKp9aQ93Qw", "On-chain, off-radar.", "FR", 305.9, 150.4),
     mkUser("u6", "pixelzap", "2Rt4mNvBc1sD8fGhJkLwXyZ0pQ7xKp9aQ5bC2", "Pixel art & memes. Zap-friendly.", "US", 54.2, 29.8),
     mkUser("u7", "zk_marie", "8fGhJkLwXyZ0pQ2Rt4mNvBc1sD7xKp9aQ3nH1", "Privacy first. ZK enthusiast.", "JP", 120.6, 45.0),
@@ -58,25 +58,25 @@ export function buildSeed(now: number = Date.now()): {
     tags: string[];
     mediaType?: "image" | "video";
   }[] = [
-    { id: "p1", userId: "u5", text: "Le pot commun vient de dépasser 1000 SOL. On est en train de construire quelque chose de fou. 🐋", hoursAgo: 2, pumped: 48.6, comments: 14, country: "FR", tags: ["#solana", "#pump"] },
-    { id: "p2", userId: "u2", text: "Nouveau drop d'art génératif ce soir. Les 3 premiers zaps ont accès à la whitelist. 🎨", hoursAgo: 5, pumped: 31.2, comments: 8, country: "US", tags: ["#nft", "#art"], mediaType: "image" },
-    { id: "p3", userId: "u3", text: "J'ai shippé le SDK ZAPR en 3 jours. Le code sera open source la semaine prochaine. gm 🛠️", hoursAgo: 1, pumped: 22.9, comments: 21, country: "JP", tags: ["#dev", "#build"] },
-    { id: "p4", userId: "u1", text: "Reminder : un post dure minimum 24h, mais chaque zap prolonge sa durée de vie. Pas de plafond. 🕒", hoursAgo: 8, pumped: 64.1, comments: 30, country: "FR", tags: ["#tuto"] },
-    { id: "p5", userId: "u4", text: "Petit timelapse de mon setup trading 🌙", hoursAgo: 12, pumped: 9.4, comments: 5, country: "BR", tags: ["#trading"], mediaType: "video" },
-    { id: "p6", userId: "u6", text: "Meme du jour : quand ton post entre dans le top 30 pendant que tu dors. 😴📈", hoursAgo: 3, pumped: 18.7, comments: 12, country: "US", tags: ["#meme"], mediaType: "image" },
-    { id: "p7", userId: "u7", text: "La confidentialité on-chain n'est pas optionnelle. Voici pourquoi ZAPR anonymise l'historique des zaps. 🔒", hoursAgo: 20, pumped: 40.3, comments: 19, country: "JP", tags: ["#privacy", "#zk"] },
-    { id: "p8", userId: "u2", text: "Merci pour tous les zaps hier 🙏 On recommence aujourd'hui, plus fort.", hoursAgo: 26, pumped: 14.0, comments: 6, country: "US", tags: [] },
-    { id: "p9", userId: "u5", text: "Alerte : ce post expire bientôt. Envoyez-lui un zap si vous voulez le garder en vie. ⏳", hoursAgo: 23, pumped: 5.1, comments: 3, country: "FR", tags: ["#pump"] },
-    { id: "p10", userId: "u3", text: "Petit sondage : quelle feature veux-tu voir en premier sur ZAPR ?", hoursAgo: 6, pumped: 11.8, comments: 24, country: "JP", tags: ["#feedback"] },
-    { id: "p11", userId: "u1", text: "Le classement par pays est live 🇫🇷🇺🇸🇯🇵🇧🇷. Regardez où vous vous situez.", hoursAgo: 4, pumped: 27.5, comments: 11, country: "FR", tags: ["#leaderboard"], mediaType: "image" },
-    { id: "p12", userId: "u4", text: "GM à tous les degens. Que vos zaps soient verts aujourd'hui. 🟢", hoursAgo: 0.5, pumped: 3.2, comments: 1, country: "BR", tags: ["#gm"] },
-    { id: "p13", userId: "u6", text: "Nouveau pack de stickers pixel pour la communauté. Un zap = accès instantané.", hoursAgo: 15, pumped: 20.0, comments: 9, country: "US", tags: ["#art", "#community"], mediaType: "image" },
+    { id: "p1", userId: "u5", text: "The community pot just passed 1000 SOL. We're building something crazy. 🐋", hoursAgo: 2, pumped: 48.6, comments: 14, country: "FR", tags: ["#solana", "#pump"] },
+    { id: "p2", userId: "u2", text: "New generative art drop tonight. The first 3 zaps get whitelist access. 🎨", hoursAgo: 5, pumped: 31.2, comments: 8, country: "US", tags: ["#nft", "#art"], mediaType: "image" },
+    { id: "p3", userId: "u3", text: "Shipped the ZAPR SDK in 3 days. Code goes open source next week. gm 🛠️", hoursAgo: 1, pumped: 22.9, comments: 21, country: "JP", tags: ["#dev", "#build"] },
+    { id: "p4", userId: "u1", text: "Reminder: a post lives at least 24h, and every zap extends its life. No cap. 🕒", hoursAgo: 8, pumped: 64.1, comments: 30, country: "FR", tags: ["#tuto"] },
+    { id: "p5", userId: "u4", text: "Quick timelapse of my trading setup 🌙", hoursAgo: 12, pumped: 9.4, comments: 5, country: "BR", tags: ["#trading"], mediaType: "video" },
+    { id: "p6", userId: "u6", text: "Meme of the day: when your post hits the top 30 while you sleep. 😴📈", hoursAgo: 3, pumped: 18.7, comments: 12, country: "US", tags: ["#meme"], mediaType: "image" },
+    { id: "p7", userId: "u7", text: "On-chain privacy isn't optional. Here's why ZAPR anonymizes zap history. 🔒", hoursAgo: 20, pumped: 40.3, comments: 19, country: "JP", tags: ["#privacy", "#zk"] },
+    { id: "p8", userId: "u2", text: "Thanks for all the zaps yesterday 🙏 Running it back today, harder.", hoursAgo: 26, pumped: 14.0, comments: 6, country: "US", tags: [] },
+    { id: "p9", userId: "u5", text: "Heads up: this post expires soon. Zap it if you want to keep it alive. ⏳", hoursAgo: 23, pumped: 5.1, comments: 3, country: "FR", tags: ["#pump"] },
+    { id: "p10", userId: "u3", text: "Quick poll: which feature do you want first on ZAPR?", hoursAgo: 6, pumped: 11.8, comments: 24, country: "JP", tags: ["#feedback"] },
+    { id: "p11", userId: "u1", text: "The by-country leaderboard is live 🇫🇷🇺🇸🇯🇵🇧🇷. See where you rank.", hoursAgo: 4, pumped: 27.5, comments: 11, country: "FR", tags: ["#leaderboard"], mediaType: "image" },
+    { id: "p12", userId: "u4", text: "GM to all the degens. May your zaps be green today. 🟢", hoursAgo: 0.5, pumped: 3.2, comments: 1, country: "BR", tags: ["#gm"] },
+    { id: "p13", userId: "u6", text: "New pixel sticker pack for the community. One zap = instant access.", hoursAgo: 15, pumped: 20.0, comments: 9, country: "US", tags: ["#art", "#community"], mediaType: "image" },
     // Older posts (already expired) so 24h / 7 days / 30 days / all-time
     // leaderboards differ in the demo. Their pumps are dated in the past below.
-    { id: "p14", userId: "u4", text: "Récap de la semaine : merci pour les zaps sur mon setup 🌙", hoursAgo: 72, pumped: 18.0, comments: 4, country: "BR", tags: ["#recap"] },
-    { id: "p15", userId: "u7", text: "Thread : pourquoi le ZK va tout changer pour les réseaux sociaux on-chain. 🧵", hoursAgo: 120, pumped: 7.5, comments: 9, country: "JP", tags: ["#zk", "#thread"] },
-    { id: "p16", userId: "u3", text: "Premier commit du SDK ZAPR. Ça commence ici. 🛠️", hoursAgo: 480, pumped: 15.0, comments: 12, country: "JP", tags: ["#dev"] },
-    { id: "p17", userId: "u2", text: "Ma toute première collection NFT est en ligne 🎨", hoursAgo: 1080, pumped: 9.0, comments: 6, country: "US", tags: ["#nft"] },
+    { id: "p14", userId: "u4", text: "Weekly recap: thanks for the zaps on my setup 🌙", hoursAgo: 72, pumped: 18.0, comments: 4, country: "BR", tags: ["#recap"] },
+    { id: "p15", userId: "u7", text: "Thread: why ZK will change everything for on-chain social. 🧵", hoursAgo: 120, pumped: 7.5, comments: 9, country: "JP", tags: ["#zk", "#thread"] },
+    { id: "p16", userId: "u3", text: "First commit of the ZAPR SDK. It starts here. 🛠️", hoursAgo: 480, pumped: 15.0, comments: 12, country: "JP", tags: ["#dev"] },
+    { id: "p17", userId: "u2", text: "My very first NFT collection is live 🎨", hoursAgo: 1080, pumped: 9.0, comments: 6, country: "US", tags: ["#nft"] },
   ];
 
   const posts: Post[] = raw.map((p) => ({
@@ -93,11 +93,11 @@ export function buildSeed(now: number = Date.now()): {
   }));
 
   const comments: Comment[] = [
-    { id: "c1", postId: "p1", userId: "u2", text: "Incroyable, félicitations 🔥", createdAt: now - 1 * H },
-    { id: "c2", postId: "p1", userId: "u3", text: "On construit ! gm", createdAt: now - 1.5 * H },
-    { id: "c3", postId: "p1", userId: "u6", text: "Zap envoyé sans hésiter ⚡", createdAt: now - 0.5 * H },
-    { id: "c4", postId: "p3", userId: "u1", text: "Hâte de voir le repo 👀", createdAt: now - 0.8 * H },
-    { id: "c5", postId: "p3", userId: "u7", text: "Le SDK gère la confidentialité ?", createdAt: now - 0.6 * H },
+    { id: "c1", postId: "p1", userId: "u2", text: "Insane, congrats 🔥", createdAt: now - 1 * H },
+    { id: "c2", postId: "p1", userId: "u3", text: "We build! gm", createdAt: now - 1.5 * H },
+    { id: "c3", postId: "p1", userId: "u6", text: "Zapped without a second thought ⚡", createdAt: now - 0.5 * H },
+    { id: "c4", postId: "p3", userId: "u1", text: "Can't wait to see the repo 👀", createdAt: now - 0.8 * H },
+    { id: "c5", postId: "p3", userId: "u7", text: "Does the SDK handle privacy?", createdAt: now - 0.6 * H },
   ];
 
   const pumps: Pump[] = [];
@@ -156,7 +156,7 @@ function placeholderMedia(id: string, type: "image" | "video"): string {
   let h = 0;
   for (const c of id) h = (h * 31 + c.charCodeAt(0)) >>> 0;
   const [a, b] = GRADS[h % GRADS.length];
-  const label = type === "video" ? "▶ Vidéo" : "Image";
+  const label = type === "video" ? "▶ Video" : "Image";
   const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='800' height='500'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='${a}'/><stop offset='1' stop-color='${b}'/></linearGradient></defs><rect width='800' height='500' fill='url(#g)'/><text x='50%' y='50%' fill='rgba(255,255,255,.9)' font-family='sans-serif' font-size='34' font-weight='700' text-anchor='middle' dominant-baseline='middle'>${label} · placeholder</text></svg>`;
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }

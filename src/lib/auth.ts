@@ -23,13 +23,13 @@ export function buildSignInMessage(params: {
 }): string {
   const { wallet, nonce, issuedAt, domain = "ZAPR" } = params;
   return [
-    `${domain} veut que tu te connectes avec ton wallet Solana.`,
+    `${domain} wants you to sign in with your Solana wallet.`,
     "",
-    `Wallet : ${wallet}`,
-    `Nonce : ${nonce}`,
-    `Émis le : ${new Date(issuedAt).toISOString()}`,
+    `Wallet: ${wallet}`,
+    `Nonce: ${nonce}`,
+    `Issued at: ${new Date(issuedAt).toISOString()}`,
     "",
-    "Signer ce message ne coûte rien et n'autorise aucune transaction.",
+    "Signing this message is free and does not authorize any transaction.",
   ].join("\n");
 }
 

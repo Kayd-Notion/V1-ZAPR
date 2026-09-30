@@ -12,7 +12,7 @@ import { api } from "@/lib/api";
 import { mediaTypeOf } from "@/lib/irys";
 import type { UploadedMedia } from "@/lib/api-types";
 import { MIN_PUMP_SOL } from "@/lib/pump-config";
-import { formatSolFr } from "@/lib/pump-rules";
+import { formatSol } from "@/lib/pump-rules";
 
 export function ComposerModal() {
   const { closeModal, toast, bumpData } = useUI();
@@ -35,7 +35,7 @@ export function ComposerModal() {
     const f = e.target.files?.[0] ?? null;
     if (!f) return;
     if (!mediaTypeOf(f)) {
-      toast("Formats acceptés : image ou vidéo.");
+      toast("Accepted formats: image or video.");
       return;
     }
     setFile(f);
@@ -45,7 +45,7 @@ export function ComposerModal() {
   const submit = async () => {
     const body = text.trim();
     if (!body) {
-      toast("Écris un truc d'abord.");
+      toast("Write something first.");
       return;
     }
     // Rule 3: check the optional initial pump BEFORE publishing.
@@ -53,7 +53,7 @@ export function ComposerModal() {
     if (wanted > 0) {
       const { minPumpSol } = await api.pumpConfig().catch(() => ({ minPumpSol: MIN_PUMP_SOL }));
       if (wanted + 1e-9 < minPumpSol) {
-        toast(`Zap initial : minimum ${formatSolFr(minPumpSol)} SOL`);
+        toast(`Starting zap: minimum ${formatSol(minPumpSol)} SOL`);
         return;
       }
     }
@@ -62,7 +62,7 @@ export function ComposerModal() {
       if (file) {
         // Irys needs the wallet to pay the upload in SOL.
         if (!wallet?.adapter) {
-          toast("Reconnecte ton wallet pour uploader le média.");
+          toast("Reconnect your wallet to upload the media.");
           return;
         }
         setPhase("uploading");
@@ -76,25 +76,25 @@ export function ComposerModal() {
       const initial = withPump ? parseFloat(pumpAmount) || 0 : 0;
       if (initial > 0) {
         if (!canSign) {
-          toast("Post publié — reconnecte ton wallet pour le zap initial.");
+          toast("Posted. Reconnect your wallet for the starting zap.");
         } else {
           setPhase("pumping");
           try {
             await runPump(post, initial, user.anonymizePumps);
           } catch (e) {
-            toast(e instanceof Error ? e.message : "Zap initial échoué (post publié).");
+            toast(e instanceof Error ? e.message : "Starting zap failed (the post is up).");
           }
         }
       }
 
       bumpData();
       closeModal();
-      toast("Posté. Que les zaps pleuvent.");
+      toast("Posted. Let the zaps rain.");
       setText("");
       setFile(null);
       setPreview(null);
     } catch (e) {
-      toast(e instanceof Error ? e.message : "Publication impossible.");
+      toast(e instanceof Error ? e.message : "Couldn't publish.");
     } finally {
       setPhase("idle");
     }
@@ -102,15 +102,15 @@ export function ComposerModal() {
 
   const phaseLabel =
     phase === "uploading"
-      ? "Upload du média sur Arweave…"
+      ? "Uploading media to Arweave…"
       : phase === "posting"
-        ? "Publication…"
+        ? "Publishing…"
         : phase === "pumping"
-          ? "Zap initial…"
-          : "Poster";
+          ? "Starting zap…"
+          : "Post";
 
   return (
-    <Modal title="Balance un post" onClose={closeModal}>
+    <Modal title="New post" onClose={closeModal}>
       <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
         <Avatar id={user.id} handle={user.handle} size="sm" />
         <textarea
@@ -118,7 +118,7 @@ export function ComposerModal() {
           rows={4}
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Balance ton alpha…"
+          placeholder="What's the alpha?"
           maxLength={500}
           style={{ resize: "none", border: "none", background: "transparent", fontSize: 17, padding: "8px 0" }}
           autoFocus
@@ -142,7 +142,7 @@ export function ComposerModal() {
               setPreview(null);
             }}
           >
-            <X /> Retirer
+            <X /> Remove
           </button>
         </div>
       )}
@@ -156,19 +156,19 @@ export function ComposerModal() {
           onChange={pickFile}
         />
         <button className="btn btn-sm" onClick={() => fileInput.current?.click()} disabled={busy}>
-          <ImagePlus /> Photo / vidéo
+          <ImagePlus /> Photo / video
         </button>
         <span className="faint" style={{ fontSize: 12, alignSelf: "center" }}>
-          Upload Arweave payé en SOL
+          Arweave upload, paid in SOL
         </span>
       </div>
 
       <label className={`toggle${withPump ? " on" : ""}`} onClick={() => setWithPump((v) => !v)}>
-        <span className="tg-switch" /> Auto-zap de départ pour booster ton post
+        <span className="tg-switch" /> Self-zap at launch to boost your post
       </label>
       {withPump && (
         <div style={{ marginTop: 12 }}>
-          <label className="field-label">Montant initial (SOL)</label>
+          <label className="field-label">Starting amount (SOL)</label>
           <input
             className="field"
             type="number"
@@ -192,7 +192,7 @@ export function ComposerModal() {
           </>
         ) : (
           <>
-            <ZapIcon /> Poster
+            <ZapIcon /> Post
           </>
         )}
       </button>

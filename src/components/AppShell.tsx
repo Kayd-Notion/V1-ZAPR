@@ -1,7 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { House, Moon, Plus, Radio, Search, Settings, Sun, Trophy, User, Wallet } from "lucide-react";
 import { useUI } from "@/context/UIContext";
 import { useSession } from "@/context/SessionContext";
@@ -20,7 +20,7 @@ const NAV = [
   { href: "/live", Icon: Radio, label: "Live" },
   { href: "/leaderboard", Icon: Trophy, label: "Top" },
   { href: "/wallet", Icon: Wallet, label: "Wallet" },
-  { href: "/profile", Icon: User, label: "Profil" },
+  { href: "/profile", Icon: User, label: "Profile" },
 ];
 
 function isActive(href: string, pathname: string): boolean {
@@ -29,7 +29,6 @@ function isActive(href: string, pathname: string): boolean {
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
   const pathname = usePathname();
   const { theme, toggleTheme, openComposer, openConnect, activeModal } = useUI();
   const { user, status, requireAuth, logout, walletAddress } = useSession();
@@ -41,21 +40,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     const guest = status === "anonymous" || status === "authenticating";
     document.documentElement.setAttribute("data-auth", guest ? "guest" : "in");
   }, [status]);
-  const [q, setQ] = useState("");
 
   const onWalletBtn = () => {
     if (user) logout();
-    else openConnect("Connecte ton wallet Solana pour entrer dans l'arène.");
+    else openConnect("Connect your Solana wallet to enter the arena.");
   };
 
   const onPost = () => {
-    if (!requireAuth("Connecte ton wallet pour poster.")) return;
+    if (!requireAuth("Connect your wallet to post.")) return;
     openComposer();
-  };
-
-  const onSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    router.push(q.trim() ? `/explore?q=${encodeURIComponent(q.trim())}` : "/explore");
   };
 
   // The side live column would duplicate the /live page.
@@ -64,33 +57,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <header className="topbar">
-        <Link href="/" className="brand" aria-label="ZAPR — accueil">
+        <Link href="/" className="brand" aria-label="ZAPR home">
           <ZaprMark className="logo-mark" />
           <span className="logo-text">ZAPR</span>
         </Link>
-        <form className="tb-search" onSubmit={onSearch} role="search">
+        <Link href="/explore" className="icon-btn tb-search-btn" aria-label="Search" title="Search">
           <Search />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Chercher un post, un degen, un #tag…" />
-        </form>
+        </Link>
         <div className="tb-actions">
-          <Link href="/explore" className="icon-btn tb-search-btn" aria-label="Chercher">
-            <Search />
-          </Link>
-          <span className={`net-badge ${IS_MAINNET ? "danger" : "safe"}`} title="Réseau Solana">
+          <span className={`net-badge ${IS_MAINNET ? "danger" : "safe"}`} title="Solana network">
             {CLUSTER}
           </span>
-          <button className="icon-btn tb-theme" onClick={toggleTheme} aria-label="Changer de thème" title="Changer de thème">
+          <button className="icon-btn tb-theme" onClick={toggleTheme} aria-label="Switch theme" title="Switch theme">
             {theme === "dark" ? <Moon /> : <Sun />}
           </button>
           <button className="btn btn-primary tb-post" onClick={onPost}>
-            <Plus /> <span>Poster</span>
+            <Plus /> <span>Post</span>
           </button>
           <button
             className={`btn btn-sm${user ? " btn-accent-soft" : " btn-primary"}`}
             onClick={onWalletBtn}
-            title={user ? "Déconnecter" : "Connecter"}
+            title={user ? "Disconnect" : "Connect"}
           >
-            {user ? shortWallet(walletAddress || user.wallet) : "Connecter"}
+            {user ? shortWallet(walletAddress || user.wallet) : "Connect"}
           </button>
         </div>
       </header>
@@ -108,11 +97,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <span>{label}</span>
             </Link>
           ))}
-          <Link href="/settings" className={`rail-item${isActive("/settings", pathname) ? " active" : ""}`} title="Réglages">
+          <Link href="/settings" className={`rail-item${isActive("/settings", pathname) ? " active" : ""}`} title="Settings">
             <Settings />
-            <span>Réglages</span>
+            <span>Settings</span>
           </Link>
-          <button className="rail-post" onClick={onPost} aria-label="Poster" title="Poster">
+          <button className="rail-post" onClick={onPost} aria-label="Post" title="Post">
             <Plus />
           </button>
         </nav>
@@ -123,7 +112,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Mobile */}
-      <button className="fab" onClick={onPost} aria-label="Poster">
+      <button className="fab" onClick={onPost} aria-label="Post">
         <Plus />
       </button>
       <nav className="bottom-nav" aria-label="Navigation">

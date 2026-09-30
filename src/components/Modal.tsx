@@ -36,7 +36,7 @@ export function Modal({
             {icon}
             {title}
           </h3>
-          <button className="icon-btn" onClick={onClose} aria-label="Fermer">
+          <button className="icon-btn" onClick={onClose} aria-label="Close">
             <X />
           </button>
         </div>

@@ -36,12 +36,12 @@ export default function WalletPage() {
   if (!user) {
     return (
       <section>
-        <ZaprEmpty title="Pas de wallet, pas de zaps.">
+        <ZaprEmpty title="No wallet, no zaps.">
           <button
             className="btn btn-primary"
-            onClick={() => openConnect("Connecte ton wallet pour voir ton solde.")}
+            onClick={() => openConnect("Connect your wallet to see your balance.")}
           >
-            Connecter
+            Connect
           </button>
         </ZaprEmpty>
       </section>
@@ -55,7 +55,7 @@ export default function WalletPage() {
       </div>
       <div className="balance-card">
         <ZapIcon className="bc-mark" />
-        <div className="bc-label">Ton solde ({CLUSTER})</div>
+        <div className="bc-label">Your balance ({CLUSTER})</div>
         <div className="bc-value">
           {loading || balance === null ? "…" : `${fmtSol(balance)} SOL`}
         </div>
@@ -66,44 +66,51 @@ export default function WalletPage() {
               publicKey &&
               connection
                 .requestAirdrop(publicKey, 1_000_000_000)
-                .then(() => toast("1 SOL devnet en route."))
-                .catch(() => toast("Faucet à sec (limite RPC). Réessaie plus tard ou passe par faucet.solana.com."))
+                .then(() => toast("1 devnet SOL on the way."))
+                .catch(() => toast("Faucet is dry (RPC limit). Try again later or use faucet.solana.com."))
             }
           >
-            <Droplet /> Faucet devnet +1 SOL
+            <Droplet /> Devnet faucet +1 SOL
           </button>
         </div>
       </div>
 
-      <div className="section-title">Tes stats</div>
+      <div className="section-title">Your stats</div>
       <div className="stats-grid">
         <div className="stat-box">
           <div className="sb-val accent">
             <ZapIcon />
             {fmtSol(user.received)}
           </div>
-          <div className="sb-label">SOL reçus</div>
+          <div className="sb-label">SOL received</div>
+        </div>
+        <div className="stat-box">
+          <div className="sb-val accent">
+            <ZapIcon />
+            {fmtSol(user.zapped)}
+          </div>
+          <div className="sb-label">SOL zapped to you</div>
         </div>
         <div className="stat-box">
           <div className="sb-val">
             <ZapIcon />
             {fmtSol(user.given)}
           </div>
-          <div className="sb-label">SOL envoyés</div>
+          <div className="sb-label">SOL sent</div>
         </div>
         <div className="stat-box">
-          <div className="sb-val">{publicKey ? "Oui" : "Non"}</div>
-          <div className="sb-label">Wallet lié</div>
+          <div className="sb-val">{publicKey ? "Yes" : "No"}</div>
+          <div className="sb-label">Wallet linked</div>
         </div>
       </div>
 
       <p className="faint hint-line">
-        Solde lu en direct sur la blockchain ({CLUSTER}).
+        Balance read live from the blockchain ({CLUSTER}).
         {publicKey && (
           <>
             {" "}
             <a href={explorerAddressUrl(publicKey.toBase58())} target="_blank" rel="noreferrer">
-              Voir sur l&apos;explorer <ExternalLink />
+              View on explorer <ExternalLink />
             </a>
           </>
         )}

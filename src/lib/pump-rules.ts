@@ -54,7 +54,7 @@ export function pumpRequirements(
   return { status: "expired", minPumpSol: MIN_PUMP_SOL, minToSaveSol: minToSave, requiredMinSol: Math.max(MIN_PUMP_SOL, minToSave) };
 }
 
-/** "0.292" → "0,292" (French, no trailing zeros). */
-export function formatSolFr(sol: number): string {
-  return (Math.round(sol * 1e9) / 1e9).toLocaleString("fr-FR", { maximumFractionDigits: 9 });
+/** 0.292 → "0.292" (US English, no trailing zeros). */
+export function formatSol(sol: number): string {
+  return (Math.round(sol * 1e9) / 1e9).toLocaleString("en-US", { maximumFractionDigits: 9 });
 }

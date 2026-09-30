@@ -4,7 +4,7 @@ import { currentUser, publicUser } from "@/lib/current-user";
 import { CREATOR_ZAP_SPLIT, MIN_CREATOR_ZAP_SOL, splitLamports } from "@/lib/pump-config";
 import { verifyPumpTransaction } from "@/lib/verify-pump";
 import { solToLamports } from "@/lib/format";
-import { formatSolFr } from "@/lib/pump-rules";
+import { formatSol } from "@/lib/pump-rules";
 
 export const runtime = "nodejs";
 
@@ -17,26 +17,26 @@ const REQUIRE_VERIFY = process.env.PUMP_REQUIRE_ONCHAIN_VERIFY === "true";
  */
 export async function POST(req: NextRequest, { params }: { params: Promise<{ handle: string }> }) {
   const me = await currentUser();
-  if (!me) return NextResponse.json({ error: "Connecte ton wallet pour zapper un créateur." }, { status: 401 });
+  if (!me) return NextResponse.json({ error: "Connect your wallet to zap a creator." }, { status: 401 });
 
   const store = getStore();
   const target = await store.getUserByHandle((await params).handle);
-  if (!target) return NextResponse.json({ error: "Profil introuvable." }, { status: 404 });
-  if (target.id === me.id) return NextResponse.json({ error: "Tu ne peux pas te zapper toi-même." }, { status: 400 });
+  if (!target) return NextResponse.json({ error: "Profile not found." }, { status: 404 });
+  if (target.id === me.id) return NextResponse.json({ error: "You can't zap yourself." }, { status: 400 });
 
   const body = await req.json().catch(() => null);
   const amount = Number(body?.amount);
   const signature = typeof body?.signature === "string" ? body.signature.trim() : "";
   const anonymous = Boolean(body?.anonymous);
-  if (!(amount > 0)) return NextResponse.json({ error: "Montant invalide." }, { status: 400 });
-  if (!signature) return NextResponse.json({ error: "Signature de transaction manquante." }, { status: 400 });
+  if (!(amount > 0)) return NextResponse.json({ error: "Invalid amount." }, { status: 400 });
+  if (!signature) return NextResponse.json({ error: "Missing transaction signature." }, { status: 400 });
   if (amount < MIN_CREATOR_ZAP_SOL) {
-    return NextResponse.json({ error: `Minimum ${formatSolFr(MIN_CREATOR_ZAP_SOL)} SOL par zap de créateur.` }, { status: 400 });
+    return NextResponse.json({ error: `Minimum ${formatSol(MIN_CREATOR_ZAP_SOL)} SOL per creator zap.` }, { status: 400 });
   }
 
   // Idempotency: a transaction is recorded once, as a post zap OR a creator zap.
   if ((await store.getCreatorZapBySignature(signature)) || (await store.getPumpBySignature(signature))) {
-    return NextResponse.json({ error: "Ce zap a déjà été enregistré." }, { status: 409 });
+    return NextResponse.json({ error: "This zap was already recorded." }, { status: 409 });
   }
 
   const { founderBps } = CREATOR_ZAP_SPLIT;
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ han
       amountSol: amount,
       founderBps,
     });
-    if (!v.ok) return NextResponse.json({ error: v.reason || "Vérification on-chain échouée." }, { status: 400 });
+    if (!v.ok) return NextResponse.json({ error: v.reason || "On-chain verification failed." }, { status: 400 });
   }
 
   // Split computed server-side, never trusted from the client.

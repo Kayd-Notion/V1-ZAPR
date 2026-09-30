@@ -12,7 +12,7 @@ export async function GET(
   const { id } = await params;
   const store = getStore();
   const post = await store.getPost(id);
-  if (!post) return NextResponse.json({ error: "Post introuvable." }, { status: 404 });
+  if (!post) return NextResponse.json({ error: "Post not found." }, { status: 404 });
 
   const [pumpersRaw, comments] = await Promise.all([
     store.listPumpers(id),

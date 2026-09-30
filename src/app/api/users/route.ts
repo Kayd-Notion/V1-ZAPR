@@ -11,7 +11,7 @@ export const runtime = "nodejs";
 export async function POST(req: NextRequest) {
   const session = await getSession();
   if (!session) {
-    return NextResponse.json({ error: "Connecte ton wallet d'abord." }, { status: 401 });
+    return NextResponse.json({ error: "Connect your wallet first." }, { status: 401 });
   }
 
   const store = getStore();
@@ -26,13 +26,13 @@ export async function POST(req: NextRequest) {
   const handle = normalizeHandle(body?.handle ?? "");
   if (!handle) {
     return NextResponse.json(
-      { error: "Pseudo invalide (3-20 caractères : lettres, chiffres, _)." },
+      { error: "Invalid username (3-20 characters: letters, numbers, _)." },
       { status: 400 },
     );
   }
 
   if (await store.getUserByHandle(handle)) {
-    return NextResponse.json({ error: "Ce pseudo est déjà pris." }, { status: 409 });
+    return NextResponse.json({ error: "That username is taken." }, { status: 409 });
   }
 
   const country = countryFromRequest(req);

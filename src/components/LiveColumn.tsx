@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Flame, Hourglass, Sparkles } from "lucide-react";
+import { IconFlame, IconHourglass, IconSparkle, IconZap } from "@/components/icons";
 import { Avatar } from "./Avatar";
-import { ZapIcon, ZaprEmpty, ZaprLoader } from "./ZaprMark";
+import { ZaprEmpty, ZaprLoader } from "./ZaprMark";
 import { api } from "@/lib/api";
 import { useLive, useNow } from "@/context/LiveContext";
 import { useSession } from "@/context/SessionContext";
@@ -14,10 +14,10 @@ import type { ClientPost } from "@/lib/client-types";
 
 type Tab = "new" | "dying" | "hot";
 
-const TABS: { key: Tab; label: string; Icon: typeof Sparkles }[] = [
-  { key: "new", label: "New", Icon: Sparkles },
-  { key: "dying", label: "Dying", Icon: Hourglass },
-  { key: "hot", label: "On fire", Icon: Flame },
+const TABS: { key: Tab; label: string; Icon: typeof IconSparkle }[] = [
+  { key: "new", label: "New", Icon: IconSparkle },
+  { key: "dying", label: "Dying", Icon: IconHourglass },
+  { key: "hot", label: "On fire", Icon: IconFlame },
 ];
 
 /**
@@ -132,12 +132,12 @@ function LiveCard({ post, now, fresh }: { post: ClientPost; now: number; fresh: 
       </div>
       <div className="lc-side">
         <span className="lc-amount">
-          <ZapIcon />
+          <IconZap />
           {fmtSol(post.pumped)}
         </span>
         {!post.deleted && (
           <button className="lc-zap" onClick={zap} aria-label="Send a zap">
-            <ZapIcon /> Zap
+            <IconZap /> Zap
           </button>
         )}
       </div>

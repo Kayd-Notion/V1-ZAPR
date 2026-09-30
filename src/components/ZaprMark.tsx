@@ -32,39 +32,61 @@ export function ZaprMark({ className }: { className?: string }) {
 }
 
 /**
- * The bolt alone, in the current text color: for yellow buttons, where the ⚡
- * emoji (itself yellow) would disappear.
+ * Loading indicator: the bolt "charging" — an empty bolt that fills with
+ * yellow from the bottom, again and again.
  */
-export function ZapIcon({ className }: { className?: string }) {
-  return (
-    <svg className={`zap-ico ${className ?? ""}`.trim()} viewBox="129 78 236 368" aria-hidden="true" focusable="false">
-      <path
-        d={BOLT}
-        stroke="currentColor"
-        strokeWidth="8"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-/** Loading indicator: the ZAPR bolt, pulsing. */
 export function ZaprLoader({ label }: { label?: string }) {
+  const cid = `zl${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
   return (
     <div className="zloader" role="status">
-      <ZaprMark className="zloader-mark" />
+      <svg className="zloader-mark" viewBox="115 64 264 396" aria-hidden="true" focusable="false">
+        <defs>
+          <clipPath id={cid}>
+            <rect className="zl-level" x="115" y="64" width="264" height="396" />
+          </clipPath>
+        </defs>
+        <path className="zl-empty" d={BOLT} strokeWidth="12" strokeLinejoin="round" />
+        <path className="zl-full" d={BOLT} clipPath={`url(#${cid})`} strokeWidth="12" strokeLinejoin="round" />
+      </svg>
       {label && <span>{label}</span>}
     </div>
   );
 }
 
-/** Empty / error state with the logo, a punchline and an optional action. */
+/**
+ * Empty-state illustration: the logo tile (dark here) with the flat yellow
+ * bolt, floating above its shadow, a few sparks flickering — idle, waiting
+ * for the next zap.
+ */
+function ZaprEmptyArt() {
+  return (
+    <svg className="zempty-art" viewBox="0 0 160 150" aria-hidden="true" focusable="false">
+      <ellipse className="ze-shadow" cx="80" cy="140" rx="34" ry="5" />
+      <g className="ze-float">
+        <rect className="ze-tile" x="32" y="18" width="96" height="96" rx="24" />
+        <path className="ze-bolt" transform="translate(36.3 19.4) scale(0.178)" d={BOLT} strokeWidth="10" strokeLinejoin="round" />
+      </g>
+      <path className="ze-spark" d="m134 24 11-11M140 42h13M121 10l4-9" />
+    </svg>
+  );
+}
+
+/** Empty / error state: the illustration, a punchline and an optional action. */
 export function ZaprEmpty({ title, children }: { title: string; children?: React.ReactNode }) {
   return (
     <div className="zempty">
-      <ZaprMark className="zempty-mark" />
+      <ZaprEmptyArt />
       <b>{title}</b>
       {children}
+    </div>
+  );
+}
+
+/** Full-page loading screen (route transitions): the charging bolt, centered. */
+export function ZaprSplash() {
+  return (
+    <div className="zsplash">
+      <ZaprLoader label="Charging the bolt…" />
     </div>
   );
 }

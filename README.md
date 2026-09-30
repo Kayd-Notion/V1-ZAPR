@@ -74,7 +74,7 @@ textes, messages d'erreur du serveur, nombres (`98.40`), durées (`3d left`,
   ses posts (ni durée de vie, ni total du post, ni classement « Degens »).
 - **Profil**, **Wallet** (solde devnet + airdrop), **Paramètres** (pseudo, bio,
   confidentialité), **Explorer** (recherche, ouverte par la loupe en haut à gauche),
-  **Classements** (période All time / 24h / 7 days / 30 days), thème sombre / clair.
+  **Classements** (période All time / 24h / 7 days / 30 days), thème sombre.
 
 Règles des zaps, vérifiées **dans l'interface et côté serveur** :
 
@@ -94,11 +94,28 @@ L'interface parle de **zap**. Le code, l'API (`/api/posts/:id/pump`), la base
 (table `pumps`) et les variables (`NEXT_PUBLIC_PUMP_*`) gardent le mot **pump** :
 un zap = un pump.
 
-Jaune électrique `#FED202` (texte noir dessus), crème `#FDFBF4`, jaune foncé
-`#8A6D00` pour le texte jaune en thème clair — variables dans
-`src/app/globals.css`. Logo : `public/brand/zapr-icon.svg` et `zapr-bolt.svg` ;
-favicon, icônes et image de partage dans `src/app/`. Icônes de l'interface :
-[lucide-react](https://lucide.dev) (aucun emoji dans l'interface).
+**Identité visuelle** (tirée du logo : éclair jaune plat aux angles francs, avec
+une encoche, sur un carré arrondi crème) :
+
+- **Tokens** : toutes les couleurs, arrondis, ombres, lueurs, espacements et
+  durées d'animation sont en tête de `src/app/globals.css` (bloc « Tokens ») ;
+  le reste du fichier ne fait que les réutiliser. Jaune du logo `#FED202`,
+  noir `#0A0A0B`, crème `#FEFDF8`. Copie pour les métadonnées :
+  `src/lib/brand.ts`.
+- **Sombre uniquement** : le thème clair (crème) reste dans le CSS mais est
+  désactivé ; pour le remettre, `LIGHT_MODE_ENABLED = true` dans
+  `src/lib/brand.ts`.
+- **Polices** (hébergées dans `src/app/fonts`, aucun appel à Google) :
+  Chakra Petch (titres, logo, boutons, onglets, rangs), Inter (texte),
+  JetBrains Mono (montants, scores, wallets).
+- **Icônes** : jeu maison dans `src/components/icons/` (trait 2,25 px, angles
+  francs, petite découpe en biais) ; l'éclair est celui du logo, **blanc** sur
+  les boutons jaunes. Aucun emoji dans l'interface.
+- **Formes** : les boutons jaunes ont la découpe de l'éclair (2 coins en biais)
+  et une lueur jaune au survol ; avatars en carrés arrondis comme le logo.
+- **Logo, favicon, icônes d'app** : `public/brand/` et `src/app/` (générés
+  depuis le logo : éclair jaune sur carré crème) ; image de partage
+  `src/app/opengraph-image.png`.
 
 ## Code
 
@@ -109,7 +126,9 @@ si `DATABASE_URL`, sinon fichier de démo).
 ```
 src/
   app/                 pages + routes API (/api/*), icônes, image de partage
-  components/          AppShell (barre, ticker, rail, colonne live), PostCard, LiveColumn, modales…
+  components/          AppShell (barre, rail, colonne live), PostCard, LiveColumn, modales…
+  components/icons/    jeu d'icônes ZAPR (SVG)
+  app/fonts/           polices hébergées localement
   context/             SessionContext (wallet), UIContext (thème, modales, toasts), LiveContext (live)
   hooks/usePump.ts     zap de bout en bout : vérif serveur → signature → envoi → enregistrement
   context/NotificationsContext.tsx  pastille « non lues » (rail + cloche mobile)

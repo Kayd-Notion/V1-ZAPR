@@ -1,6 +1,6 @@
 "use client";
 import { useEffect } from "react";
-import { X } from "lucide-react";
+import { IconClose } from "@/components/icons";
 
 export function Modal({
   title,
@@ -37,7 +37,7 @@ export function Modal({
             {title}
           </h3>
           <button className="icon-btn" onClick={onClose} aria-label="Close">
-            <X />
+            <IconClose />
           </button>
         </div>
         <div className="modal-body">{children}</div>

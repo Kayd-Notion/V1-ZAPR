@@ -1,9 +1,9 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { MessageCircle, UserPlus } from "lucide-react";
+import { IconComment, IconUserPlus, IconZap } from "@/components/icons";
 import { Avatar } from "@/components/Avatar";
-import { ZapIcon, ZaprEmpty, ZaprLoader } from "@/components/ZaprMark";
+import { ZaprEmpty, ZaprLoader } from "@/components/ZaprMark";
 import { api } from "@/lib/api";
 import { useSession } from "@/context/SessionContext";
 import { useUI } from "@/context/UIContext";
@@ -114,7 +114,7 @@ function NotificationRow({ n, fresh }: { n: ClientNotification; fresh: boolean }
 
   // Where a click goes: the post if it is still alive, else the person.
   const href = n.postId ? `/post/${n.postId}` : n.actor ? `/profile/${n.actor.handle}` : null;
-  const Icon = n.kind === "follow" ? UserPlus : n.kind === "comment" ? MessageCircle : ZapIcon;
+  const Icon = n.kind === "follow" ? IconUserPlus : n.kind === "comment" ? IconComment : IconZap;
 
   return (
     <div
@@ -143,7 +143,7 @@ function NotificationRow({ n, fresh }: { n: ClientNotification; fresh: boolean }
       </div>
       {zap && n.amount !== null && (
         <span className="notif-amount">
-          <ZapIcon />+{fmtSol(n.amount)}
+          <IconZap />+{fmtSol(n.amount)}
         </span>
       )}
       {fresh && <span className="notif-dot" aria-label="New" />}

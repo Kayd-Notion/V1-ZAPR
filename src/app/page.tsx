@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Globe, Users } from "lucide-react";
+import { IconGlobe, IconUsers } from "@/components/icons";
 import { PostCard } from "@/components/PostCard";
 import { TopDegens } from "@/components/TopDegens";
 import { ZaprEmpty, ZaprLoader, ZaprMark } from "@/components/ZaprMark";
@@ -124,7 +124,7 @@ export default function FeedPage() {
         )}
         <div className="feed-tabs" role="tablist">
           <button role="tab" aria-selected={tab === "all"} className={`feed-tab${tab === "all" ? " active" : ""}`} onClick={() => pickTab("all")}>
-            <Globe /> All
+            <IconGlobe /> All
           </button>
           <button
             role="tab"
@@ -132,7 +132,7 @@ export default function FeedPage() {
             className={`feed-tab${tab === "following" ? " active" : ""}`}
             onClick={() => pickTab("following")}
           >
-            <Users /> Following
+            <IconUsers /> Following
           </button>
         </div>
 

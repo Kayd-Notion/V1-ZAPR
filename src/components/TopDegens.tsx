@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Crown } from "lucide-react";
+import { IconCrown, IconZap } from "@/components/icons";
 import { Avatar } from "./Avatar";
-import { ZapIcon } from "./ZaprMark";
+
 import { api } from "@/lib/api";
 import { useUI } from "@/context/UIContext";
 import { fmtSol } from "@/lib/format";
@@ -37,7 +37,7 @@ export function TopDegens() {
     <aside className="panel top-degens">
       <div className="panel-head">
         <h4>
-          <Crown /> Top degens
+          <IconCrown /> Top degens
         </h4>
         <div className="seg seg-sm">
           {PERIODS.map((p) => (
@@ -56,7 +56,7 @@ export function TopDegens() {
             <Avatar id={u.id} handle={u.handle} size="sm" />
             <span className="td-handle">{u.handle}</span>
             <span className="td-amount">
-              <ZapIcon />+{fmtSol(total)}
+              <IconZap />+{fmtSol(total)}
             </span>
           </Link>
         ))

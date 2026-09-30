@@ -1,9 +1,9 @@
 "use client";
 import { useState } from "react";
-import { Landmark, User } from "lucide-react";
+import { IconPlatform, IconUser, IconZap } from "@/components/icons";
 import { Modal } from "../Modal";
 import { Avatar } from "../Avatar";
-import { ZapIcon, ZaprMark } from "../ZaprMark";
+import { ZaprMark } from "../ZaprMark";
 import { useUI } from "@/context/UIContext";
 import { useSession } from "@/context/SessionContext";
 import { useCreatorZap } from "@/hooks/useCreatorZap";
@@ -52,7 +52,7 @@ export function CreatorZapModal() {
   };
 
   return (
-    <Modal title="Zap this creator" icon={<ZapIcon />} onClose={closeModal}>
+    <Modal title="Zap this creator" icon={<IconZap />} onClose={closeModal}>
       {phase === "success" ? (
         <div className="pump-success">
           <ZaprMark className="ps-mark" />
@@ -102,13 +102,13 @@ export function CreatorZapModal() {
           <div className="split-box">
             <div className="split-row creator">
               <span>
-                <User /> Creator ({creatorBps / 100}%)
+                <IconUser /> Creator ({creatorBps / 100}%)
               </span>
               <b>{fmtSol(split.creatorSol)} SOL</b>
             </div>
             <div className="split-row">
               <span>
-                <Landmark /> Platform ({founderBps / 100}%)
+                <IconPlatform /> Platform ({founderBps / 100}%)
               </span>
               <b>{fmtSol(split.founderSol)} SOL</b>
             </div>
@@ -133,7 +133,7 @@ export function CreatorZapModal() {
               </>
             ) : (
               <>
-                <ZapIcon /> Send it · {formatSol(safeAmount)} SOL
+                <IconZap /> Send it · {formatSol(safeAmount)} SOL
               </>
             )}
           </button>

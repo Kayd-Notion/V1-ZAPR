@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { BRAND } from "@/lib/brand";
 
 /** Web app manifest ("Add to Home Screen"). */
 export default function manifest(): MetadataRoute.Manifest {
@@ -9,8 +10,8 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: "en-US",
     start_url: "/",
     display: "standalone",
-    background_color: "#0a0a0b",
-    theme_color: "#0a0a0b",
+    background_color: BRAND.ink,
+    theme_color: BRAND.ink,
     icons: [
       { src: "/brand/zapr-icon.svg", sizes: "any", type: "image/svg+xml" },
       { src: "/brand/zapr-icon-192.png", sizes: "192x192", type: "image/png" },

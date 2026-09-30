@@ -1,12 +1,13 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, LogOut } from "lucide-react";
+import { IconBack, IconLogOut } from "@/components/icons";
 import { ZaprEmpty } from "@/components/ZaprMark";
 import { useSession } from "@/context/SessionContext";
 import { useUI } from "@/context/UIContext";
 import { api } from "@/lib/api";
 import { shortWallet } from "@/lib/format";
+import { LIGHT_MODE_ENABLED } from "@/lib/brand";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -63,7 +64,7 @@ export default function SettingsPage() {
     <section>
       <div className="subbar">
         <button className="icon-btn" onClick={() => router.push("/profile")} aria-label="Back">
-          <ArrowLeft />
+          <IconBack />
         </button>
         <div className="page-title">Settings</div>
       </div>
@@ -120,15 +121,17 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <div className="settings-group">
-        <div className="sg-title">Appearance</div>
-        <div className="settings-row">
-          <div className="sr-text">Dark mode</div>
-          <div className={`toggle${theme === "dark" ? " on" : ""}`} onClick={toggleTheme}>
-            <span className="tg-switch" />
+      {LIGHT_MODE_ENABLED && (
+        <div className="settings-group">
+          <div className="sg-title">Appearance</div>
+          <div className="settings-row">
+            <div className="sr-text">Dark mode</div>
+            <div className={`toggle${theme === "dark" ? " on" : ""}`} onClick={toggleTheme}>
+              <span className="tg-switch" />
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="settings-group">
         <div className="sg-title">Account</div>
@@ -137,7 +140,7 @@ export default function SettingsPage() {
             Disconnect wallet
             <small>{shortWallet(user.wallet)}</small>
           </div>
-          <LogOut className="sr-ico" />
+          <IconLogOut className="sr-ico" />
         </div>
       </div>
     </section>

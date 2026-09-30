@@ -5,7 +5,16 @@ import type {
   ClientPumper,
   ClientUser,
 } from "./client-types";
-import type { Api, FollowStats, LeaderboardKind, LeaderboardPage, LeaderboardParams, ProfilePage, PumpQuote } from "./api-types";
+import type {
+  Api,
+  FollowStats,
+  LeaderboardKind,
+  LeaderboardPage,
+  LeaderboardParams,
+  NotificationsPage,
+  ProfilePage,
+  PumpQuote,
+} from "./api-types";
 import { FOUNDER_WALLET, MIN_PUMP_SOL, resolvedSplitBps } from "./pump-config";
 import { ApiError } from "./api-error";
 
@@ -85,6 +94,12 @@ export const api: Api = {
   follow: (handle) => req<FollowStats>(`/api/users/${encodeURIComponent(handle)}/follow`, { method: "POST" }),
   unfollow: (handle) => req<FollowStats>(`/api/users/${encodeURIComponent(handle)}/follow`, { method: "DELETE" }),
   followingIds: () => req<{ ids: string[] }>("/api/follows"),
+
+  // Notifications
+  notifications: (cursor) =>
+    req<NotificationsPage>(cursor ? `/api/notifications?cursor=${encodeURIComponent(cursor)}` : "/api/notifications"),
+  unreadNotifications: () => req<{ unread: number }>("/api/notifications/unread"),
+  markNotificationsSeen: () => req<{ unread: number }>("/api/notifications/seen", { method: "POST" }),
 
   // Creator zaps
   prepareCreatorZap: async (handle, amountSol) => {

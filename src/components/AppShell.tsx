@@ -2,9 +2,10 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { House, Moon, Plus, Radio, Search, Settings, Sun, Trophy, User, Wallet } from "lucide-react";
+import { Bell, House, Moon, Plus, Radio, Search, Settings, Sun, Trophy, User, Wallet } from "lucide-react";
 import { useUI } from "@/context/UIContext";
 import { useSession } from "@/context/SessionContext";
+import { useNotifications } from "@/context/NotificationsContext";
 import { shortWallet } from "@/lib/format";
 import { CLUSTER, IS_MAINNET } from "@/lib/solana";
 import { LiveColumn } from "./LiveColumn";
@@ -23,6 +24,20 @@ const NAV = [
   { href: "/profile", Icon: User, label: "Profile" },
 ];
 
+// Desktop rail: the same pages plus Notifications (on mobile it is the bell in
+// the top bar, the bottom nav has no room left).
+const RAIL = [...NAV.slice(0, 3), { href: "/notifications", Icon: Bell, label: "Notifications" }, ...NAV.slice(3)];
+
+/** Unread count on an icon; nothing when there is nothing new. */
+function UnreadBadge({ count }: { count: number }) {
+  if (count <= 0) return null;
+  return (
+    <span className="unread-badge" aria-label={`${count} new`}>
+      {count > 99 ? "99+" : count}
+    </span>
+  );
+}
+
 function isActive(href: string, pathname: string): boolean {
   if (href === "/") return pathname === "/";
   return pathname.startsWith(href);
@@ -32,6 +47,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { theme, toggleTheme, openComposer, openConnect, activeModal } = useUI();
   const { user, status, requireAuth, logout, walletAddress } = useSession();
+  const { unread } = useNotifications();
 
   // Visitors (wallet not connected) see every bolt of the site grey; each one
   // lights up on hover. While the session is loading, keep the pre-paint hint.
@@ -65,14 +81,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <Search />
         </Link>
         <div className="tb-actions">
+          {user && (
+            <Link
+              href="/notifications"
+              className={`icon-btn tb-notif${isActive("/notifications", pathname) ? " active" : ""}`}
+              aria-label="Notifications"
+              title="Notifications"
+            >
+              <Bell />
+              <UnreadBadge count={unread} />
+            </Link>
+          )}
           <span className={`net-badge ${IS_MAINNET ? "danger" : "safe"}`} title="Solana network">
             {CLUSTER}
           </span>
           <button className="icon-btn tb-theme" onClick={toggleTheme} aria-label="Switch theme" title="Switch theme">
             {theme === "dark" ? <Moon /> : <Sun />}
-          </button>
-          <button className="btn btn-primary tb-post" onClick={onPost}>
-            <Plus /> <span>Post</span>
           </button>
           <button
             className={`btn btn-sm${user ? " btn-accent-soft" : " btn-primary"}`}
@@ -86,14 +110,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <div className={`app${showLiveCol ? "" : " no-live"}`}>
         <nav className="rail" aria-label="Navigation">
-          {NAV.map(({ href, Icon, label }) => (
+          {RAIL.map(({ href, Icon, label }) => (
             <Link
               key={href}
               href={href}
               className={`rail-item${isActive(href, pathname) ? " active" : ""}`}
               title={label}
             >
-              <Icon />
+              <span className="rail-ico">
+                <Icon />
+                {href === "/notifications" && <UnreadBadge count={unread} />}
+              </span>
               <span>{label}</span>
             </Link>
           ))}

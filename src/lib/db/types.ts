@@ -83,6 +83,35 @@ export interface Comment {
   createdAt: number;
 }
 
+/**
+ * Something that happened to a user, derived from the existing logs (no
+ * separate events table): a zap on one of their posts, a zap straight to
+ * them, a new follower, a comment on one of their posts. Their own actions
+ * (self-zap, own comment) are never notified.
+ */
+export type NotificationKind = "post_zap" | "creator_zap" | "follow" | "comment";
+
+export interface Notification {
+  /** Stable id: kind prefix + source row id. Also the keyset tie-breaker. */
+  id: string;
+  kind: NotificationKind;
+  createdAt: number;
+  /** Who did it; null for an anonymous zap (or a deleted account). */
+  actor: Pick<User, "id" | "handle"> | null;
+  /** Zaps: SOL the user received (creator share). */
+  amount: number | null;
+  /** Post zaps and comments: the post, if it is still alive. */
+  postId: string | null;
+  postText: string | null;
+  /** Comments: the comment text. */
+  text: string | null;
+}
+
+export interface NotificationCursor {
+  createdAt: number;
+  id: string;
+}
+
 export type LeaderboardKind = "posts" | "creators" | "zapped";
 export type LeaderboardScope = "world" | "country";
 
@@ -222,6 +251,15 @@ export interface Store {
     anonymous: boolean;
   }): Promise<CreatorZap>;
   getCreatorZapBySignature(signature: string): Promise<CreatorZap | null>;
+
+  // Notifications (derived from zaps, creator zaps, follows and comments)
+  /** Newest first; keyset pagination on (createdAt, id). */
+  listNotifications(userId: string, opts: { limit: number; before?: NotificationCursor }): Promise<Notification[]>;
+  /** Notifications newer than `after` (capped at 100). */
+  countNotificationsSince(userId: string, after: number): Promise<number>;
+  /** When the user last opened their notifications (0 = never). */
+  getNotificationsSeenAt(userId: string): Promise<number>;
+  setNotificationsSeenAt(userId: string, at: number): Promise<void>;
 
   // Leaderboards
   leaderboardPosts(q: LeaderboardQuery): Promise<PostRankEntry[]>;

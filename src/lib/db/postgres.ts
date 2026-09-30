@@ -15,6 +15,8 @@ import type {
   CreatorZap,
   FeedQuery,
   LeaderboardQuery,
+  Notification,
+  NotificationKind,
   PostRankEntry,
   PostWithAuthor,
   Pump,
@@ -141,6 +143,33 @@ function cursorIsUsable(c: LeaderboardQuery["cursor"]): boolean {
 }
 
 /** Row → posts-leaderboard entry. The post columns are null when it was removed. */
+/**
+ * Everything that happened to `userId`, as one row shape (kind, nid, created_at,
+ * actor_id, anonymous, amount, post_id, body). Own actions are left out.
+ */
+function notificationEvents(db: Sql, userId: string) {
+  return db`
+    select 'post_zap' as kind, 'z:' || pm.id as nid, pm.created_at, pm.pumper_user_id as actor_id,
+           pm.anonymous, pm.creator_amount as amount, pm.post_id, null::text as body
+    from pumps pm
+    where pm.creator_user_id = ${userId} and pm.pumper_user_id <> ${userId}
+    union all
+    select 'creator_zap', 'c:' || cz.id, cz.created_at, cz.zapper_user_id,
+           cz.anonymous, cz.creator_amount, null::uuid, null::text
+    from creator_zaps cz
+    where cz.creator_user_id = ${userId}
+    union all
+    select 'follow', 'f:' || f.follower_id, f.created_at, f.follower_id,
+           false, null::float8, null::uuid, null::text
+    from follows f
+    where f.followee_id = ${userId}
+    union all
+    select 'comment', 'm:' || c.id, c.created_at, c.user_id,
+           false, null::float8, c.post_id, c.text
+    from comments c join posts cp on cp.id = c.post_id
+    where cp.user_id = ${userId} and c.user_id <> ${userId}`;
+}
+
 function rowToPostRank(r: Row): PostRankEntry {
   return {
     postId: r.rank_post_id,
@@ -382,6 +411,49 @@ export function createPostgresStore(): Store {
       const db = await getSql();
       const rows = await db`select * from creator_zaps where signature = ${signature} limit 1`;
       return rows[0] ? rowToCreatorZap(rows[0]) : null;
+    },
+
+    async listNotifications(userId, { limit, before }) {
+      const db = await getSql();
+      const now = Date.now();
+      const rows = await db`
+        select n.*, u.handle as actor_handle, p.text as post_text
+        from (${notificationEvents(db, userId)}) n
+        left join users u on u.id = n.actor_id and not n.anonymous
+        left join posts p on p.id = n.post_id and p.expires_at > ${now}
+        where true
+          ${before ? db`and (n.created_at < ${before.createdAt} or (n.created_at = ${before.createdAt} and n.nid < ${before.id}))` : db``}
+        order by n.created_at desc, n.nid desc
+        limit ${limit}`;
+      return rows.map(
+        (r): Notification => ({
+          id: r.nid,
+          kind: r.kind as NotificationKind,
+          createdAt: Number(r.created_at),
+          actor: r.actor_handle ? { id: r.actor_id, handle: r.actor_handle } : null,
+          amount: r.amount === null ? null : Number(r.amount),
+          postId: r.post_text === null ? null : r.post_id,
+          postText: r.post_text ?? null,
+          text: r.body ?? null,
+        }),
+      );
+    },
+    async countNotificationsSince(userId, after) {
+      const db = await getSql();
+      const [r] = await db`
+        select count(*)::int as n from (
+          select 1 from (${notificationEvents(db, userId)}) e where e.created_at > ${after} limit 100
+        ) x`;
+      return r.n;
+    },
+    async getNotificationsSeenAt(userId) {
+      const db = await getSql();
+      const rows = await db`select notifications_seen_at from users where id = ${userId}`;
+      return rows[0] ? Number(rows[0].notifications_seen_at) : 0;
+    },
+    async setNotificationsSeenAt(userId, at) {
+      const db = await getSql();
+      await db`update users set notifications_seen_at = greatest(notifications_seen_at, ${at}) where id = ${userId}`;
     },
 
     async leaderboardPosts(q: LeaderboardQuery) {

@@ -69,3 +69,21 @@ export interface LeaderboardCreatorItem {
   /** SOL received — all time, or within the selected period. */
   total: number;
 }
+
+export type NotificationKind = "post_zap" | "creator_zap" | "follow" | "comment";
+
+/** Something that happened to the signed-in user (see /api/notifications). */
+export interface ClientNotification {
+  id: string;
+  kind: NotificationKind;
+  createdAt: number;
+  /** null for an anonymous zap. */
+  actor: { id: string; handle: string } | null;
+  /** Zaps: SOL the user received (creator share). */
+  amount: number | null;
+  /** The post, if it is still alive. */
+  postId: string | null;
+  postText: string | null;
+  /** Comments: the comment text. */
+  text: string | null;
+}

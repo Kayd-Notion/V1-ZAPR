@@ -57,8 +57,14 @@ textes, messages d'erreur du serveur, nombres (`98.40`), durées (`3d left`,
   mise à jour toutes les 4 s, nouveaux posts qui arrivent en direct dans le feed,
   panneau « Top degens ».
 - **Posts** texte + photo/vidéo (médias sur Arweave, payés en SOL), commentaires.
-  On poste avec le bouton **Post** (en haut) ou le **+** (rail / mobile).
+  On poste avec le **+** jaune (rail de gauche sur ordinateur, bouton flottant sur mobile).
 - **Zaps** : montants rapides ou libres, aperçu du 70/30, option d'anonymat.
+- **Notifications** (rail de gauche ; cloche en haut sur mobile) : quelqu'un zappe
+  un de tes posts, te zappe directement, te suit ou commente un de tes posts.
+  Pastille jaune = nombre de nouvelles (vérifié toutes les 30 s) ; ouvrir la
+  page les marque comme vues. Tes propres actions ne sont jamais notifiées, et
+  un zap anonyme reste anonyme. Calculées à partir des zaps, abonnements et
+  commentaires existants (pas de table d'événements en plus).
 - **Suivre un créateur** (gratuit) : bouton « Follow » sur son profil, compteurs
   followers / following, onglet **Following** dans le feed (seulement les posts
   des créateurs suivis).
@@ -106,6 +112,7 @@ src/
   components/          AppShell (barre, ticker, rail, colonne live), PostCard, LiveColumn, modales…
   context/             SessionContext (wallet), UIContext (thème, modales, toasts), LiveContext (live)
   hooks/usePump.ts     zap de bout en bout : vérif serveur → signature → envoi → enregistrement
+  context/NotificationsContext.tsx  pastille « non lues » (rail + cloche mobile)
   hooks/useCreatorZap.ts  idem pour un zap de créateur (90/10)
   lib/
     pump.ts            transaction du zap — SEUL module à remplacer par le futur programme Anchor

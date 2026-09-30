@@ -11,7 +11,7 @@ const inter = Inter({
 });
 
 const DESCRIPTION =
-  "Le réseau social crypto sur Solana : envoie des zaps en SOL pour faire vivre les posts.";
+  "The crypto social network on Solana: zap posts with SOL to keep them alive.";
 
 // Public address of the site, used for absolute links in social previews.
 // Set NEXT_PUBLIC_SITE_URL once ZAPR has its own domain; until then, the
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   title: { default: "ZAPR", template: "%s · ZAPR" },
   description: DESCRIPTION,
   applicationName: "ZAPR",
-  openGraph: { type: "website", siteName: "ZAPR", title: "ZAPR", description: DESCRIPTION, locale: "fr_FR" },
+  openGraph: { type: "website", siteName: "ZAPR", title: "ZAPR", description: DESCRIPTION, locale: "en_US" },
   twitter: { card: "summary_large_image", title: "ZAPR", description: DESCRIPTION },
 };
 
@@ -45,7 +45,7 @@ const themeScript = `(function(){var d=document.documentElement;try{var t=localS
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" data-theme="dark" suppressHydrationWarning>
+    <html lang="en" data-theme="dark" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>

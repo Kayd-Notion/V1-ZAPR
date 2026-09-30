@@ -24,13 +24,13 @@ export function PostCard({ post, fresh = false }: { post: ClientPost; fresh?: bo
   const stop = (e: React.MouseEvent) => e.stopPropagation();
 
   const doPump = () => {
-    if (!requireAuth("Connecte ton wallet pour envoyer un zap.")) return;
+    if (!requireAuth("Connect your wallet to send a zap.")) return;
     openPump(post);
   };
   const copyLink = () => {
     const url = `${window.location.origin}/post/${post.id}`;
     navigator.clipboard?.writeText(url).then(
-      () => toast("Lien copié. Va shiller."),
+      () => toast("Link copied. Go shill it."),
       () => toast(url),
     );
   };
@@ -45,7 +45,7 @@ export function PostCard({ post, fresh = false }: { post: ClientPost; fresh?: bo
       <div className="post-body">
         <div className="post-head">
           <span className="name">{post.author.handle}</span>
-          <span className="time">il y a {timeAgo(post.createdAt)}</span>
+          <span className="time">{timeAgo(post.createdAt)} ago</span>
         </div>
         <div className="post-text">{post.text}</div>
 
@@ -68,16 +68,16 @@ export function PostCard({ post, fresh = false }: { post: ClientPost; fresh?: bo
               <ZapIcon />
               {fmtSol(post.pumped)}
             </span>
-            <span className="pb-label">SOL en zaps</span>
+            <span className="pb-label">SOL zapped</span>
           </div>
         </div>
 
         <div className="post-actions" onClick={stop}>
-          <button className="pa-btn" onClick={go} title="Commentaires">
+          <button className="pa-btn" onClick={go} title="Comments">
             <MessageCircle />
             <span>{post.comments}</span>
           </button>
-          <button className="pa-btn" onClick={copyLink} title="Copier le lien">
+          <button className="pa-btn" onClick={copyLink} title="Copy link">
             <Link2 />
           </button>
           {!post.deleted && (

@@ -32,7 +32,7 @@ export function initials(pseudo: string): string {
 }
 
 export function fmtSol(n: number): string {
-  return (Math.round(n * 100) / 100).toLocaleString("fr-FR", {
+  return (Math.round(n * 100) / 100).toLocaleString("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
@@ -43,22 +43,22 @@ export function shortWallet(w: string): string {
   return w.slice(0, 4) + "…" + w.slice(-4);
 }
 
-/** Short relative time from a ms-epoch timestamp: "12s", "4min", "3h", "2j". */
+/** Short relative time from a ms-epoch timestamp: "12s", "4m", "3h", "2d". */
 export function timeAgo(fromMs: number, nowMs: number = Date.now()): string {
   const s = Math.max(0, Math.floor((nowMs - fromMs) / 1000));
   if (s < 60) return s + "s";
-  if (s < 3600) return Math.floor(s / 60) + "min";
+  if (s < 3600) return Math.floor(s / 60) + "m";
   if (s < 86400) return Math.floor(s / 3600) + "h";
-  return Math.floor(s / 86400) + "j";
+  return Math.floor(s / 86400) + "d";
 }
 
-/** Remaining lifespan: "reste 13j", "reste 4h", "reste 12min", or "RIP". */
+/** Remaining lifespan: "13d left", "4h left", "12m left", or "RIP". */
 export function remainingLabel(remainingMs: number): string {
   const min = remainingMs / 60_000;
   if (min <= 0) return "RIP";
-  if (min < 60) return "reste " + Math.max(1, Math.floor(min)) + "min";
-  if (min < 1440) return "reste " + Math.floor(min / 60) + "h";
-  return "reste " + Math.floor(min / 1440) + "j";
+  if (min < 60) return Math.max(1, Math.floor(min)) + "m left";
+  if (min < 1440) return Math.floor(min / 60) + "h left";
+  return Math.floor(min / 1440) + "d left";
 }
 
 export const SOL_PER_LAMPORT = 1 / 1_000_000_000;

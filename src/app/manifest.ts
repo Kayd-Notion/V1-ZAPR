@@ -1,12 +1,12 @@
 import type { MetadataRoute } from "next";
 
-/** Web app manifest ("Ajouter à l'écran d'accueil"). */
+/** Web app manifest ("Add to Home Screen"). */
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "ZAPR",
     short_name: "ZAPR",
-    description: "Le réseau social crypto sur Solana : envoie des zaps en SOL pour faire vivre les posts.",
-    lang: "fr",
+    description: "The crypto social network on Solana: zap posts with SOL to keep them alive.",
+    lang: "en-US",
     start_url: "/",
     display: "standalone",
     background_color: "#0a0a0b",

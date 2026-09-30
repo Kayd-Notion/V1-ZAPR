@@ -9,7 +9,7 @@ import { useSession } from "@/context/SessionContext";
 import { useCreatorZap } from "@/hooks/useCreatorZap";
 import { quotePump } from "@/lib/pump";
 import { CREATOR_ZAP_SPLIT, MIN_CREATOR_ZAP_SOL } from "@/lib/pump-config";
-import { formatSolFr } from "@/lib/pump-rules";
+import { formatSol } from "@/lib/pump-rules";
 import { fmtSol } from "@/lib/format";
 import { IS_MAINNET } from "@/lib/solana";
 
@@ -33,7 +33,7 @@ export function CreatorZapModal() {
   const confirm = async () => {
     if (tooLow) return;
     if (!canSign) {
-      toast("Reconnecte ton wallet pour signer la transaction.");
+      toast("Reconnect your wallet to sign the transaction.");
       return;
     }
     setPhase("sending");
@@ -43,24 +43,24 @@ export function CreatorZapModal() {
       bumpData();
       setTimeout(() => {
         closeModal();
-        toast(`Zap de ${fmtSol(safeAmount)} SOL envoyé à @${creator.handle}. LFG.`);
+        toast(`${fmtSol(safeAmount)} SOL zapped to @${creator.handle}. LFG.`);
       }, 1200);
     } catch (e) {
       setPhase("form");
-      toast(e instanceof Error ? e.message : "Le zap a échoué.");
+      toast(e instanceof Error ? e.message : "The zap failed.");
     }
   };
 
   return (
-    <Modal title="Zap ce créateur" icon={<ZapIcon />} onClose={closeModal}>
+    <Modal title="Zap this creator" icon={<ZapIcon />} onClose={closeModal}>
       {phase === "success" ? (
         <div className="pump-success">
           <ZaprMark className="ps-mark" />
-          <h3>Zap envoyé. LFG.</h3>
+          <h3>Zap sent. LFG.</h3>
           <p className="muted">
-            <b>+{fmtSol(safeAmount)} SOL</b> pour @{creator.handle}.
+            <b>+{fmtSol(safeAmount)} SOL</b> for @{creator.handle}.
             <br />
-            Il grimpe dans le classement des créateurs zappés.
+            They climb the Zapped creators leaderboard.
           </p>
         </div>
       ) : (
@@ -68,17 +68,17 @@ export function CreatorZapModal() {
           <div className="pump-target">
             <Avatar id={creator.id} handle={creator.handle} size="sm" />
             <div className="pt-text">
-              Tu envoies un zap direct à <b>@{creator.handle}</b>
+              You&apos;re zapping <b>@{creator.handle}</b> directly
               <br />
-              Ça le fait monter dans le Top « Zappés », sans toucher à ses posts.
+              It pushes them up the &ldquo;Zapped&rdquo; Top, without touching their posts.
             </div>
           </div>
 
           {IS_MAINNET && (
-            <p className="warn-line">Les zaps sont désactivés sur mainnet (programme non audité).</p>
+            <p className="warn-line">Zaps are disabled on mainnet (program not audited yet).</p>
           )}
 
-          <label className="field-label">Combien tu envoies ?</label>
+          <label className="field-label">How much are you sending?</label>
           <div className="quick-amounts">
             {QUICK_AMOUNTS.map((a) => (
               <button key={a} className={`qa-btn${a === amount ? " active" : ""}`} onClick={() => setAmount(a)}>
@@ -87,7 +87,7 @@ export function CreatorZapModal() {
             ))}
           </div>
 
-          <label className="field-label">Montant perso (SOL)</label>
+          <label className="field-label">Custom amount (SOL)</label>
           <input
             className={`field${tooLow ? " field-invalid" : ""}`}
             type="number"
@@ -97,18 +97,18 @@ export function CreatorZapModal() {
             onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
             aria-invalid={tooLow}
           />
-          {tooLow && <p className="field-error">Minimum {formatSolFr(MIN_CREATOR_ZAP_SOL)} SOL</p>}
+          {tooLow && <p className="field-error">Minimum {formatSol(MIN_CREATOR_ZAP_SOL)} SOL</p>}
 
           <div className="split-box">
             <div className="split-row creator">
               <span>
-                <User /> Créateur ({creatorBps / 100}%)
+                <User /> Creator ({creatorBps / 100}%)
               </span>
               <b>{fmtSol(split.creatorSol)} SOL</b>
             </div>
             <div className="split-row">
               <span>
-                <Landmark /> Plateforme ({founderBps / 100}%)
+                <Landmark /> Platform ({founderBps / 100}%)
               </span>
               <b>{fmtSol(split.founderSol)} SOL</b>
             </div>
@@ -129,16 +129,16 @@ export function CreatorZapModal() {
           >
             {phase === "sending" ? (
               <>
-                <span className="spinner" /> Signe dans ton wallet…
+                <span className="spinner" /> Sign in your wallet…
               </>
             ) : (
               <>
-                <ZapIcon /> Send it · {formatSolFr(safeAmount)} SOL
+                <ZapIcon /> Send it · {formatSol(safeAmount)} SOL
               </>
             )}
           </button>
           <button className="btn btn-ghost btn-block" style={{ marginTop: 8 }} onClick={closeModal} disabled={phase === "sending"}>
-            Laisse tomber
+            Nah, forget it
           </button>
         </>
       )}

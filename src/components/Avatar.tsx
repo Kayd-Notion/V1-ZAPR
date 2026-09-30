@@ -14,7 +14,7 @@ export function Avatar({
 }) {
   if (anonymous) {
     return (
-      <div className={`avatar anon ${size}`.trim()} aria-label="Anonyme">
+      <div className={`avatar anon ${size}`.trim()} aria-label="Anonymous">
         <Ghost />
       </div>
     );

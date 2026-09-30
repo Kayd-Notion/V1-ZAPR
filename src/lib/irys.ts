@@ -40,9 +40,9 @@ export async function uploadMedia(
   walletProvider: unknown,
 ): Promise<UploadResult> {
   const mediaType = mediaTypeOf(file);
-  if (!mediaType) throw new Error("Type de fichier non supporté (image ou vidéo uniquement).");
+  if (!mediaType) throw new Error("File type not supported (images or videos only).");
   if (file.size > MAX_MEDIA_BYTES) {
-    throw new Error(`Fichier trop lourd (max ${MAX_MEDIA_BYTES / (1024 * 1024)} Mo).`);
+    throw new Error(`File too large (max ${MAX_MEDIA_BYTES / (1024 * 1024)} MB).`);
   }
 
   let builder = WebUploader(WebSolana).withProvider(walletProvider);

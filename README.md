@@ -46,28 +46,33 @@ dans le navigateur : Storage → ta base → **Open in Neon** → **SQL Editor**
 
 ## Ce que fait l'app
 
+L'interface est **entièrement en anglais US** (une seule langue, pas de sélecteur) :
+textes, messages d'erreur du serveur, nombres (`98.40`), durées (`3d left`,
+`2h ago`), message de signature du wallet, image de partage.
+
 - **Connexion wallet** Phantom / Solflare / Backpack (Wallet Standard), preuve
   de propriété par signature d'un message, choix d'un pseudo.
-- **Mode visiteur** : le fil se lit sans wallet.
-- **Live permanent** (style pump.fun) : colonne « Nouveau / Bientôt RIP / En feu »
+- **Mode visiteur** : le fil se lit sans wallet (bandeau « You're just watching »).
+- **Live permanent** (style pump.fun) : colonne « New / Dying / On fire »
   mise à jour toutes les 4 s, nouveaux posts qui arrivent en direct dans le feed,
-  bandeau des créateurs les plus zappés, panneau « Top degens ».
+  panneau « Top degens ».
 - **Posts** texte + photo/vidéo (médias sur Arweave, payés en SOL), commentaires.
+  On poste avec le bouton **Post** (en haut) ou le **+** (rail / mobile).
 - **Zaps** : montants rapides ou libres, aperçu du 70/30, option d'anonymat.
-- **Suivre un créateur** (gratuit) : bouton « Suivre » sur son profil, compteurs
-  abonnés / abonnements, onglet **Abonnements** dans le feed (seulement les posts
+- **Suivre un créateur** (gratuit) : bouton « Follow » sur son profil, compteurs
+  followers / following, onglet **Following** dans le feed (seulement les posts
   des créateurs suivis).
-- **Zap ce créateur** : SOL envoyé directement à un créateur (pas à un post),
+- **Zap this creator** : SOL envoyé directement à un créateur (pas à un post),
   même transaction atomique à deux transferts, partagée **90/10**
-  créateur/plateforme. Classement dédié **Zappés** dans le Top. Aucun effet sur
+  créateur/plateforme. Classement dédié **Zapped** dans le Top. Aucun effet sur
   ses posts (ni durée de vie, ni total du post, ni classement « Degens »).
 - **Profil**, **Wallet** (solde devnet + airdrop), **Paramètres** (pseudo, bio,
-  confidentialité), **Explorer** (recherche), **Classements** (période Tout /
-  24 h / 7 j / 30 j), thème sombre / clair.
+  confidentialité), **Explorer** (recherche, ouverte par la loupe en haut à gauche),
+  **Classements** (période All time / 24h / 7 days / 30 days), thème sombre / clair.
 
 Règles des zaps, vérifiées **dans l'interface et côté serveur** :
 
-1. **Auto-zap autorisé** (badge « auto-zap »), compte normalement.
+1. **Auto-zap autorisé** (badge « self-zap »), compte normalement.
 2. **Post expiré** : il faut au moins le montant qui le sauve (≥ 1 h de vie en
    plus) ; le serveur revérifie juste avant la signature.
 3. **Minimum 0,005 SOL** par zap.
@@ -106,7 +111,7 @@ src/
     pump.ts            transaction du zap — SEUL module à remplacer par le futur programme Anchor
     pump-config.ts     ratios 70/30 et 90/10, minimums, wallet plateforme
     pump-rules.ts      « minimum pour sauver un post expiré »
-    pump-errors.ts     erreurs wallet/Solana traduites en français
+    pump-errors.ts     erreurs wallet/Solana traduites en messages clairs
     lifespan(-config).ts  paliers de durée de vie
     solana.ts          réseau (devnet par défaut) + garde anti-mainnet
     verify-pump.ts     vérification on-chain d'un zap côté serveur

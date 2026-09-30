@@ -6,7 +6,7 @@ import { verifyPumpTransaction } from "@/lib/verify-pump";
 import { solToLamports } from "@/lib/format";
 import { lifespanInfo, PURGE_GRACE_MS } from "@/lib/lifespan";
 import { MIN_PUMP_SOL } from "@/lib/pump-config";
-import { formatSolFr } from "@/lib/pump-rules";
+import { formatSol } from "@/lib/pump-rules";
 
 export const runtime = "nodejs";
 
@@ -23,7 +23,7 @@ export async function POST(
 ) {
   const me = await currentUser();
   if (!me) {
-    return NextResponse.json({ error: "Connecte ton wallet pour envoyer un zap." }, { status: 401 });
+    return NextResponse.json({ error: "Connect your wallet to send a zap." }, { status: 401 });
   }
 
   const { id } = await params;
@@ -33,15 +33,15 @@ export async function POST(
   const anonymous = Boolean(body?.anonymous);
 
   if (!(amount > 0)) {
-    return NextResponse.json({ error: "Montant invalide." }, { status: 400 });
+    return NextResponse.json({ error: "Invalid amount." }, { status: 400 });
   }
   if (!signature) {
-    return NextResponse.json({ error: "Signature de transaction manquante." }, { status: 400 });
+    return NextResponse.json({ error: "Missing transaction signature." }, { status: 400 });
   }
   // Rule 3, server-side even if the client skipped the pre-check.
   if (amount < MIN_PUMP_SOL) {
     return NextResponse.json(
-      { error: `Minimum ${formatSolFr(MIN_PUMP_SOL)} SOL par zap.`, code: "below_min_pump" },
+      { error: `Minimum ${formatSol(MIN_PUMP_SOL)} SOL per zap.`, code: "below_min_pump" },
       { status: 400 },
     );
   }
@@ -51,11 +51,11 @@ export async function POST(
   // expired while the wallet was signing. The money has moved, so record it
   // (which also extends the post's life) unless the post is already deleted.
   const post = await store.getPost(id, { graceMs: PURGE_GRACE_MS });
-  if (!post) return NextResponse.json({ error: "Post introuvable." }, { status: 404 });
+  if (!post) return NextResponse.json({ error: "Post not found." }, { status: 404 });
 
   // Idempotency: a transaction is recorded once, as a post zap OR a creator zap.
   if ((await store.getPumpBySignature(signature)) || (await store.getCreatorZapBySignature(signature))) {
-    return NextResponse.json({ error: "Ce zap a déjà été enregistré." }, { status: 409 });
+    return NextResponse.json({ error: "This zap was already recorded." }, { status: 409 });
   }
 
   // Integrity: re-check the transaction on-chain (prod). Skipped in dev.
@@ -67,7 +67,7 @@ export async function POST(
       amountSol: amount,
     });
     if (!v.ok) {
-      return NextResponse.json({ error: v.reason || "Vérification on-chain échouée." }, { status: 400 });
+      return NextResponse.json({ error: v.reason || "On-chain verification failed." }, { status: 400 });
     }
   }
 

@@ -18,7 +18,7 @@ export function useCreatorZap() {
 
   const runCreatorZap = useCallback(
     async (creator: ClientUser, amountSol: number, anonymous: boolean): Promise<ClientUser | null> => {
-      if (!publicKey || !sendTransaction) throw new Error("Wallet non connecté.");
+      if (!publicKey || !sendTransaction) throw new Error("Wallet not connected.");
       // 1. Server re-check (auth, not yourself, minimum). Refused → nothing is signed.
       await api.prepareCreatorZap(creator.handle, amountSol);
 

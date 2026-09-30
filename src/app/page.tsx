@@ -3,7 +3,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Globe, Users } from "lucide-react";
 import { PostCard } from "@/components/PostCard";
-import { Avatar } from "@/components/Avatar";
 import { TopDegens } from "@/components/TopDegens";
 import { ZaprEmpty, ZaprLoader, ZaprMark } from "@/components/ZaprMark";
 import { useSession } from "@/context/SessionContext";
@@ -16,10 +15,10 @@ type Tab = "all" | "following";
 
 export default function FeedPage() {
   const { user, requireAuth } = useSession();
-  const { openComposer, openConnect, dataVersion } = useUI();
+  const { openConnect, dataVersion } = useUI();
   const live = useLive();
   const [tab, setTab] = useState<Tab>("all");
-  // Creators the user follows ("Abonnements"): null until loaded.
+  // Creators the user follows ("Following"): null until loaded.
   const [followingIds, setFollowingIds] = useState<Set<string> | null>(null);
   const [posts, setPosts] = useState<ClientPost[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -30,7 +29,7 @@ export default function FeedPage() {
 
   const following = tab === "following";
 
-  // Back to "Tout" when the user signs out.
+  // Back to "All" when the user signs out.
   useEffect(() => {
     if (!user) setTab("all");
   }, [user]);
@@ -59,7 +58,7 @@ export default function FeedPage() {
   }, [loadInitial, dataVersion]);
 
   // Live: posts published since the page loaded slide in at the top (only
-  // from followed creators on "Abonnements"), and the zap totals of the posts
+  // from followed creators on "Following"), and the zap totals of the posts
   // already shown stay up to date.
   useEffect(() => {
     if (!live.posts || loading) return;
@@ -99,13 +98,8 @@ export default function FeedPage() {
   }, [loadMore]);
 
   const pickTab = (t: Tab) => {
-    if (t === "following" && !requireAuth("Connecte ton wallet pour voir tes abonnements.")) return;
+    if (t === "following" && !requireAuth("Connect your wallet to see who you follow.")) return;
     setTab(t);
-  };
-
-  const onComposer = () => {
-    if (!requireAuth("Connecte ton wallet pour poster.")) return;
-    openComposer();
   };
 
   return (
@@ -117,31 +111,20 @@ export default function FeedPage() {
             {/* Grey bolt: not lit yet — connecting the wallet "turns it on". */}
             <ZaprMark className="vb-mark" />
             <div className="vb-text">
-              <b>T&apos;es en spectateur.</b>
-              Connecte ton wallet pour allumer l&apos;éclair : poster, envoyer des zaps et grimper au classement.
+              <b>You&apos;re just watching.</b>
+              Connect your wallet to light the bolt: post, send zaps and climb the leaderboard.
             </div>
             <button
               className="btn btn-primary btn-sm"
-              onClick={() => openConnect("Connecte ton wallet Solana pour entrer dans l'arène.")}
+              onClick={() => openConnect("Connect your Solana wallet to enter the arena.")}
             >
-              Connecter
+              Connect
             </button>
           </div>
         )}
-        <div className="composer-trigger">
-          {user ? (
-            <Avatar id={user.id} handle={user.handle} size="sm" />
-          ) : (
-            <Avatar id="visitor" handle="?" size="sm" anonymous />
-          )}
-          <button className="ct-fake" onClick={onComposer}>
-            Balance ton alpha…
-          </button>
-        </div>
-
         <div className="feed-tabs" role="tablist">
           <button role="tab" aria-selected={tab === "all"} className={`feed-tab${tab === "all" ? " active" : ""}`} onClick={() => pickTab("all")}>
-            <Globe /> Tout
+            <Globe /> All
           </button>
           <button
             role="tab"
@@ -149,36 +132,36 @@ export default function FeedPage() {
             className={`feed-tab${tab === "following" ? " active" : ""}`}
             onClick={() => pickTab("following")}
           >
-            <Users /> Abonnements
+            <Users /> Following
           </button>
         </div>
 
         {loading ? (
-          <ZaprLoader label="Chargement du feed…" />
+          <ZaprLoader label="Loading the feed…" />
         ) : posts.length === 0 ? (
           following ? (
             followingIds && followingIds.size === 0 ? (
-              <ZaprEmpty title="Tu ne suis personne. Pour l'instant.">
-                <span>Trouve des degens à suivre dans le Top, c&apos;est gratuit.</span>
+              <ZaprEmpty title="You don't follow anyone. Yet.">
+                <span>Find degens to follow in the Top. It&apos;s free.</span>
                 <Link href="/leaderboard" className="btn btn-primary">
-                  Voir le Top
+                  See the Top
                 </Link>
               </ZaprEmpty>
             ) : (
-              <ZaprEmpty title="Rien de neuf chez tes abonnements.">
-                <span>Leurs prochains posts arriveront ici en direct.</span>
+              <ZaprEmpty title="Nothing new from the degens you follow.">
+                <span>Their next posts will land here live.</span>
               </ZaprEmpty>
             )
           ) : (
-            <ZaprEmpty title="C'est calme. Trop calme.">
-              <span>Sois le premier à poster. Le premier zap est pour toi.</span>
+            <ZaprEmpty title="It's quiet. Too quiet.">
+              <span>Be the first to post. The first zap is yours.</span>
             </ZaprEmpty>
           )
         ) : (
           posts.map((p) => <PostCard key={p.id} post={p} fresh={live.freshIds.has(p.id)} />)
         )}
         <div ref={sentinel} />
-        {done && posts.length > 0 && <p className="feed-end">T&apos;as tout vu. Va toucher de l&apos;herbe.</p>}
+        {done && posts.length > 0 && <p className="feed-end">You&apos;ve seen it all. Go touch grass.</p>}
       </section>
     </div>
   );

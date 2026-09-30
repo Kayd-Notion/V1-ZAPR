@@ -15,10 +15,10 @@ import type {
 } from "@/lib/client-types";
 
 const PERIODS: { key: LeaderboardPeriod; label: string; short: string }[] = [
-  { key: "all", label: "Tout", short: "" },
+  { key: "all", label: "All time", short: "" },
   { key: "24h", label: "24h", short: "24h" },
-  { key: "7d", label: "7 jours", short: "7 j" },
-  { key: "30d", label: "30 jours", short: "30 j" },
+  { key: "7d", label: "7 days", short: "7d" },
+  { key: "30d", label: "30 days", short: "30d" },
 ];
 
 export default function LeaderboardPage() {
@@ -132,7 +132,7 @@ export default function LeaderboardPage() {
           Degens
         </div>
         <div className={`tab${kind === "zapped" ? " active" : ""}`} onClick={() => setKind("zapped")}>
-          Zappés
+          Zapped
         </div>
       </div>
 
@@ -140,13 +140,13 @@ export default function LeaderboardPage() {
         <div className="lb-filters">
           <div className="seg">
             <button className={`chip${scope === "world" ? " active" : ""}`} onClick={() => setScope("world")}>
-              <Globe /> Monde
+              <Globe /> World
             </button>
             <button className={`chip${scope === "country" ? " active" : ""}`} onClick={() => setScope("country")}>
-              <MapPin /> Par pays
+              <MapPin /> By country
             </button>
           </div>
-          <div className="seg" role="group" aria-label="Période">
+          <div className="seg" role="group" aria-label="Period">
             {PERIODS.map((p) => (
               <button
                 key={p.key}
@@ -172,8 +172,8 @@ export default function LeaderboardPage() {
       {loading ? (
         <ZaprLoader />
       ) : empty ? (
-        <ZaprEmpty title="Personne sur le podium.">
-          <span>{period === "all" ? "Rien pour ce filtre. Pour l'instant." : "Aucun zap sur cette période."}</span>
+        <ZaprEmpty title="Nobody on the podium.">
+          <span>{period === "all" ? "Nothing for this filter. Yet." : "No zaps in this period."}</span>
         </ZaprEmpty>
       ) : kind === "posts" ? (
         posts.map((it, i) => {
@@ -199,11 +199,11 @@ export default function LeaderboardPage() {
                   <div className="lb-name">{it.post.text}</div>
                 ) : (
                   <div className="lb-name faint" style={{ fontStyle: "italic", fontWeight: 600 }}>
-                    Post RIP (supprimé)
+                    RIP post (deleted)
                   </div>
                 )}
                 <div className="lb-sub">
-                  {author ? `${author.handle} · @${author.handle}` : "Créateur inconnu"}
+                  {author ? `${author.handle} · @${author.handle}` : "Unknown creator"}
                 </div>
               </div>
               <div className="lb-amount">
@@ -235,7 +235,7 @@ export default function LeaderboardPage() {
                 {fmtSol(total)}
               </span>
               <small>
-                {kind === "zapped" ? "SOL zappés" : "SOL reçus"}
+                {kind === "zapped" ? "SOL zapped" : "SOL received"}
                 {short ? ` · ${short}` : ""}
               </small>
             </div>

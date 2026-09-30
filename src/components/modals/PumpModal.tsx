@@ -9,7 +9,7 @@ import { useSession } from "@/context/SessionContext";
 import { usePump } from "@/hooks/usePump";
 import { quotePump } from "@/lib/pump";
 import { MIN_PUMP_SOL, resolvedSplitBps } from "@/lib/pump-config";
-import { formatSolFr } from "@/lib/pump-rules";
+import { formatSol } from "@/lib/pump-rules";
 import { api } from "@/lib/api";
 import { ApiError } from "@/lib/api-error";
 import type { PumpQuote } from "@/lib/api-types";
@@ -92,14 +92,14 @@ export function PumpModal() {
   let amountError: string | null = null;
   if (q && tooLow) {
     amountError = expired
-      ? `Ce post est expiré. Il faut au moins ${formatSolFr(requiredMin)} SOL pour le sauver.`
-      : `Minimum ${formatSolFr(minPump)} SOL`;
+      ? `This post has expired. It takes at least ${formatSol(requiredMin)} SOL to save it.`
+      : `Minimum ${formatSol(minPump)} SOL`;
   }
 
   const confirm = async () => {
     if (!q || tooLow) return;
     if (!canSign) {
-      toast("Reconnecte ton wallet pour signer la transaction.");
+      toast("Reconnect your wallet to sign the transaction.");
       return;
     }
     setPhase("sending");
@@ -109,7 +109,7 @@ export function PumpModal() {
       bumpData();
       setTimeout(() => {
         closeModal();
-        toast(`Zap de ${fmtSol(safeAmount)} SOL envoyé. LFG.`);
+        toast(`${fmtSol(safeAmount)} SOL zapped. LFG.`);
       }, 1200);
     } catch (e) {
       setPhase("form");
@@ -125,36 +125,36 @@ export function PumpModal() {
           setAmount(min);
         }
       }
-      toast(e instanceof Error ? e.message : "Le zap a échoué.");
+      toast(e instanceof Error ? e.message : "The zap failed.");
     }
   };
 
   // --- Post purged: no pump possible ------------------------------------
   if (q?.status === "deleted") {
     return (
-      <Modal title="Zap ce post" icon={<ZapIcon />} onClose={closeModal}>
+      <Modal title="Zap this post" icon={<ZapIcon />} onClose={closeModal}>
         <div className="zempty">
           <Trash2 className="zempty-ico" />
-          <b>Trop tard, il est parti.</b>
-          <span>Ce post a expiré et a été supprimé : il ne peut plus recevoir de zaps. Aucun SOL n&apos;a été envoyé.</span>
+          <b>Too late, it&apos;s gone.</b>
+          <span>This post expired and was deleted: it can&apos;t get zaps anymore. No SOL was sent.</span>
         </div>
         <button className="btn btn-block" onClick={closeModal}>
-          Fermer
+          Close
         </button>
       </Modal>
     );
   }
 
   return (
-    <Modal title="Zap ce post" icon={<ZapIcon />} onClose={closeModal}>
+    <Modal title="Zap this post" icon={<ZapIcon />} onClose={closeModal}>
       {phase === "success" ? (
         <div className="pump-success">
           <ZaprMark className="ps-mark" />
-          <h3>Zap envoyé. LFG.</h3>
+          <h3>Zap sent. LFG.</h3>
           <p className="muted">
-            <b>+{fmtSol(safeAmount)} SOL</b> sur ce post.
+            <b>+{fmtSol(safeAmount)} SOL</b> on this post.
             <br />
-            Il vient de gagner du temps de vie.
+            It just got more time to live.
           </p>
         </div>
       ) : (
@@ -162,15 +162,15 @@ export function PumpModal() {
           <div className="pump-target">
             <Avatar id={post.author.id} handle={post.author.handle} size="sm" />
             <div className="pt-text">
-              Tu envoies un zap à <b>@{post.author.handle}</b>
-              <br />« {post.text.slice(0, 60)}
-              {post.text.length > 60 ? "…" : ""} »
+              You&apos;re zapping <b>@{post.author.handle}</b>
+              <br />&ldquo;{post.text.slice(0, 60)}
+              {post.text.length > 60 ? "…" : ""}&rdquo;
             </div>
           </div>
 
           {IS_MAINNET && (
             <p className="warn-line">
-              <AlertTriangle /> Les zaps sont désactivés sur mainnet (programme non audité).
+              <AlertTriangle /> Zaps are disabled on mainnet (program not audited yet).
             </p>
           )}
 
@@ -178,19 +178,19 @@ export function PumpModal() {
             <div className="pump-notice">
               <p>
                 <b className="notice-title">
-                  <Hourglass /> Ce post est RIP.
+                  <Hourglass /> This post is RIP.
                 </b>{" "}
-                Il faut au moins <b>{formatSolFr(requiredMin)} SOL</b> pour le ressusciter (sinon il sera supprimé).
+                It takes at least <b>{formatSol(requiredMin)} SOL</b> to bring it back (otherwise it gets deleted).
               </p>
               {tooLow && (
                 <button className="btn btn-sm btn-accent-soft" style={{ marginTop: 8 }} onClick={() => setAmount(requiredMin)}>
-                  Mettre {formatSolFr(requiredMin)} SOL
+                  Use {formatSol(requiredMin)} SOL
                 </button>
               )}
             </div>
           )}
 
-          <label className="field-label">Combien tu envoies ?</label>
+          <label className="field-label">How much are you sending?</label>
           <div className="quick-amounts">
             {QUICK_AMOUNTS.map((a) => (
               <button
@@ -200,14 +200,14 @@ export function PumpModal() {
                 // Only an expired post's save minimum disables quick amounts
                 // (they all start at 0.01, above MIN_PUMP_SOL).
                 disabled={expired && a + EPS < requiredMin}
-                title={expired && a + EPS < requiredMin ? "Insuffisant pour sauver ce post" : undefined}
+                title={expired && a + EPS < requiredMin ? "Not enough to save this post" : undefined}
               >
                 {a}
               </button>
             ))}
           </div>
 
-          <label className="field-label">Montant perso (SOL)</label>
+          <label className="field-label">Custom amount (SOL)</label>
           <input
             className={`field${amountError ? " field-invalid" : ""}`}
             type="number"
@@ -222,13 +222,13 @@ export function PumpModal() {
           <div className="split-box">
             <div className="split-row creator">
               <span>
-                <User /> Créateur ({creatorBps / 100}%)
+                <User /> Creator ({creatorBps / 100}%)
               </span>
               <b>{fmtSol(quoteSplit.creatorSol)} SOL</b>
             </div>
             <div className="split-row">
               <span>
-                <Landmark /> Plateforme ({founderBps / 100}%)
+                <Landmark /> Platform ({founderBps / 100}%)
               </span>
               <b>{fmtSol(quoteSplit.founderSol)} SOL</b>
             </div>
@@ -252,15 +252,15 @@ export function PumpModal() {
           >
             {!q ? (
               <>
-                <span className="spinner" /> Check du post…
+                <span className="spinner" /> Checking the post…
               </>
             ) : phase === "sending" ? (
               <>
-                <span className="spinner" /> Signe dans ton wallet…
+                <span className="spinner" /> Sign in your wallet…
               </>
             ) : (
               <>
-                <ZapIcon /> Send it · {formatSolFr(safeAmount)} SOL
+                <ZapIcon /> Send it · {formatSol(safeAmount)} SOL
               </>
             )}
           </button>
@@ -270,7 +270,7 @@ export function PumpModal() {
             onClick={closeModal}
             disabled={phase === "sending"}
           >
-            Laisse tomber
+            Nah, forget it
           </button>
         </>
       )}

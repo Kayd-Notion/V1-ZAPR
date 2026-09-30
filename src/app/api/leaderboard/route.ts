@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
   const rawCursor = sp.get("cursor");
   const cursor = rawCursor ? decodeCursor(rawCursor) : undefined;
   if (rawCursor && !cursor) {
-    return NextResponse.json({ error: "Curseur invalide." }, { status: 400 });
+    return NextResponse.json({ error: "Invalid cursor." }, { status: 400 });
   }
 
   const country =

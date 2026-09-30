@@ -23,7 +23,7 @@ export function usePump() {
       anonymous: boolean,
     ): Promise<ClientPost> => {
       if (!publicKey || !sendTransaction) {
-        throw new Error("Wallet non connecté.");
+        throw new Error("Wallet not connected.");
       }
       // 1. Server re-check at this exact moment (rules 2 + 3): post purged in
       //    the meantime? amount still enough to save an expired post? If it

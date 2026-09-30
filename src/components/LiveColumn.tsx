@@ -15,9 +15,9 @@ import type { ClientPost } from "@/lib/client-types";
 type Tab = "new" | "dying" | "hot";
 
 const TABS: { key: Tab; label: string; Icon: typeof Sparkles }[] = [
-  { key: "new", label: "Nouveau", Icon: Sparkles },
-  { key: "dying", label: "Bientôt RIP", Icon: Hourglass },
-  { key: "hot", label: "En feu", Icon: Flame },
+  { key: "new", label: "New", Icon: Sparkles },
+  { key: "dying", label: "Dying", Icon: Hourglass },
+  { key: "hot", label: "On fire", Icon: Flame },
 ];
 
 /**
@@ -31,7 +31,7 @@ export function LiveColumn({ wide = false }: { wide?: boolean }) {
   const [tab, setTab] = useState<Tab>("new");
   const [hot, setHot] = useState<ClientPost[] | null>(null);
 
-  // "En feu": most zapped posts over 24 h (real totals from the zap log).
+  // "On fire": most zapped posts over 24 h (real totals from the zap log).
   useEffect(() => {
     if (tab !== "hot") return;
     let cancelled = false;
@@ -82,8 +82,8 @@ export function LiveColumn({ wide = false }: { wide?: boolean }) {
         {list === null ? (
           <ZaprLoader />
         ) : list.length === 0 ? (
-          <ZaprEmpty title={tab === "hot" ? "Rien en feu aujourd'hui." : "Rien de neuf. Pour l'instant."}>
-            <span>Poste un truc, le live s&apos;allume.</span>
+          <ZaprEmpty title={tab === "hot" ? "Nothing on fire today." : "Nothing new. Yet."}>
+            <span>Post something and the live lights up.</span>
           </ZaprEmpty>
         ) : (
           list.map((p) => <LiveCard key={p.id} post={p} now={now} fresh={freshIds.has(p.id)} />)
@@ -103,7 +103,7 @@ function LiveCard({ post, now, fresh }: { post: ClientPost; now: number; fresh: 
 
   const zap = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!requireAuth("Connecte ton wallet pour envoyer un zap.")) return;
+    if (!requireAuth("Connect your wallet to send a zap.")) return;
     openPump(post);
   };
 
@@ -136,7 +136,7 @@ function LiveCard({ post, now, fresh }: { post: ClientPost; now: number; fresh: 
           {fmtSol(post.pumped)}
         </span>
         {!post.deleted && (
-          <button className="lc-zap" onClick={zap} aria-label="Envoyer un zap">
+          <button className="lc-zap" onClick={zap} aria-label="Send a zap">
             <ZapIcon /> Zap
           </button>
         )}

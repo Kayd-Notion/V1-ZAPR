@@ -31,19 +31,19 @@ export function ProfileView({ handle }: { handle: string }) {
     api
       .profile(handle)
       .then(setData)
-      .catch((e) => setError(e instanceof Error ? e.message : "Profil introuvable."));
+      .catch((e) => setError(e instanceof Error ? e.message : "Profile not found."));
     // Refetch when the viewer changes: "isFollowing" depends on who is looking.
   }, [handle, dataVersion, user?.id]);
 
   if (error) {
     return (
-      <ZaprEmpty title="Profil introuvable.">
+      <ZaprEmpty title="Profile not found.">
         <span>{error}</span>
       </ZaprEmpty>
     );
   }
   if (!data) {
-    return <ZaprLoader label="Chargement du profil…" />;
+    return <ZaprLoader label="Loading profile…" />;
   }
 
   const u = data.user;
@@ -52,20 +52,20 @@ export function ProfileView({ handle }: { handle: string }) {
   const follow = data.follow;
 
   const toggleFollow = async () => {
-    if (!requireAuth("Connecte ton wallet pour suivre ce créateur.")) return;
+    if (!requireAuth("Connect your wallet to follow this creator.")) return;
     setFollowBusy(true);
     try {
       const next = follow.isFollowing ? await api.unfollow(u.handle) : await api.follow(u.handle);
       setData((d) => (d ? { ...d, follow: next } : d));
     } catch (e) {
-      toast(e instanceof Error ? e.message : "Action impossible.");
+      toast(e instanceof Error ? e.message : "Couldn't do that.");
     } finally {
       setFollowBusy(false);
     }
   };
 
   const zapCreator = () => {
-    if (!requireAuth("Connecte ton wallet pour zapper ce créateur.")) return;
+    if (!requireAuth("Connect your wallet to zap this creator.")) return;
     openCreatorZap(u);
   };
 
@@ -78,7 +78,7 @@ export function ProfileView({ handle }: { handle: string }) {
         <div>
           <div className="page-title">{u.handle}</div>
           <div className="faint" style={{ fontSize: 12 }}>
-            {data.postsCount} posts
+            {data.postsCount} post{data.postsCount === 1 ? "" : "s"}
           </div>
         </div>
       </div>
@@ -91,7 +91,7 @@ export function ProfileView({ handle }: { handle: string }) {
           <Avatar id={u.id} handle={u.handle} size="lg" />
           {isMe ? (
             <button className="btn" style={{ marginTop: 12 }} onClick={() => router.push("/settings")}>
-              Modifier le profil
+              Edit profile
             </button>
           ) : (
             <div className="profile-actions">
@@ -102,10 +102,10 @@ export function ProfileView({ handle }: { handle: string }) {
                 aria-pressed={follow.isFollowing}
               >
                 {follow.isFollowing ? <UserCheck /> : <UserPlus />}
-                {follow.isFollowing ? "Suivi" : "Suivre"}
+                {follow.isFollowing ? "Following" : "Follow"}
               </button>
               <button className="btn btn-primary" onClick={zapCreator}>
-                <ZapIcon /> Zap ce créateur
+                <ZapIcon /> Zap this creator
               </button>
             </div>
           )}
@@ -115,10 +115,10 @@ export function ProfileView({ handle }: { handle: string }) {
         <div className="profile-bio">{u.bio}</div>
         <div className="profile-follow">
           <span>
-            <b>{follow.followers}</b> abonné{follow.followers > 1 ? "s" : ""}
+            <b>{follow.followers}</b> follower{follow.followers === 1 ? "" : "s"}
           </span>
           <span>
-            <b>{follow.following}</b> abonnement{follow.following > 1 ? "s" : ""}
+            <b>{follow.following}</b> following
           </span>
         </div>
         <div className="profile-wallet">
@@ -132,14 +132,14 @@ export function ProfileView({ handle }: { handle: string }) {
             <ZapIcon />
             {fmtSol(u.received)}
           </div>
-          <div className="sb-label">SOL reçus</div>
+          <div className="sb-label">SOL received</div>
         </div>
         <div className="stat-box">
           <div className="sb-val accent">
             <ZapIcon />
             {fmtSol(u.zapped)}
           </div>
-          <div className="sb-label">SOL zappés au créateur</div>
+          <div className="sb-label">SOL zapped to creator</div>
         </div>
         <div className="stat-box">
           <div className="sb-val">
@@ -152,25 +152,25 @@ export function ProfileView({ handle }: { handle: string }) {
               "—"
             )}
           </div>
-          <div className="sb-label">SOL envoyés</div>
+          <div className="sb-label">SOL sent</div>
         </div>
         <div className="stat-box">
           <div className="sb-val">{data.postsCount}</div>
-          <div className="sb-label">posts en vie</div>
+          <div className="sb-label">live posts</div>
         </div>
       </div>
       {!showGiven && (
         <p className="faint hint-line">
-          <EyeOff /> Historique de zaps masqué.
+          <EyeOff /> Zap history hidden.
         </p>
       )}
 
-      <div className="section-title">Posts en vie</div>
+      <div className="section-title">Live posts</div>
       {data.active.length ? (
         data.active.map((p) => <PostCard key={p.id} post={p} />)
       ) : (
-        <ZaprEmpty title="Aucun post en vie.">
-          <span>{isMe ? "Poste un truc, le feed t'attend." : "Rien pour l'instant."}</span>
+        <ZaprEmpty title="No live posts.">
+          <span>{isMe ? "Post something, the feed is waiting." : "Nothing yet."}</span>
         </ZaprEmpty>
       )}
     </section>

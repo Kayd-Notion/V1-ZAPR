@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { humanizePumpError } from "../src/lib/pump-errors";
-import { formatSolFr, pumpRequirements, pumpedSolForLifespan } from "../src/lib/pump-rules";
+import { formatSol, pumpRequirements, pumpedSolForLifespan } from "../src/lib/pump-rules";
 import { MIN_PUMP_SOL, PUMP_QUOTE_SLACK_SECONDS, PUMP_SAVE_MIN_LIFETIME_SECONDS } from "../src/lib/pump-config";
 import { expiresAt, lifespanHours } from "../src/lib/lifespan";
 
@@ -30,18 +30,18 @@ test("rule 3: the rent-exempt failure becomes a readable message (real Solana er
   ];
   for (const e of samples) {
     const msg = humanizePumpError(e);
-    assert.match(msg, /wallets qui le reçoit est vide/);
+    assert.match(msg, /receiving wallets is empty/);
     assert.doesNotMatch(msg, /InsufficientFundsForRent|simulation|account_index/);
   }
 });
 
 test("pump errors: other wallet/network failures are readable too", () => {
-  assert.match(humanizePumpError(new Error("Attempt to debit an account but found no record of a prior credit.")), /Solde insuffisant/);
-  assert.match(humanizePumpError(new Error("User rejected the request.")), /annulée/);
-  assert.match(humanizePumpError(new Error("Blockhash not found")), /expiré/);
-  assert.match(humanizePumpError(new Error("Simulation failed: \"AccountNotFound\"")), /Solde insuffisant/);
+  assert.match(humanizePumpError(new Error("Attempt to debit an account but found no record of a prior credit.")), /Not enough SOL/);
+  assert.match(humanizePumpError(new Error("User rejected the request.")), /canceled/);
+  assert.match(humanizePumpError(new Error("Blockhash not found")), /expired/);
+  assert.match(humanizePumpError(new Error("Simulation failed: \"AccountNotFound\"")), /Not enough SOL/);
   assert.match(humanizePumpError(new Error("Unexpected error")), /Solana Devnet/);
-  assert.equal(humanizePumpError(new Error("autre chose")), "autre chose");
+  assert.equal(humanizePumpError(new Error("something else")), "something else");
 });
 
 // ---- Rule 2 ----------------------------------------------------------------
@@ -75,8 +75,8 @@ test("rule 2: a purged post has no pump option", () => {
   assert.equal(r.status, "deleted");
 });
 
-test("formatSolFr", () => {
-  assert.equal(formatSolFr(0.292), "0,292");
-  assert.equal(formatSolFr(0.005), "0,005");
-  assert.equal(formatSolFr(1), "1");
+test("formatSol", () => {
+  assert.equal(formatSol(0.292), "0.292");
+  assert.equal(formatSol(0.005), "0.005");
+  assert.equal(formatSol(1), "1");
 });

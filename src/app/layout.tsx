@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { Providers } from "./providers";
-import { BRAND } from "@/lib/brand";
+import { BRAND, LIGHT_MODE_ENABLED } from "@/lib/brand";
 
 // Self-hosted fonts (src/app/fonts): no Google Fonts / CDN request at runtime.
 // Each one fills a CSS variable read by the font tokens in globals.css.
@@ -59,7 +59,8 @@ export const viewport: Viewport = {
 // Set the theme before paint to avoid a flash of the wrong theme.
 // Also mark visitors (data-auth="guest") so every bolt starts grey without a
 // yellow flash; AppShell corrects it once the session is known.
-const themeScript = `(function(){var d=document.documentElement;try{var t=localStorage.getItem('zapr_theme');d.setAttribute('data-theme',t==='light'?'light':'dark');d.setAttribute('data-auth',localStorage.getItem('zapr_logged_in')==='1'?'in':'guest');}catch(e){d.setAttribute('data-theme','dark');d.setAttribute('data-auth','guest');}})();`;
+// Dark-only unless LIGHT_MODE_ENABLED: a saved "light" choice is then ignored.
+const themeScript = `(function(){var d=document.documentElement;try{var t=${LIGHT_MODE_ENABLED ? "localStorage.getItem('zapr_theme')" : "'dark'"};d.setAttribute('data-theme',t==='light'?'light':'dark');d.setAttribute('data-auth',localStorage.getItem('zapr_logged_in')==='1'?'in':'guest');}catch(e){d.setAttribute('data-theme','dark');d.setAttribute('data-auth','guest');}})();`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

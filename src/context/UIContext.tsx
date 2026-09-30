@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 import type { ClientPost, ClientUser } from "@/lib/client-types";
+import { LIGHT_MODE_ENABLED } from "@/lib/brand";
 
 type ModalKind = "connect" | "composer" | "pump" | "creatorZap" | "onboard" | null;
 
@@ -48,8 +49,9 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
   const [dataVersion, setDataVersion] = useState(0);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Load persisted theme.
+  // Load persisted theme (dark-only while the light theme is switched off).
   useEffect(() => {
+    if (!LIGHT_MODE_ENABLED) return;
     try {
       const t = localStorage.getItem("zapr_theme");
       if (t === "light" || t === "dark") setTheme(t);
@@ -64,6 +66,7 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
   }, [theme]);
 
   const toggleTheme = useCallback(() => {
+    if (!LIGHT_MODE_ENABLED) return;
     setTheme((prev) => {
       const next = prev === "dark" ? "light" : "dark";
       try {

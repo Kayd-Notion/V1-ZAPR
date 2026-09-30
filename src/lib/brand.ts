@@ -8,3 +8,10 @@ export const BRAND = {
   cream: "#fefdf8",
   ink: "#0a0a0b",
 } as const;
+
+/**
+ * Light theme switch. ZAPR ships dark-only: the light (cream) colors stay in
+ * globals.css, unused. Set to true to bring back the theme toggle in the top
+ * bar and in Settings, and to honor a saved "light" choice.
+ */
+export const LIGHT_MODE_ENABLED = false;

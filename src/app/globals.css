@@ -103,7 +103,9 @@
 }
 
 :root[data-theme="light"] {
-  /* The logo's cream, white cards. */
+  /* SWITCHED OFF — ZAPR is dark-only for now (LIGHT_MODE_ENABLED = false in
+     src/lib/brand.ts). Kept so the light theme can come back in one line.
+     The logo's cream, white cards. */
   --bg: var(--zapr-cream);
   --bg-elev: #ffffff;
   --bg-elev-2: #f8f5ea;

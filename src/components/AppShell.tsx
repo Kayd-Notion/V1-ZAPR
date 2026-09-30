@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { IconBell, IconFeed, IconLive, IconMoon, IconPlus, IconSearch, IconSettings, IconSun, IconTop, IconUser, IconWallet } from "@/components/icons";
+import { LIGHT_MODE_ENABLED } from "@/lib/brand";
 import { useUI } from "@/context/UIContext";
 import { useSession } from "@/context/SessionContext";
 import { useNotifications } from "@/context/NotificationsContext";
@@ -95,9 +96,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <span className={`net-badge ${IS_MAINNET ? "danger" : "safe"}`} title="Solana network">
             {CLUSTER}
           </span>
-          <button className="icon-btn tb-theme" onClick={toggleTheme} aria-label="Switch theme" title="Switch theme">
-            {theme === "dark" ? <IconMoon /> : <IconSun />}
-          </button>
+          {LIGHT_MODE_ENABLED && (
+            <button className="icon-btn tb-theme" onClick={toggleTheme} aria-label="Switch theme" title="Switch theme">
+              {theme === "dark" ? <IconMoon /> : <IconSun />}
+            </button>
+          )}
           <button
             className={`btn btn-sm${user ? " btn-accent-soft tb-wallet" : " btn-primary"}`}
             onClick={onWalletBtn}

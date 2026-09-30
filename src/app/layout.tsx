@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import { BRAND } from "@/lib/brand";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -35,7 +36,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#0a0a0b",
+  themeColor: BRAND.ink,
 };
 
 // Set the theme before paint to avoid a flash of the wrong theme.

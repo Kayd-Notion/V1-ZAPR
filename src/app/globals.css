@@ -404,6 +404,25 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
 .visitor-banner:hover { border-color: var(--accent-text); background: linear-gradient(135deg, var(--accent-soft), transparent); }
 .vb-mark { height: 42px; margin: 0 4px; transform: rotate(-8deg); }
 
+/* Onglets du feed : Tout / Abonnements */
+.feed-tabs {
+  position: sticky; top: var(--chrome-h); z-index: 20;
+  display: flex; border-bottom: 1px solid var(--border-soft);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(12px);
+}
+.feed-tab {
+  flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 13px 8px; font-weight: 700; font-size: 14px; color: var(--text-dim); position: relative;
+}
+.feed-tab:hover { background: var(--bg-hover); }
+.feed-tab.active { color: var(--text); }
+.feed-tab.active::after {
+  content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 56px; height: 3px; border-radius: 3px; background: var(--accent);
+}
+.feed-tab.active svg.lucide { color: var(--accent-text); }
+
 .composer-trigger {
   display: flex; align-items: center; gap: 12px;
   padding: 16px 20px; border-bottom: 1px solid var(--border-soft);
@@ -661,7 +680,11 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
 .profile-handle { color: var(--text-faint); font-size: 14px; }
 .profile-bio { margin: 10px 0; font-size: 14.5px; }
 .profile-wallet { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-dim); background: var(--bg-elev-2); padding: 5px 12px; border-radius: 999px; margin-bottom: 4px; }
-.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 4px 20px 12px; max-width: 760px; }
+.profile-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; justify-content: flex-end; }
+.profile-actions .btn svg { width: 16px; height: 16px; }
+.profile-follow { display: flex; gap: 16px; font-size: 14px; color: var(--text-faint); margin-bottom: 10px; }
+.profile-follow b { color: var(--text); font-weight: 800; }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 4px 20px 12px; max-width: 760px; }
 .stat-box { background: var(--bg-elev-2); border: 1px solid var(--border-soft); border-radius: var(--radius-sm); padding: 12px; text-align: center; }
 .stat-box .sb-val { display: flex; align-items: center; justify-content: center; gap: 3px; font-size: 18px; font-weight: 900; }
 .stat-box .sb-val.accent { color: var(--accent-text); }
@@ -748,6 +771,10 @@ svg.lucide { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2
   .post { padding: 14px; gap: 12px; }
   .composer-trigger { padding: 14px; }
   .visitor-banner { margin: 12px; flex-wrap: wrap; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); padding: 4px 14px 12px; }
+  .profile-head { padding: 0 14px 16px; }
+  .profile-actions { gap: 6px; }
+  .profile-actions .btn { padding: 8px 12px; font-size: 13px; }
   .live-col.wide .live-list { grid-template-columns: minmax(0, 1fr); }
   .modal { max-width: 440px; align-self: flex-end; margin-bottom: 0; border-radius: 20px 20px 0 0; }
   .modal-overlay { align-items: flex-end; padding: 0; }

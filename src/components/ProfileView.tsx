@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, EyeOff, Wallet } from "lucide-react";
+import { ArrowLeft, EyeOff, UserCheck, UserPlus, Wallet } from "lucide-react";
 import { PostCard } from "./PostCard";
 import { Avatar } from "./Avatar";
 import { ZapIcon, ZaprEmpty, ZaprLoader } from "./ZaprMark";
@@ -10,17 +10,20 @@ import { useSession } from "@/context/SessionContext";
 import { useUI } from "@/context/UIContext";
 import { fmtSol, shortWallet } from "@/lib/format";
 import type { ClientPost, ClientUser } from "@/lib/client-types";
+import type { FollowStats } from "@/lib/api-types";
 
 export function ProfileView({ handle }: { handle: string }) {
   const router = useRouter();
-  const { user } = useSession();
-  const { dataVersion } = useUI();
+  const { user, requireAuth } = useSession();
+  const { dataVersion, openCreatorZap, toast } = useUI();
   const [data, setData] = useState<{
     user: ClientUser;
     postsCount: number;
     active: ClientPost[];
+    follow: FollowStats;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [followBusy, setFollowBusy] = useState(false);
 
   useEffect(() => {
     setData(null);
@@ -29,7 +32,8 @@ export function ProfileView({ handle }: { handle: string }) {
       .profile(handle)
       .then(setData)
       .catch((e) => setError(e instanceof Error ? e.message : "Profil introuvable."));
-  }, [handle, dataVersion]);
+    // Refetch when the viewer changes: "isFollowing" depends on who is looking.
+  }, [handle, dataVersion, user?.id]);
 
   if (error) {
     return (
@@ -45,6 +49,25 @@ export function ProfileView({ handle }: { handle: string }) {
   const u = data.user;
   const isMe = user?.id === u.id;
   const showGiven = isMe || !u.hidePumpHistory;
+  const follow = data.follow;
+
+  const toggleFollow = async () => {
+    if (!requireAuth("Connecte ton wallet pour suivre ce créateur.")) return;
+    setFollowBusy(true);
+    try {
+      const next = follow.isFollowing ? await api.unfollow(u.handle) : await api.follow(u.handle);
+      setData((d) => (d ? { ...d, follow: next } : d));
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "Action impossible.");
+    } finally {
+      setFollowBusy(false);
+    }
+  };
+
+  const zapCreator = () => {
+    if (!requireAuth("Connecte ton wallet pour zapper ce créateur.")) return;
+    openCreatorZap(u);
+  };
 
   return (
     <section>
@@ -66,15 +89,38 @@ export function ProfileView({ handle }: { handle: string }) {
       <div className="profile-head">
         <div className="profile-top-row">
           <Avatar id={u.id} handle={u.handle} size="lg" />
-          {isMe && (
+          {isMe ? (
             <button className="btn" style={{ marginTop: 12 }} onClick={() => router.push("/settings")}>
               Modifier le profil
             </button>
+          ) : (
+            <div className="profile-actions">
+              <button
+                className={`btn${follow.isFollowing ? "" : " btn-accent-soft"}`}
+                onClick={toggleFollow}
+                disabled={followBusy}
+                aria-pressed={follow.isFollowing}
+              >
+                {follow.isFollowing ? <UserCheck /> : <UserPlus />}
+                {follow.isFollowing ? "Suivi" : "Suivre"}
+              </button>
+              <button className="btn btn-primary" onClick={zapCreator}>
+                <ZapIcon /> Zap ce créateur
+              </button>
+            </div>
           )}
         </div>
         <div className="profile-name">{u.handle}</div>
         <div className="profile-handle">@{u.handle}</div>
         <div className="profile-bio">{u.bio}</div>
+        <div className="profile-follow">
+          <span>
+            <b>{follow.followers}</b> abonné{follow.followers > 1 ? "s" : ""}
+          </span>
+          <span>
+            <b>{follow.following}</b> abonnement{follow.following > 1 ? "s" : ""}
+          </span>
+        </div>
         <div className="profile-wallet">
           <Wallet /> {shortWallet(u.wallet)}
         </div>
@@ -87,6 +133,13 @@ export function ProfileView({ handle }: { handle: string }) {
             {fmtSol(u.received)}
           </div>
           <div className="sb-label">SOL reçus</div>
+        </div>
+        <div className="stat-box">
+          <div className="sb-val accent">
+            <ZapIcon />
+            {fmtSol(u.zapped)}
+          </div>
+          <div className="sb-label">SOL zappés au créateur</div>
         </div>
         <div className="stat-box">
           <div className="sb-val">

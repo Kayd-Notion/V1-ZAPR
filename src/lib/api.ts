@@ -5,7 +5,7 @@ import type {
   ClientPumper,
   ClientUser,
 } from "./client-types";
-import type { Api, LeaderboardPage, LeaderboardParams, ProfilePage, PumpQuote } from "./api-types";
+import type { Api, FollowStats, LeaderboardKind, LeaderboardPage, LeaderboardParams, ProfilePage, PumpQuote } from "./api-types";
 import { FOUNDER_WALLET, MIN_PUMP_SOL, resolvedSplitBps } from "./pump-config";
 import { ApiError } from "./api-error";
 
@@ -45,8 +45,9 @@ export const api: Api = {
   profile: (handle) => req<ProfilePage>(`/api/users/${encodeURIComponent(handle)}`),
 
   // Posts
-  feed: async (cursor, limit = 20) => {
+  feed: async (cursor, limit = 20, following = false) => {
     const p = new URLSearchParams({ limit: String(limit) });
+    if (following) p.set("following", "1");
     if (cursor) p.set("before", cursor);
     const r = await req<{ posts: ClientPost[]; nextCursor: number | null }>(`/api/posts?${p}`);
     return { posts: r.posts, nextCursor: r.nextCursor === null ? null : String(r.nextCursor) };
@@ -80,6 +81,24 @@ export const api: Api = {
       body: JSON.stringify({ amount, signature, anonymous }),
     }),
 
+  // Follows
+  follow: (handle) => req<FollowStats>(`/api/users/${encodeURIComponent(handle)}/follow`, { method: "POST" }),
+  unfollow: (handle) => req<FollowStats>(`/api/users/${encodeURIComponent(handle)}/follow`, { method: "DELETE" }),
+  followingIds: () => req<{ ids: string[] }>("/api/follows"),
+
+  // Creator zaps
+  prepareCreatorZap: async (handle, amountSol) => {
+    await req(`/api/users/${encodeURIComponent(handle)}/zap/prepare`, {
+      method: "POST",
+      body: JSON.stringify({ amount: amountSol }),
+    });
+  },
+  recordCreatorZap: (handle, { amount, signature, anonymous }) =>
+    req<{ user: ClientUser | null }>(`/api/users/${encodeURIComponent(handle)}/zap`, {
+      method: "POST",
+      body: JSON.stringify({ amount, signature, anonymous }),
+    }),
+
   // Comments
   addComment: (postId, text) =>
     req<{ comments: ClientComment[] }>(`/api/posts/${postId}/comments`, {
@@ -88,7 +107,7 @@ export const api: Api = {
     }),
 
   // Leaderboard
-  leaderboard: <K extends "posts" | "creators">(params: LeaderboardParams<K>) => {
+  leaderboard: <K extends LeaderboardKind>(params: LeaderboardParams<K>) => {
     const p = new URLSearchParams({
       kind: params.kind,
       scope: params.scope,

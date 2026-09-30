@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStore } from "@/lib/db";
-import { publicUser } from "@/lib/current-user";
+import { currentUser, publicUser } from "@/lib/current-user";
 
 export const runtime = "nodejs";
 
@@ -14,12 +14,14 @@ export async function GET(
   const user = await store.getUserByHandle(handle);
   if (!user) return NextResponse.json({ error: "Profil introuvable." }, { status: 404 });
 
-  const active = await store.listPosts({ limit: 100, authorId: user.id });
+  const [active, me] = await Promise.all([store.listPosts({ limit: 100, authorId: user.id }), currentUser()]);
+  const follow = await store.followStats(user.id, me?.id ?? null);
 
   const pub = publicUser(user);
   return NextResponse.json({
     user: pub,
     postsCount: active.length,
     active,
+    follow,
   });
 }

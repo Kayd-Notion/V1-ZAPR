@@ -12,6 +12,7 @@ import { ZaprMark } from "./ZaprMark";
 import { ConnectModal } from "./modals/ConnectModal";
 import { ComposerModal } from "./modals/ComposerModal";
 import { PumpModal } from "./modals/PumpModal";
+import { CreatorZapModal } from "./modals/CreatorZapModal";
 import { OnboardModal } from "./modals/OnboardModal";
 
 const NAV = [
@@ -137,6 +138,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {activeModal === "connect" && <ConnectModal />}
       {activeModal === "composer" && <ComposerModal />}
       {activeModal === "pump" && <PumpModal />}
+      {activeModal === "creatorZap" && <CreatorZapModal />}
       {activeModal === "onboard" && <OnboardModal />}
     </>
   );

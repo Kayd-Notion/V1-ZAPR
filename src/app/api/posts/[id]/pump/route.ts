@@ -53,8 +53,8 @@ export async function POST(
   const post = await store.getPost(id, { graceMs: PURGE_GRACE_MS });
   if (!post) return NextResponse.json({ error: "Post introuvable." }, { status: 404 });
 
-  // Idempotency: never record the same on-chain tx twice.
-  if (await store.getPumpBySignature(signature)) {
+  // Idempotency: a transaction is recorded once, as a post zap OR a creator zap.
+  if ((await store.getPumpBySignature(signature)) || (await store.getCreatorZapBySignature(signature))) {
     return NextResponse.json({ error: "Ce zap a déjà été enregistré." }, { status: 409 });
   }
 

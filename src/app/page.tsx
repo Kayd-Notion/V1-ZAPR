@@ -1,5 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { Globe, Users } from "lucide-react";
 import { PostCard } from "@/components/PostCard";
 import { Avatar } from "@/components/Avatar";
 import { TopDegens } from "@/components/TopDegens";
@@ -10,10 +12,15 @@ import { useLive } from "@/context/LiveContext";
 import { api } from "@/lib/api";
 import type { ClientPost } from "@/lib/client-types";
 
+type Tab = "all" | "following";
+
 export default function FeedPage() {
   const { user, requireAuth } = useSession();
   const { openComposer, openConnect, dataVersion } = useUI();
   const live = useLive();
+  const [tab, setTab] = useState<Tab>("all");
+  // Creators the user follows ("Abonnements"): null until loaded.
+  const [followingIds, setFollowingIds] = useState<Set<string> | null>(null);
   const [posts, setPosts] = useState<ClientPost[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -21,11 +28,22 @@ export default function FeedPage() {
   const sentinel = useRef<HTMLDivElement>(null);
   const loadingRef = useRef(false);
 
+  const following = tab === "following";
+
+  // Back to "Tout" when the user signs out.
+  useEffect(() => {
+    if (!user) setTab("all");
+  }, [user]);
+
   const loadInitial = useCallback(async () => {
     setLoading(true);
     setDone(false);
     try {
-      const res = await api.feed();
+      if (following) {
+        const { ids } = await api.followingIds();
+        setFollowingIds(new Set(ids));
+      }
+      const res = await api.feed(undefined, 20, following);
       setPosts(res.posts);
       setCursor(res.nextCursor);
       setDone(res.nextCursor === null);
@@ -34,37 +52,41 @@ export default function FeedPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [following]);
 
   useEffect(() => {
     loadInitial();
   }, [loadInitial, dataVersion]);
 
-  // Live: posts published since the page loaded slide in at the top, and the
-  // zap totals of the posts already shown stay up to date.
+  // Live: posts published since the page loaded slide in at the top (only
+  // from followed creators on "Abonnements"), and the zap totals of the posts
+  // already shown stay up to date.
   useEffect(() => {
     if (!live.posts || loading) return;
+    if (following && !followingIds) return;
     setPosts((prev) => {
       const latest = new Map(live.posts!.map((p) => [p.id, p]));
       const newest = prev[0]?.createdAt ?? 0;
       const shown = new Set(prev.map((p) => p.id));
-      const arrived = live.posts!.filter((p) => !shown.has(p.id) && p.createdAt > newest);
+      const arrived = live.posts!.filter(
+        (p) => !shown.has(p.id) && p.createdAt > newest && (!following || followingIds!.has(p.userId)),
+      );
       return [...arrived, ...prev.map((p) => latest.get(p.id) ?? p)];
     });
-  }, [live.posts, loading]);
+  }, [live.posts, loading, following, followingIds]);
 
   const loadMore = useCallback(async () => {
     if (loadingRef.current || done || cursor === null) return;
     loadingRef.current = true;
     try {
-      const res = await api.feed(cursor);
+      const res = await api.feed(cursor, 20, following);
       setPosts((prev) => [...prev, ...res.posts]);
       setCursor(res.nextCursor);
       if (res.nextCursor === null) setDone(true);
     } finally {
       loadingRef.current = false;
     }
-  }, [cursor, done]);
+  }, [cursor, done, following]);
 
   useEffect(() => {
     const el = sentinel.current;
@@ -75,6 +97,11 @@ export default function FeedPage() {
     obs.observe(el);
     return () => obs.disconnect();
   }, [loadMore]);
+
+  const pickTab = (t: Tab) => {
+    if (t === "following" && !requireAuth("Connecte ton wallet pour voir tes abonnements.")) return;
+    setTab(t);
+  };
 
   const onComposer = () => {
     if (!requireAuth("Connecte ton wallet pour poster.")) return;
@@ -112,12 +139,41 @@ export default function FeedPage() {
           </button>
         </div>
 
+        <div className="feed-tabs" role="tablist">
+          <button role="tab" aria-selected={tab === "all"} className={`feed-tab${tab === "all" ? " active" : ""}`} onClick={() => pickTab("all")}>
+            <Globe /> Tout
+          </button>
+          <button
+            role="tab"
+            aria-selected={tab === "following"}
+            className={`feed-tab${tab === "following" ? " active" : ""}`}
+            onClick={() => pickTab("following")}
+          >
+            <Users /> Abonnements
+          </button>
+        </div>
+
         {loading ? (
           <ZaprLoader label="Chargement du feed…" />
         ) : posts.length === 0 ? (
-          <ZaprEmpty title="C'est calme. Trop calme.">
-            <span>Sois le premier à poster. Le premier zap est pour toi.</span>
-          </ZaprEmpty>
+          following ? (
+            followingIds && followingIds.size === 0 ? (
+              <ZaprEmpty title="Tu ne suis personne. Pour l'instant.">
+                <span>Trouve des degens à suivre dans le Top, c&apos;est gratuit.</span>
+                <Link href="/leaderboard" className="btn btn-primary">
+                  Voir le Top
+                </Link>
+              </ZaprEmpty>
+            ) : (
+              <ZaprEmpty title="Rien de neuf chez tes abonnements.">
+                <span>Leurs prochains posts arriveront ici en direct.</span>
+              </ZaprEmpty>
+            )
+          ) : (
+            <ZaprEmpty title="C'est calme. Trop calme.">
+              <span>Sois le premier à poster. Le premier zap est pour toi.</span>
+            </ZaprEmpty>
+          )
         ) : (
           posts.map((p) => <PostCard key={p.id} post={p} fresh={live.freshIds.has(p.id)} />)
         )}

@@ -39,7 +39,8 @@ dans le navigateur : Storage → ta base → **Open in Neon** → **SQL Editor**
 | `NEXT_PUBLIC_SOLANA_CLUSTER` | `devnet` (défaut) | réseau ; `mainnet-beta` bloque les zaps |
 | `NEXT_PUBLIC_SOLANA_RPC` | vide ou URL Helius/QuickNode | RPC custom |
 | `NEXT_PUBLIC_FOUNDER_WALLET` | adresse devnet du fondateur | reçoit les 30 % |
-| `NEXT_PUBLIC_PUMP_CREATOR_BPS` / `_FOUNDER_BPS` | `7000` / `3000` | ratio |
+| `NEXT_PUBLIC_PUMP_CREATOR_BPS` / `_FOUNDER_BPS` | `7000` / `3000` | ratio des zaps de post |
+| `NEXT_PUBLIC_CREATOR_ZAP_CREATOR_BPS` | `9000` | part créateur des zaps de créateur (le reste va à la plateforme) |
 | `NEXT_PUBLIC_IRYS_NETWORK` | `devnet` | upload des médias (Arweave via Irys) |
 | `NEXT_PUBLIC_SITE_URL` | vide, ou le domaine ZAPR | liens des aperçus de partage |
 
@@ -53,6 +54,13 @@ dans le navigateur : Storage → ta base → **Open in Neon** → **SQL Editor**
   bandeau des créateurs les plus zappés, panneau « Top degens ».
 - **Posts** texte + photo/vidéo (médias sur Arweave, payés en SOL), commentaires.
 - **Zaps** : montants rapides ou libres, aperçu du 70/30, option d'anonymat.
+- **Suivre un créateur** (gratuit) : bouton « Suivre » sur son profil, compteurs
+  abonnés / abonnements, onglet **Abonnements** dans le feed (seulement les posts
+  des créateurs suivis).
+- **Zap ce créateur** : SOL envoyé directement à un créateur (pas à un post),
+  même transaction atomique à deux transferts, partagée **90/10**
+  créateur/plateforme. Classement dédié **Zappés** dans le Top. Aucun effet sur
+  ses posts (ni durée de vie, ni total du post, ni classement « Degens »).
 - **Profil**, **Wallet** (solde devnet + airdrop), **Paramètres** (pseudo, bio,
   confidentialité), **Explorer** (recherche), **Classements** (période Tout /
   24 h / 7 j / 30 j), thème sombre / clair.
@@ -63,6 +71,11 @@ Règles des zaps, vérifiées **dans l'interface et côté serveur** :
 2. **Post expiré** : il faut au moins le montant qui le sauve (≥ 1 h de vie en
    plus) ; le serveur revérifie juste avant la signature.
 3. **Minimum 0,005 SOL** par zap.
+
+Règles des zaps de créateur, vérifiées **dans l'interface et côté serveur** :
+minimum **0,01 SOL** (les deux parts restent au-dessus du minimum de rente
+Solana), **pas de zap à soi-même**, une transaction n'est enregistrée qu'une
+fois (ni deux fois comme zap de créateur, ni à la fois comme zap de post).
 
 ## Vocabulaire et identité
 
@@ -88,9 +101,10 @@ src/
   components/          AppShell (barre, ticker, rail, colonne live), PostCard, LiveColumn, modales…
   context/             SessionContext (wallet), UIContext (thème, modales, toasts), LiveContext (live)
   hooks/usePump.ts     zap de bout en bout : vérif serveur → signature → envoi → enregistrement
+  hooks/useCreatorZap.ts  idem pour un zap de créateur (90/10)
   lib/
     pump.ts            transaction du zap — SEUL module à remplacer par le futur programme Anchor
-    pump-config.ts     ratio 70/30, minimum, wallet plateforme
+    pump-config.ts     ratios 70/30 et 90/10, minimums, wallet plateforme
     pump-rules.ts      « minimum pour sauver un post expiré »
     pump-errors.ts     erreurs wallet/Solana traduites en français
     lifespan(-config).ts  paliers de durée de vie

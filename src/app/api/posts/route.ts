@@ -19,8 +19,16 @@ export async function GET(req: NextRequest) {
   const limit = Math.min(Number(sp.get("limit")) || 20, 50);
   const before = sp.get("before") ? Number(sp.get("before")) : undefined;
 
+  // "Abonnements" feed: posts of the creators the current user follows.
+  let authorIds: string[] | undefined;
+  if (sp.get("following") === "1") {
+    const me = await currentUser();
+    authorIds = me ? await getStore().listFollowingIds(me.id) : [];
+    if (authorIds.length === 0) return NextResponse.json({ posts: [], nextCursor: null });
+  }
+
   await purgeIfDue();
-  const posts = await getStore().listPosts({ limit, before });
+  const posts = await getStore().listPosts({ limit, before, authorIds });
   const nextCursor = posts.length === limit ? posts[posts.length - 1].createdAt : null;
   return NextResponse.json({ posts, nextCursor });
 }

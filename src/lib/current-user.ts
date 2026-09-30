@@ -20,6 +20,7 @@ export function publicUser(u: User) {
     country: u.country,
     received: u.received,
     given: u.given,
+    zapped: u.zapped,
     hidePumpHistory: u.hidePumpHistory,
     anonymizePumps: u.anonymizePumps,
     createdAt: u.createdAt,

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { House, Moon, Plus, Radio, Search, Settings, Sun, Trophy, User, Wallet } from "lucide-react";
@@ -31,7 +31,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const { theme, toggleTheme, openComposer, openConnect, activeModal } = useUI();
-  const { user, requireAuth, logout, walletAddress } = useSession();
+  const { user, status, requireAuth, logout, walletAddress } = useSession();
+
+  // Visitors (wallet not connected) see every bolt of the site grey; each one
+  // lights up on hover. While the session is loading, keep the pre-paint hint.
+  useEffect(() => {
+    if (status === "loading") return;
+    const guest = status === "anonymous" || status === "authenticating";
+    document.documentElement.setAttribute("data-auth", guest ? "guest" : "in");
+  }, [status]);
   const [q, setQ] = useState("");
 
   const onWalletBtn = () => {

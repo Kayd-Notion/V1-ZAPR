@@ -8,12 +8,10 @@ import { useUI } from "@/context/UIContext";
 import { useSession } from "@/context/SessionContext";
 import { useCreatorZap } from "@/hooks/useCreatorZap";
 import { quotePump } from "@/lib/pump";
-import { CREATOR_ZAP_SPLIT, MIN_CREATOR_ZAP_SOL } from "@/lib/pump-config";
+import { CREATOR_ZAP_SPLIT, MIN_CREATOR_ZAP_SOL, QUICK_ZAP_AMOUNTS } from "@/lib/pump-config";
 import { formatSol } from "@/lib/pump-rules";
-import { fmtSol } from "@/lib/format";
 import { IS_MAINNET } from "@/lib/solana";
 
-const QUICK_AMOUNTS = [0.05, 0.1, 0.5, 1];
 const EPS = 1e-9;
 
 /** Zap a creator directly (not a post): 90/10 by default, no effect on posts. */
@@ -43,7 +41,7 @@ export function CreatorZapModal() {
       bumpData();
       setTimeout(() => {
         closeModal();
-        toast(`${fmtSol(safeAmount)} SOL zapped to @${creator.handle}. LFG.`);
+        toast(`${formatSol(safeAmount)} SOL zapped to @${creator.handle}. LFG.`);
       }, 1200);
     } catch (e) {
       setPhase("form");
@@ -58,7 +56,7 @@ export function CreatorZapModal() {
           <ZaprMark className="ps-mark" />
           <h3>Zap sent. LFG.</h3>
           <p className="muted">
-            <b>+{fmtSol(safeAmount)} SOL</b> for @{creator.handle}.
+            <b>+{formatSol(safeAmount)} SOL</b> for @{creator.handle}.
             <br />
             They climb the Zapped creators leaderboard.
           </p>
@@ -80,7 +78,7 @@ export function CreatorZapModal() {
 
           <label className="field-label">How much are you sending?</label>
           <div className="quick-amounts">
-            {QUICK_AMOUNTS.map((a) => (
+            {QUICK_ZAP_AMOUNTS.map((a) => (
               <button key={a} className={`qa-btn${a === amount ? " active" : ""}`} onClick={() => setAmount(a)}>
                 {a}
               </button>
@@ -104,13 +102,13 @@ export function CreatorZapModal() {
               <span>
                 <IconUser /> Creator ({creatorBps / 100}%)
               </span>
-              <b>{fmtSol(split.creatorSol)} SOL</b>
+              <b>{formatSol(split.creatorSol)} SOL</b>
             </div>
             <div className="split-row">
               <span>
                 <IconPlatform /> Platform ({founderBps / 100}%)
               </span>
-              <b>{fmtSol(split.founderSol)} SOL</b>
+              <b>{formatSol(split.founderSol)} SOL</b>
             </div>
             <div className="split-bar">
               <div className="s-creator" style={{ width: `${creatorBps / 100}%` }} />
@@ -118,7 +116,7 @@ export function CreatorZapModal() {
             </div>
             <div className="split-row" style={{ borderTop: "1px solid var(--border-soft)", marginTop: 6, paddingTop: 8 }}>
               <span>Total</span>
-              <b>{fmtSol(safeAmount)} SOL</b>
+              <b>{formatSol(safeAmount)} SOL</b>
             </div>
           </div>
 

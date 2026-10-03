@@ -76,6 +76,9 @@ export const MIN_PUMP_SOL = 0.005;
 // Creator zaps: with a 10% platform share, 0.01 SOL keeps both shares above
 // the rent-exempt minimum of an empty recipient wallet.
 export const MIN_CREATOR_ZAP_SOL = 0.01;
+// Quick amounts offered in both zap windows (post zap and creator zap). All
+// are at or above both minimums above.
+export const QUICK_ZAP_AMOUNTS = [0.01, 0.05, 0.1, 0.5, 1] as const;
 // Rule 2: saving an expired post must give it at least this much life.
 export const PUMP_SAVE_MIN_LIFETIME_SECONDS = 3600;
 // Rule 2: extra margin on the amount shown in the modal, so it is still

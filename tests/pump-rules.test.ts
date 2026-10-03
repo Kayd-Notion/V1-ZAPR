@@ -3,7 +3,13 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { humanizePumpError } from "../src/lib/pump-errors";
 import { formatSol, pumpRequirements, pumpedSolForLifespan } from "../src/lib/pump-rules";
-import { MIN_PUMP_SOL, PUMP_QUOTE_SLACK_SECONDS, PUMP_SAVE_MIN_LIFETIME_SECONDS } from "../src/lib/pump-config";
+import {
+  MIN_CREATOR_ZAP_SOL,
+  MIN_PUMP_SOL,
+  PUMP_QUOTE_SLACK_SECONDS,
+  PUMP_SAVE_MIN_LIFETIME_SECONDS,
+  QUICK_ZAP_AMOUNTS,
+} from "../src/lib/pump-config";
 import { expiresAt, lifespanHours } from "../src/lib/lifespan";
 
 const H = 3_600_000;
@@ -12,7 +18,11 @@ const NOW = Date.parse("2026-09-01T00:00:00Z");
 // ---- Rule 3 ----------------------------------------------------------------
 test("rule 3: MIN_PUMP_SOL is 0.005 and quick amounts (≥ 0.01) are above it", () => {
   assert.equal(MIN_PUMP_SOL, 0.005);
-  for (const quick of [0.01, 0.1, 0.5, 1]) assert.ok(quick >= MIN_PUMP_SOL);
+  assert.deepEqual([...QUICK_ZAP_AMOUNTS], [0.01, 0.05, 0.1, 0.5, 1]);
+  for (const quick of QUICK_ZAP_AMOUNTS) {
+    assert.ok(quick >= MIN_PUMP_SOL, "post zap minimum");
+    assert.ok(quick >= MIN_CREATOR_ZAP_SOL, "creator zap minimum");
+  }
   // Every live post requires at least the global minimum.
   const r = pumpRequirements({ createdAt: NOW - 2 * H, pumped: 0, expiresAt: NOW + 22 * H }, NOW);
   assert.equal(r.status, "active");

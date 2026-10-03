@@ -112,7 +112,7 @@ export interface NotificationCursor {
   id: string;
 }
 
-export type LeaderboardKind = "posts" | "creators" | "zapped";
+export type LeaderboardKind = "posts" | "creators";
 export type LeaderboardScope = "world" | "country";
 
 export interface FeedQuery {
@@ -264,6 +264,4 @@ export interface Store {
   // Leaderboards
   leaderboardPosts(q: LeaderboardQuery): Promise<PostRankEntry[]>;
   leaderboardCreators(q: LeaderboardQuery): Promise<CreatorRankEntry[]>;
-  /** Creators ranked by SOL zapped to them directly (all time or period). */
-  leaderboardZapped(q: LeaderboardQuery): Promise<CreatorRankEntry[]>;
 }

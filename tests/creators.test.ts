@@ -1,4 +1,4 @@
-// Free follows ("Following" feed) and creator zaps (90/10, "Zapped" leaderboard).
+// Free follows ("Following" feed) and creator zaps (90/10, counted in the Creators leaderboard).
 // Runs the demo (file) store on the seed data, in a throwaway data directory.
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -39,7 +39,7 @@ test("follow / unfollow drive the counts and the Abonnements feed", async () => 
   assert.equal((await store.followStats("u2", "u1")).isFollowing, false);
 });
 
-test("creator zaps update totals, rank in Zapped, and never touch posts", async () => {
+test("creator zaps update totals, count in the Creators board, and never touch posts", async () => {
   const { createMemoryStore } = await import("../src/lib/db/memory");
   const store = createMemoryStore();
 
@@ -47,6 +47,11 @@ test("creator zaps update totals, rank in Zapped, and never touch posts", async 
   // Copies: the demo store hands out its live objects.
   const creatorBefore = { ...(await store.getUserById("u2"))! };
   const zapperBefore = { ...(await store.getUserById("u1"))! };
+  const boardTotal = async (id: string) =>
+    (await store.leaderboardCreators({ kind: "creators", scope: "world", limit: 100 })).find((r) => r.user.id === id)?.total ?? 0;
+  const u2Before = await boardTotal("u2");
+  const u3Before = await boardTotal("u3");
+  const t0 = Date.now();
 
   await store.recordCreatorZap({
     creatorUserId: "u2",
@@ -93,28 +98,34 @@ test("creator zaps update totals, rank in Zapped, and never touch posts", async 
     postsBefore.map((p) => [p.id, p.pumped]),
   );
 
-  for (const since of [undefined, Date.now() - 3600_000]) {
-    const board = await store.leaderboardZapped({ kind: "zapped", scope: "world", limit: 10, since });
-    assert.deepEqual(
-      board.map((r) => [r.user.id, r.total]),
-      [
-        ["u2", 0.5],
-        ["u3", 0.1],
-      ],
-    );
-  }
+  // Creators board = share of post zaps + share of direct zaps (90%).
+  const near = (a: number, b: number) => Math.abs(a - b) < 1e-9;
+  assert.ok(near(await boardTotal("u2"), u2Before + 0.45), "u2 gains the creator share of the direct zap");
+  assert.ok(near(await boardTotal("u3"), u3Before + 0.09));
+  // A window starting right before the direct zaps holds exactly them.
+  const recent = await store.leaderboardCreators({ kind: "creators", scope: "world", limit: 10, since: t0 });
+  assert.deepEqual(
+    recent.map((r) => [r.user.id, r.total]),
+    [
+      ["u2", 0.45],
+      ["u3", 0.09],
+    ],
+  );
   // A window that starts after the zaps is empty.
   assert.deepEqual(
-    await store.leaderboardZapped({ kind: "zapped", scope: "world", limit: 10, since: Date.now() + 1000 }),
+    await store.leaderboardCreators({ kind: "creators", scope: "world", limit: 10, since: Date.now() + 1000 }),
     [],
   );
-  // Keyset pagination: the second page starts after the first row.
-  const [first] = await store.leaderboardZapped({ kind: "zapped", scope: "world", limit: 1 });
-  const page2 = await store.leaderboardZapped({
-    kind: "zapped",
+  // Only creators who received something; sorted; keyset pagination continues the order.
+  const all = await store.leaderboardCreators({ kind: "creators", scope: "world", limit: 100 });
+  assert.ok(all.every((r) => r.total > 0));
+  for (let i = 1; i < all.length; i++) assert.ok(all[i - 1].total >= all[i].total);
+  const [first] = await store.leaderboardCreators({ kind: "creators", scope: "world", limit: 1 });
+  const page2 = await store.leaderboardCreators({
+    kind: "creators",
     scope: "world",
     limit: 1,
     cursor: { total: first.cursorTotal, id: first.user.id },
   });
-  assert.deepEqual(page2.map((r) => r.user.id), ["u3"]);
+  assert.deepEqual(page2.map((r) => r.user.id), [all[1].user.id]);
 });

@@ -54,8 +54,8 @@ export interface LeaderboardPage<K extends LeaderboardKind> {
   nextCursor: string | null;
 }
 
-/** posts: by SOL zapped · creators: by SOL received from post zaps · zapped: by SOL zapped to them directly. */
-export type LeaderboardKind = "posts" | "creators" | "zapped";
+/** posts: most zapped posts · creators: most zapped creators (post zaps + direct zaps received). */
+export type LeaderboardKind = "posts" | "creators";
 
 export interface FollowStats {
   followers: number;

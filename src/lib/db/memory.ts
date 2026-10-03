@@ -475,50 +475,25 @@ export function createMemoryStore(): Store {
       });
     },
     async leaderboardCreators(q: LeaderboardQuery) {
+      // Most zapped creators: share of the zaps on their posts + share of the
+      // zaps sent to them directly. All time: post-zap running total plus the
+      // direct-zap log; a period sums both logs over the window.
       const d = await load();
       const byCountry = q.scope === "country" && q.country ? q.country : null;
-      let rows: { id: string; total: number; user: User }[];
-
+      const sums = new Map<string, number>();
+      const add = (id: string, sol: number) => sums.set(id, (sums.get(id) ?? 0) + sol);
       if (q.since === undefined) {
-        rows = d.users.map((u) => ({ id: u.id, total: u.received, user: u }));
+        for (const u of d.users) add(u.id, u.received);
+        for (const z of d.creatorZaps) add(z.creatorUserId, z.creatorAmount);
       } else {
-        // Period: sum the creator share of pumps received in the window.
-        const sums = new Map<string, number>();
-        for (const pm of d.pumps) {
-          if (pm.createdAt < q.since || !pm.creatorUserId) continue;
-          sums.set(pm.creatorUserId, (sums.get(pm.creatorUserId) ?? 0) + pm.creatorAmount);
-        }
-        rows = [];
-        for (const [id, total] of sums) {
-          const user = findUser(d, id);
-          if (user) rows.push({ id, total, user });
-        }
+        for (const pm of d.pumps) if (pm.createdAt >= q.since && pm.creatorUserId) add(pm.creatorUserId, pm.creatorAmount);
+        for (const z of d.creatorZaps) if (z.createdAt >= q.since) add(z.creatorUserId, z.creatorAmount);
       }
-
-      return rows
-        .filter((r) => !byCountry || r.user.country === byCountry)
-        .filter((r) => afterCursor(r.total, r.id, q.cursor))
-        .sort(byTotalThenId)
-        .slice(0, q.limit)
-        .map((r): CreatorRankEntry => ({ user: r.user, total: r.total, cursorTotal: String(r.total) }));
-    },
-    async leaderboardZapped(q: LeaderboardQuery) {
-      const d = await load();
-      const byCountry = q.scope === "country" && q.country ? q.country : null;
-      let rows: { id: string; total: number; user: User }[];
-      if (q.since === undefined) {
-        rows = d.users.filter((u) => u.zapped > 0).map((u) => ({ id: u.id, total: u.zapped, user: u }));
-      } else {
-        const sums = new Map<string, number>();
-        for (const z of d.creatorZaps) {
-          if (z.createdAt < q.since) continue;
-          sums.set(z.creatorUserId, (sums.get(z.creatorUserId) ?? 0) + z.amount);
-        }
-        rows = [];
-        for (const [id, total] of sums) {
-          const user = findUser(d, id);
-          if (user) rows.push({ id, total, user });
-        }
+      const rows: { id: string; total: number; user: User }[] = [];
+      for (const [id, raw] of sums) {
+        const user = findUser(d, id);
+        const total = Math.round(raw * 1e9) / 1e9; // lamport precision, no float noise
+        if (user && total > 0) rows.push({ id, total, user });
       }
       return rows
         .filter((r) => !byCountry || r.user.country === byCountry)

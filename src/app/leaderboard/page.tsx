@@ -24,7 +24,7 @@ const PERIODS: { key: LeaderboardPeriod; label: string; short: string }[] = [
 export default function LeaderboardPage() {
   const router = useRouter();
   const { dataVersion } = useUI();
-  const [kind, setKind] = useState<"posts" | "creators" | "zapped">("posts");
+  const [kind, setKind] = useState<"posts" | "creators">("posts");
   const [scope, setScope] = useState<"world" | "country">("world");
   const [period, setPeriod] = useState<LeaderboardPeriod>("all");
   const [country, setCountry] = useState("FR");
@@ -129,10 +129,7 @@ export default function LeaderboardPage() {
           Posts
         </div>
         <div className={`tab${kind === "creators" ? " active" : ""}`} onClick={() => setKind("creators")}>
-          Degens
-        </div>
-        <div className={`tab${kind === "zapped" ? " active" : ""}`} onClick={() => setKind("zapped")}>
-          Zapped
+          Creators
         </div>
       </div>
 
@@ -234,10 +231,7 @@ export default function LeaderboardPage() {
                 <IconZap />
                 {fmtSol(total)}
               </span>
-              <small>
-                {kind === "zapped" ? "SOL zapped" : "SOL received"}
-                {short ? ` · ${short}` : ""}
-              </small>
+              <small>{short ? `SOL received · ${short}` : "SOL received"}</small>
             </div>
           </div>
         ))

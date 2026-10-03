@@ -36,9 +36,9 @@ function decodeCursor(raw: string): LeaderboardCursor | null {
 }
 
 /**
- * Three leaderboards (posts by SOL zapped, creators by SOL received from post
- * zaps, creators by SOL zapped to them directly), each
- * world or by-country, all-time or over a sliding window (24h / 7d / 30d).
+ * Two leaderboards — the most zapped posts, and the most zapped creators
+ * (their share of the zaps on their posts + of the zaps sent to them
+ * directly) — each world or by-country, all-time or over a sliding window (24h / 7d / 30d).
  * Infinite scroll uses a keyset cursor (not offsets), so rows shifting while
  * pumps come in never cause duplicates or skips between pages.
  * Country defaults to the requester's IP-derived country (never stored).
@@ -47,7 +47,8 @@ export async function GET(req: NextRequest) {
   await purgeIfDue();
   const sp = req.nextUrl.searchParams;
   const rawKind = sp.get("kind");
-  const kind: LeaderboardKind = rawKind === "creators" || rawKind === "zapped" ? rawKind : "posts";
+  // "zapped" was a separate creators board; old links now land on the merged one.
+  const kind: LeaderboardKind = rawKind === "creators" || rawKind === "zapped" ? "creators" : "posts";
   const scope: LeaderboardScope = sp.get("scope") === "country" ? "country" : "world";
   const period = parsePeriod(sp.get("period"));
   const limit = Math.min(Math.max(Number(sp.get("limit")) || 20, 1), 50);
@@ -68,8 +69,8 @@ export async function GET(req: NextRequest) {
   const store = getStore();
   const meta = { kind, scope, period, country: country ?? null };
 
-  if (kind === "creators" || kind === "zapped") {
-    const rows = kind === "creators" ? await store.leaderboardCreators(query) : await store.leaderboardZapped(query);
+  if (kind === "creators") {
+    const rows = await store.leaderboardCreators(query);
     const last = rows[rows.length - 1];
     return NextResponse.json({
       ...meta,

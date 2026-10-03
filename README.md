@@ -70,11 +70,14 @@ textes, messages d'erreur du serveur, nombres (`98.40`), durées (`3d left`,
   des créateurs suivis).
 - **Zap this creator** : SOL envoyé directement à un créateur (pas à un post),
   même transaction atomique à deux transferts, partagée **90/10**
-  créateur/plateforme. Classement dédié **Zapped** dans le Top. Aucun effet sur
-  ses posts (ni durée de vie, ni total du post, ni classement « Degens »).
+  créateur/plateforme. Compte dans le classement **Creators** du Top. Aucun
+  effet sur ses posts (ni durée de vie, ni total du post).
 - **Profil**, **Wallet** (solde devnet + airdrop), **Paramètres** (pseudo, bio,
   confidentialité), **Explorer** (recherche, ouverte par la loupe en haut à gauche),
-  **Classements** (période All time / 24h / 7 days / 30 days), thème sombre.
+  **Classements** : deux onglets, **Posts** (les posts les plus zappés) et
+  **Creators** (les créateurs les plus zappés : leur part des zaps sur leurs
+  posts + leur part des zaps reçus directement) ; période All time / 24h /
+  7 days / 30 days, monde ou par pays ; thème sombre.
 
 Règles des zaps, vérifiées **dans l'interface et côté serveur** :
 

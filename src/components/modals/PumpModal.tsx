@@ -165,7 +165,7 @@ export function PumpModal() {
       ) : (
         <>
           <div className="pump-target">
-            <Avatar id={post.author.id} handle={post.author.handle} size="sm" />
+            <Avatar id={post.author.id} handle={post.author.handle} src={post.author.avatarUrl} size="sm" />
             <div className="pt-text">
               You&apos;re zapping <b>@{post.author.handle}</b>
               <br />&ldquo;{post.text.slice(0, 60)}

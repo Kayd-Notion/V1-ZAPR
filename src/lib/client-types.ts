@@ -13,7 +13,16 @@ export interface ClientUser {
   zapped: number;
   hidePumpHistory: boolean;
   anonymizePumps: boolean;
+  avatarUrl: string | null;
   createdAt: number;
+}
+
+/** How a user appears next to their content. */
+export interface ClientUserRef {
+  id: string;
+  handle: string;
+  wallet: string;
+  avatarUrl: string | null;
 }
 
 export interface ClientPost {
@@ -29,7 +38,7 @@ export interface ClientPost {
   comments: number;
   country: string;
   tags: string[];
-  author: { id: string; handle: string; wallet: string; bio: string };
+  author: ClientUserRef & { bio: string };
 }
 
 export interface ClientPumper {
@@ -40,7 +49,7 @@ export interface ClientPumper {
   /** Rule 1: the creator pumped their own post ("auto-pump" badge). */
   isSelfPump?: boolean;
   label: string;
-  author: { handle: string; wallet: string } | null;
+  author: ClientUserRef | null;
 }
 
 export interface ClientComment {
@@ -49,7 +58,7 @@ export interface ClientComment {
   userId: string;
   text: string;
   createdAt: number;
-  author: { id: string; handle: string; wallet: string };
+  author: ClientUserRef;
 }
 
 export type LeaderboardPeriod = "all" | "24h" | "7d" | "30d";
@@ -61,7 +70,7 @@ export interface LeaderboardPostItem {
   total: number;
   deleted: boolean;
   post: ClientPost | null;
-  creator: { id: string; handle: string; wallet: string } | null;
+  creator: ClientUserRef | null;
 }
 
 export interface LeaderboardCreatorItem {
@@ -78,7 +87,7 @@ export interface ClientNotification {
   kind: NotificationKind;
   createdAt: number;
   /** null for an anonymous zap. */
-  actor: { id: string; handle: string } | null;
+  actor: { id: string; handle: string; avatarUrl: string | null } | null;
   /** Zaps: SOL the user received (creator share). */
   amount: number | null;
   /** The post, if it is still alive. */

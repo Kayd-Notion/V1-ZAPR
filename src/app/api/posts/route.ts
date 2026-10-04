@@ -3,6 +3,7 @@ import { getStore, purgeIfDue } from "@/lib/db";
 import { currentUser } from "@/lib/current-user";
 import { countryFromRequest } from "@/lib/geo";
 import type { MediaType } from "@/lib/db/types";
+import { isIrysUrl } from "@/lib/media-url";
 
 export const runtime = "nodejs";
 
@@ -47,7 +48,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Text too long (max ${MAX_TEXT}).` }, { status: 400 });
   }
 
-  const mediaUrl = typeof body?.mediaUrl === "string" ? body.mediaUrl : null;
+  const mediaUrl = isIrysUrl(body?.mediaUrl) ? body.mediaUrl : null;
+  if (body?.mediaUrl && !mediaUrl) {
+    return NextResponse.json({ error: "Media must be uploaded through ZAPR." }, { status: 400 });
+  }
   const mediaType =
     body?.mediaType === "image" || body?.mediaType === "video"
       ? (body.mediaType as MediaType)

@@ -1107,6 +1107,47 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
 .welcome-list b { color: var(--text); }
 .welcome-net { margin: 0 0 16px; padding: 8px 12px; border-radius: var(--radius-sm); background: var(--accent-soft); font-size: 13.5px; }
 
+/* -------- Posts: rich text, menu, share, comments, avatars, search ----- */
+.avatar.has-img { overflow: hidden; background: var(--bg-hover); }
+.avatar.has-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.rt-link { color: var(--accent-text); font-weight: 600; }
+.rt-link:hover { text-decoration: underline; }
+.post-menu { position: relative; }
+.pm-list {
+  position: absolute; right: 0; top: calc(100% + 4px); z-index: 40; min-width: 220px; padding: 6px;
+  background: var(--bg-elev); border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: var(--shadow);
+}
+/* In a post card the trigger sits on the left: open to the right. */
+.post-actions .pm-list { left: 0; right: auto; }
+.subbar-actions { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+.subbar-actions .pm-trigger { width: 38px; height: 38px; justify-content: center; }
+.pm-item {
+  width: 100%; display: flex; align-items: flex-start; gap: 10px; padding: 9px 10px; border-radius: var(--radius-xs);
+  font-size: 14px; font-weight: 600; text-align: left; color: var(--text);
+}
+.pm-item svg.icon { flex: none; width: 17px; height: 17px; margin-top: 1px; }
+.pm-item small { display: block; font-size: 12px; font-weight: 500; color: var(--text-faint); margin-top: 2px; }
+.pm-item:hover:not(:disabled) { background: var(--bg-hover); }
+.pm-item:disabled { opacity: 0.55; cursor: not-allowed; }
+.pm-item.danger { color: var(--danger); }
+.pm-item.danger.confirm { background: rgba(var(--danger-rgb), 0.14); }
+.comment .c-head .name { cursor: pointer; }
+.c-del {
+  margin-left: auto; display: inline-flex; align-items: center; gap: 4px; padding: 3px 6px; border-radius: var(--radius-xs);
+  color: var(--text-faint); font-size: 12px; font-weight: 700;
+}
+.c-del svg.icon { width: 14px; height: 14px; }
+.c-del:hover, .c-del.confirm { color: var(--danger); background: rgba(var(--danger-rgb), 0.12); }
+.avatar-edit { display: flex; align-items: center; gap: 16px; padding: 16px 16px 4px; }
+.ae-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.ae-actions small { flex-basis: 100%; font-size: 12.5px; color: var(--text-faint); }
+.search-users { border-bottom: 1px solid var(--border-soft); }
+.su-row { display: flex; align-items: center; gap: 12px; padding: 10px 20px; color: var(--text); }
+.su-row:hover { background: var(--bg-hover); }
+.su-text { display: flex; flex-direction: column; min-width: 0; }
+.su-text b { font-size: 14.5px; }
+.su-text small { font-size: 12.5px; color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
 @media (max-width: 1360px) {
   .home-grid { grid-template-columns: minmax(0, 1fr); }
   .home-grid > .panel { display: none; }

@@ -19,7 +19,12 @@ export interface User {
   hidePumpHistory: boolean;
   /** Privacy: appear anonymous in pumpers lists by default. */
   anonymizePumps: boolean;
+  /** Profile picture (Arweave URL through the Irys gateway), or null for initials. */
+  avatarUrl: string | null;
 }
+
+/** How a user appears next to their content (posts, zaps, comments…). */
+export type UserRef = Pick<User, "id" | "handle" | "wallet" | "avatarUrl">;
 
 export interface Post {
   id: string;
@@ -97,7 +102,7 @@ export interface Notification {
   kind: NotificationKind;
   createdAt: number;
   /** Who did it; null for an anonymous zap (or a deleted account). */
-  actor: Pick<User, "id" | "handle"> | null;
+  actor: Pick<User, "id" | "handle" | "avatarUrl"> | null;
   /** Zaps: SOL the user received (creator share). */
   amount: number | null;
   /** Post zaps and comments: the post, if it is still alive. */
@@ -156,7 +161,7 @@ export interface PostRankEntry {
   /** Exact sort key for the next cursor. */
   cursorTotal: string;
   post: PostWithAuthor | null;
-  creator: Pick<User, "id" | "handle" | "wallet"> | null;
+  creator: UserRef | null;
 }
 
 export interface CreatorRankEntry {
@@ -167,16 +172,24 @@ export interface CreatorRankEntry {
 
 /** A post enriched with its author, ready for the UI. */
 export interface PostWithAuthor extends Post {
-  author: Pick<User, "id" | "handle" | "wallet" | "bio">;
+  author: UserRef & Pick<User, "bio">;
 }
 
 /** A pump enriched with its author. */
 export interface PumpWithAuthor extends Pump {
-  author: Pick<User, "id" | "handle" | "wallet">;
+  author: UserRef;
 }
 
 export interface CommentWithAuthor extends Comment {
-  author: Pick<User, "id" | "handle" | "wallet">;
+  author: UserRef;
+}
+
+/** Why a post could not be deleted (only its author can, and only before any zap). */
+export type DeletePostResult = "deleted" | "not_found" | "not_author" | "has_zaps";
+
+export interface SearchResult {
+  posts: PostWithAuthor[];
+  users: User[];
 }
 
 export interface Store {
@@ -192,7 +205,7 @@ export interface Store {
   }): Promise<User>;
   updateUser(
     id: string,
-    patch: Partial<Pick<User, "bio" | "handle" | "hidePumpHistory" | "anonymizePumps">>,
+    patch: Partial<Pick<User, "bio" | "handle" | "hidePumpHistory" | "anonymizePumps" | "avatarUrl">>,
   ): Promise<User>;
 
   // Posts
@@ -216,6 +229,13 @@ export interface Store {
    * log is kept: it is the record of money that moved and feeds creator totals.
    */
   purgeExpired(before: number): Promise<number>;
+  /**
+   * Deletes a post (with its comments) for its author, only while it has
+   * received no zap: once SOL moved for it, the post stays until it expires.
+   */
+  deletePost(postId: string, userId: string): Promise<DeletePostResult>;
+  /** Live posts whose text or tags match, and users whose handle matches. */
+  search(query: string, limit: number): Promise<SearchResult>;
 
   // Pumps
   recordPump(input: {
@@ -233,6 +253,8 @@ export interface Store {
   // Comments
   addComment(input: { postId: string; userId: string; text: string }): Promise<Comment>;
   listComments(postId: string): Promise<CommentWithAuthor[]>;
+  /** The comment's author or the post's author may delete it. False if not found / not allowed. */
+  deleteComment(commentId: string, userId: string): Promise<boolean>;
 
   // Follows (free)
   follow(followerId: string, followeeId: string): Promise<void>;

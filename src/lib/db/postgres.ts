@@ -13,6 +13,7 @@ import type {
   CommentWithAuthor,
   CreatorRankEntry,
   CreatorZap,
+  DeletePostResult,
   FeedQuery,
   LeaderboardQuery,
   Notification,
@@ -93,6 +94,7 @@ function rowToUser(r: Row): User {
     zapped: Number(r.zapped ?? 0),
     hidePumpHistory: r.hide_pump_history,
     anonymizePumps: r.anonymize_pumps,
+    avatarUrl: r.avatar_url ?? null,
   };
 }
 
@@ -108,7 +110,13 @@ function rowToPostWithAuthor(r: Row): PostWithAuthor {
     comments: r.comments,
     country: r.country,
     tags: r.tags ?? [],
-    author: { id: r.author_id, handle: r.author_handle, wallet: r.author_wallet, bio: r.author_bio },
+    author: {
+      id: r.author_id,
+      handle: r.author_handle,
+      wallet: r.author_wallet,
+      bio: r.author_bio,
+      avatarUrl: r.author_avatar ?? null,
+    },
   };
 }
 
@@ -184,7 +192,9 @@ function rowToPostRank(r: Row): PostRankEntry {
     total: Number(r.rank_total),
     cursorTotal: String(r.rank_total),
     post: r.id ? rowToPostWithAuthor(r) : null,
-    creator: r.author_id ? { id: r.author_id, handle: r.author_handle, wallet: r.author_wallet } : null,
+    creator: r.author_id
+      ? { id: r.author_id, handle: r.author_handle, wallet: r.author_wallet, avatarUrl: r.author_avatar ?? null }
+      : null,
   };
 }
 
@@ -221,7 +231,8 @@ export function createPostgresStore(): Store {
           bio = coalesce(${patch.bio ?? null}, bio),
           handle = coalesce(${patch.handle ?? null}, handle),
           hide_pump_history = coalesce(${patch.hidePumpHistory ?? null}, hide_pump_history),
-          anonymize_pumps = coalesce(${patch.anonymizePumps ?? null}, anonymize_pumps)
+          anonymize_pumps = coalesce(${patch.anonymizePumps ?? null}, anonymize_pumps),
+          avatar_url = ${"avatarUrl" in patch ? db`${patch.avatarUrl ?? null}` : db`avatar_url`}
         where id = ${id}
         returning *`;
       if (!rows[0]) throw new Error("user not found");
@@ -255,7 +266,7 @@ export function createPostgresStore(): Store {
       if (!UUID_RE.test(id)) return null;
       const aliveAfter = Date.now() - (opts?.graceMs ?? 0);
       const rows = await db`
-        select p.*, u.id as author_id, u.handle as author_handle, u.wallet as author_wallet, u.bio as author_bio
+        select p.*, u.id as author_id, u.handle as author_handle, u.wallet as author_wallet, u.bio as author_bio, u.avatar_url as author_avatar
         from posts p join users u on u.id = p.user_id
         where p.id = ${id} and p.expires_at > ${aliveAfter} limit 1`;
       return rows[0] ? rowToPostWithAuthor(rows[0]) : null;
@@ -263,7 +274,7 @@ export function createPostgresStore(): Store {
     async listPosts(q: FeedQuery) {
       const db = await getSql();
       const rows = await db`
-        select p.*, u.id as author_id, u.handle as author_handle, u.wallet as author_wallet, u.bio as author_bio
+        select p.*, u.id as author_id, u.handle as author_handle, u.wallet as author_wallet, u.bio as author_bio, u.avatar_url as author_avatar
         from posts p join users u on u.id = p.user_id
         where p.expires_at > ${Date.now()}
           ${q.authorId ? db`and p.user_id = ${q.authorId}` : db``}
@@ -316,6 +327,45 @@ export function createPostgresStore(): Store {
       const rows = await db`delete from posts where expires_at <= ${before} returning id`;
       return rows.length;
     },
+    async deletePost(postId, userId): Promise<DeletePostResult> {
+      const db = await getSql();
+      if (!UUID_RE.test(postId)) return "not_found";
+      // One statement: the zap check and the delete can't be split by a zap.
+      const rows = await db`
+        delete from posts p
+        where p.id = ${postId} and p.user_id = ${userId} and p.pumped = 0
+          and not exists (select 1 from pumps pm where pm.post_id = p.id)
+        returning p.id`;
+      if (rows.length) return "deleted";
+      const [p] = await db`select user_id from posts where id = ${postId} and expires_at > ${Date.now()}`;
+      if (!p) return "not_found";
+      return p.user_id === userId ? "has_zaps" : "not_author";
+    },
+    async search(query, limit) {
+      const db = await getSql();
+      const q = query.trim().toLowerCase();
+      if (!q) return { posts: [], users: [] };
+      // Literal match: % and _ typed by the user are not wildcards.
+      const like = `%${q.replace(/[\\%_]/g, (c) => "\\" + c)}%`;
+      const tag = q.startsWith("#") ? q : `#${q}`;
+      const handleLike = `%${q.replace(/^@/, "").replace(/[\\%_]/g, (c) => "\\" + c)}%`;
+      const [posts, users] = await Promise.all([
+        db`
+          select p.*, u.id as author_id, u.handle as author_handle, u.wallet as author_wallet, u.bio as author_bio,
+                 u.avatar_url as author_avatar
+          from posts p join users u on u.id = p.user_id
+          where p.expires_at > ${Date.now()}
+            and (p.text ilike ${like} or ${tag} = any(p.tags) or u.handle ilike ${handleLike})
+          order by p.pumped desc, p.created_at desc
+          limit ${limit}`,
+        db`
+          select * from users
+          where handle ilike ${handleLike}
+          order by received desc, handle asc
+          limit ${Math.min(limit, 10)}`,
+      ]);
+      return { posts: posts.map(rowToPostWithAuthor), users: users.map(rowToUser) };
+    },
     async getPumpBySignature(signature) {
       const db = await getSql();
       const rows = await db`select * from pumps where signature = ${signature} limit 1`;
@@ -324,14 +374,14 @@ export function createPostgresStore(): Store {
     async listPumpers(postId) {
       const db = await getSql();
       const rows = await db`
-        select pm.*, u.id as author_id, u.handle as author_handle, u.wallet as author_wallet
+        select pm.*, u.id as author_id, u.handle as author_handle, u.wallet as author_wallet, u.avatar_url as author_avatar
         from pumps pm join users u on u.id = pm.pumper_user_id
         where pm.post_id = ${postId}
         order by pm.created_at desc`;
       return rows.map(
         (r): PumpWithAuthor => ({
           ...rowToPump(r),
-          author: { id: r.author_id, handle: r.author_handle, wallet: r.author_wallet },
+          author: { id: r.author_id, handle: r.author_handle, wallet: r.author_wallet, avatarUrl: r.author_avatar ?? null },
         }),
       );
     },
@@ -359,7 +409,7 @@ export function createPostgresStore(): Store {
     async listComments(postId) {
       const db = await getSql();
       const rows = await db`
-        select c.*, u.id as author_id, u.handle as author_handle, u.wallet as author_wallet
+        select c.*, u.id as author_id, u.handle as author_handle, u.wallet as author_wallet, u.avatar_url as author_avatar
         from comments c join users u on u.id = c.user_id
         where c.post_id = ${postId}
         order by c.created_at desc`;
@@ -370,9 +420,24 @@ export function createPostgresStore(): Store {
           userId: r.user_id,
           text: r.text,
           createdAt: Number(r.created_at),
-          author: { id: r.author_id, handle: r.author_handle, wallet: r.author_wallet },
+          author: { id: r.author_id, handle: r.author_handle, wallet: r.author_wallet, avatarUrl: r.author_avatar ?? null },
         }),
       );
+    },
+
+    async deleteComment(commentId, userId) {
+      const db = await getSql();
+      if (!UUID_RE.test(commentId)) return false;
+      return db.begin(async (tx) => {
+        const rows = await tx`
+          delete from comments c
+          using posts p
+          where c.id = ${commentId} and p.id = c.post_id and (c.user_id = ${userId} or p.user_id = ${userId})
+          returning c.post_id`;
+        if (!rows[0]) return false;
+        await tx`update posts set comments = greatest(comments - 1, 0) where id = ${rows[0].post_id}`;
+        return true;
+      });
     },
 
     async follow(followerId, followeeId) {
@@ -425,7 +490,7 @@ export function createPostgresStore(): Store {
       const db = await getSql();
       const now = Date.now();
       const rows = await db`
-        select n.*, u.handle as actor_handle, p.text as post_text
+        select n.*, u.handle as actor_handle, u.avatar_url as actor_avatar, p.text as post_text
         from (${notificationEvents(db, userId)}) n
         left join users u on u.id = n.actor_id and not n.anonymous
         left join posts p on p.id = n.post_id and p.expires_at > ${now}
@@ -438,7 +503,7 @@ export function createPostgresStore(): Store {
           id: r.nid,
           kind: r.kind as NotificationKind,
           createdAt: Number(r.created_at),
-          actor: r.actor_handle ? { id: r.actor_id, handle: r.actor_handle } : null,
+          actor: r.actor_handle ? { id: r.actor_id, handle: r.actor_handle, avatarUrl: r.actor_avatar ?? null } : null,
           amount: r.amount === null ? null : Number(r.amount),
           postId: r.post_text === null ? null : r.post_id,
           postText: r.post_text ?? null,
@@ -475,7 +540,7 @@ export function createPostgresStore(): Store {
         // string round-trips exactly, so the keyset equality is safe).
         const rows = await db`
           select p.*, p.id as rank_post_id, p.pumped as rank_total,
-                 u.id as author_id, u.handle as author_handle, u.wallet as author_wallet, u.bio as author_bio
+                 u.id as author_id, u.handle as author_handle, u.wallet as author_wallet, u.bio as author_bio, u.avatar_url as author_avatar
           from posts p join users u on u.id = p.user_id
           where p.expires_at > ${Date.now()}
             ${country ? db`and p.country = ${country}` : db``}
@@ -497,7 +562,7 @@ export function createPostgresStore(): Store {
           group by pm.post_id, pm.creator_user_id
         )
         select p.*, agg.post_id as rank_post_id, agg.total::text as rank_total,
-               u.id as author_id, u.handle as author_handle, u.wallet as author_wallet, u.bio as author_bio
+               u.id as author_id, u.handle as author_handle, u.wallet as author_wallet, u.bio as author_bio, u.avatar_url as author_avatar
         from agg
         join posts p on p.id = agg.post_id
         join users u on u.id = p.user_id

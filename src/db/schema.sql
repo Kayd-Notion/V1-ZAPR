@@ -22,6 +22,8 @@ create index if not exists users_zapped_id_idx on users (zapped desc, id);
 create index if not exists users_country_idx on users (country);
 -- When the user last opened their notifications (ms epoch, 0 = never).
 alter table users add column if not exists notifications_seen_at bigint not null default 0;
+-- Profile picture (Arweave URL through the Irys gateway); null = initials.
+alter table users add column if not exists avatar_url text;
 
 create table if not exists posts (
   id          uuid primary key default gen_random_uuid(),

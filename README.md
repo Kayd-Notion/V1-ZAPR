@@ -69,6 +69,19 @@ textes, messages d'erreur du serveur, nombres (`98.40`), durées (`3d left`,
   panneau « Top degens ».
 - **Posts** texte + photo/vidéo (médias sur Arweave, payés en SOL), commentaires.
   On poste avec le **+** jaune (rail de gauche sur ordinateur, bouton flottant sur mobile).
+  Les **#tags** et **@pseudos** sont cliquables (recherche / profil). Le serveur
+  n'accepte que des médias hébergés via Irys (`src/lib/media-url.ts`).
+- **Partager** : feuille de partage du téléphone, sinon lien copié. Chaque post a
+  son **aperçu de partage** (titre « @pseudo on ZAPR », texte, image générée avec
+  le total zappé et le temps restant : `src/app/post/[id]/opengraph-image.tsx`).
+- **Supprimer** (menu « ⋯ ») : son propre post **tant qu'il n'a reçu aucun zap**
+  (après, il reste jusqu'à expiration : ceux qui ont payé gardent ce qu'ils ont
+  payé) ; ses commentaires, et les commentaires sous ses posts. Deuxième appui
+  pour confirmer ; vérifié côté serveur.
+- **Photo de profil** (Settings) : recadrée en 400×400 dans le navigateur, stockée
+  sur Arweave (payée en SOL comme les médias), affichée partout ; initiales sinon.
+- **Recherche** (loupe) : côté serveur, sur tous les posts vivants (texte, #tag,
+  auteur) et les pseudos.
 - **Zaps** : montants rapides ou libres, aperçu du 70/30, option d'anonymat.
 - **Notifications** (rail de gauche ; cloche en haut sur mobile) : quelqu'un zappe
   un de tes posts, te zappe directement, te suit ou commente un de tes posts.
@@ -84,7 +97,7 @@ textes, messages d'erreur du serveur, nombres (`98.40`), durées (`3d left`,
   créateur/plateforme. Compte dans le classement **Creators** du Top. Aucun
   effet sur ses posts (ni durée de vie, ni total du post).
 - **Profil**, **Wallet** (solde devnet + airdrop), **Paramètres** (pseudo, bio,
-  confidentialité), **Explorer** (recherche, ouverte par la loupe en haut à gauche),
+  confidentialité), **Explorer** (ouvert par la loupe en haut à gauche),
   **Classements** : deux onglets, **Posts** (les posts les plus zappés) et
   **Creators** (les créateurs les plus zappés : leur part des zaps sur leurs
   posts + leur part des zaps reçus directement) ; période All time / 24h /

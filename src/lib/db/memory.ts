@@ -16,6 +16,7 @@ import type {
   CommentWithAuthor,
   CreatorRankEntry,
   CreatorZap,
+  DeletePostResult,
   LeaderboardCursor,
   PostRankEntry,
   FeedQuery,
@@ -74,7 +75,10 @@ async function load(): Promise<DbShape> {
       db.follows ??= [];
       db.creatorZaps ??= [];
       db.notificationsSeenAt ??= {};
-      for (const u of db.users) u.zapped ??= 0;
+      for (const u of db.users) {
+        u.zapped ??= 0;
+        u.avatarUrl ??= null;
+      }
       if (backfillPumpSnapshots(db)) await persistNow(db);
     } catch {
       db = { ...buildSeed(), follows: [], creatorZaps: [], notificationsSeenAt: {} };
@@ -128,15 +132,19 @@ function persist(): void {
   writeChain = writeChain.then(() => (db ? persistNow(db) : Promise.resolve())).catch(() => {});
 }
 
+function refOf(u: User) {
+  return { id: u.id, handle: u.handle, wallet: u.wallet, avatarUrl: u.avatarUrl };
+}
+
 function authorOf(u: User) {
-  return { id: u.id, handle: u.handle, wallet: u.wallet, bio: u.bio };
+  return { ...refOf(u), bio: u.bio };
 }
 
 /** Everything that happened to `userId`, newest first (own actions left out). */
 function notificationEvents(d: DbShape, userId: string, now: number): Notification[] {
   const actor = (id: string) => {
     const u = d.users.find((x) => x.id === id);
-    return u ? { id: u.id, handle: u.handle } : null;
+    return u ? { id: u.id, handle: u.handle, avatarUrl: u.avatarUrl } : null;
   };
   const livePost = (id: string) => d.posts.find((p) => p.id === id && isAlive(p, now)) ?? null;
   const out: Notification[] = [];
@@ -214,6 +222,7 @@ export function createMemoryStore(): Store {
         zapped: 0,
         hidePumpHistory: false,
         anonymizePumps: false,
+        avatarUrl: null,
       };
       d.users.push(user);
       persist();
@@ -311,6 +320,41 @@ export function createMemoryStore(): Store {
       persist();
       return dead.size;
     },
+    async deletePost(postId, userId): Promise<DeletePostResult> {
+      const d = await load();
+      const post = d.posts.find((p) => p.id === postId && isAlive(p));
+      if (!post) return "not_found";
+      if (post.userId !== userId) return "not_author";
+      if (post.pumped > 0 || d.pumps.some((pm) => pm.postId === postId)) return "has_zaps";
+      d.posts = d.posts.filter((p) => p.id !== postId);
+      d.comments = d.comments.filter((c) => c.postId !== postId);
+      persist();
+      return "deleted";
+    },
+    async search(query, limit) {
+      const d = await load();
+      const q = query.trim().toLowerCase();
+      if (!q) return { posts: [], users: [] };
+      const tag = q.startsWith("#") ? q : `#${q}`;
+      const h = q.replace(/^@/, "");
+      const now = Date.now();
+      const posts = d.posts
+        .filter((p) => isAlive(p, now))
+        .map((p) => ({ p, author: findUser(d, p.userId) }))
+        .filter(
+          ({ p, author }) =>
+            author &&
+            (p.text.toLowerCase().includes(q) || p.tags.includes(tag) || author.handle.toLowerCase().includes(h)),
+        )
+        .sort((a, b) => b.p.pumped - a.p.pumped || b.p.createdAt - a.p.createdAt)
+        .slice(0, limit)
+        .map(({ p, author }) => ({ ...p, author: authorOf(author!) }));
+      const users = d.users
+        .filter((u) => u.handle.toLowerCase().includes(h))
+        .sort((a, b) => b.received - a.received || a.handle.localeCompare(b.handle))
+        .slice(0, Math.min(limit, 10));
+      return { posts, users };
+    },
     async getPumpBySignature(signature) {
       const d = await load();
       return d.pumps.find((p) => p.signature === signature) || null;
@@ -323,7 +367,7 @@ export function createMemoryStore(): Store {
         .map((p) => {
           const author = findUser(d, p.pumperUserId);
           return author
-            ? { ...p, author: { id: author.id, handle: author.handle, wallet: author.wallet } }
+            ? { ...p, author: refOf(author) }
             : null;
         })
         .filter((x): x is PumpWithAuthor => x !== null);
@@ -353,10 +397,22 @@ export function createMemoryStore(): Store {
         .map((c) => {
           const author = findUser(d, c.userId);
           return author
-            ? { ...c, author: { id: author.id, handle: author.handle, wallet: author.wallet } }
+            ? { ...c, author: refOf(author) }
             : null;
         })
         .filter((x): x is CommentWithAuthor => x !== null);
+    },
+
+    async deleteComment(commentId, userId) {
+      const d = await load();
+      const c = d.comments.find((x) => x.id === commentId);
+      if (!c) return false;
+      const post = d.posts.find((p) => p.id === c.postId);
+      if (c.userId !== userId && post?.userId !== userId) return false;
+      d.comments = d.comments.filter((x) => x.id !== commentId);
+      if (post) post.comments = Math.max(0, post.comments - 1);
+      persist();
+      return true;
     },
 
     async follow(followerId, followeeId) {
@@ -470,7 +526,7 @@ export function createMemoryStore(): Store {
           total: r.total,
           cursorTotal: String(r.total),
           post: post && author ? { ...post, author: authorOf(author) } : null,
-          creator: creator ? { id: creator.id, handle: creator.handle, wallet: creator.wallet } : null,
+          creator: creator ? refOf(creator) : null,
         };
       });
     },

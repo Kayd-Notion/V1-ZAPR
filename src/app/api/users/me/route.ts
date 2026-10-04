@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { currentUser, publicUser } from "@/lib/current-user";
 import { getStore } from "@/lib/db";
 import { normalizeHandle } from "@/lib/auth";
+import { isIrysUrl } from "@/lib/media-url";
 
 export const runtime = "nodejs";
 
@@ -17,6 +18,13 @@ export async function PATCH(req: NextRequest) {
   if (typeof body?.bio === "string") patch.bio = body.bio.slice(0, 240);
   if (typeof body?.hidePumpHistory === "boolean") patch.hidePumpHistory = body.hidePumpHistory;
   if (typeof body?.anonymizePumps === "boolean") patch.anonymizePumps = body.anonymizePumps;
+  // Profile picture: an uploaded Arweave URL, or null to go back to initials.
+  if (body && "avatarUrl" in body) {
+    if (body.avatarUrl !== null && !isIrysUrl(body.avatarUrl)) {
+      return NextResponse.json({ error: "The picture must be uploaded through ZAPR." }, { status: 400 });
+    }
+    patch.avatarUrl = body.avatarUrl;
+  }
 
   if (typeof body?.handle === "string" && body.handle.trim()) {
     const handle = normalizeHandle(body.handle);

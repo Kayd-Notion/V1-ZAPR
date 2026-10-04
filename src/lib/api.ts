@@ -74,6 +74,8 @@ export const api: Api = {
     }),
   post: (id) =>
     req<{ post: ClientPost; pumpers: ClientPumper[]; comments: ClientComment[] }>(`/api/posts/${id}`),
+  deletePost: (id) => req<{ ok: boolean }>(`/api/posts/${id}`, { method: "DELETE" }),
+  search: (q) => req<{ posts: ClientPost[]; users: ClientUser[] }>(`/api/search?q=${encodeURIComponent(q)}`),
 
   // Pump
   pumpConfig: async () => {
@@ -120,6 +122,9 @@ export const api: Api = {
       method: "POST",
       body: JSON.stringify({ text }),
     }),
+
+  deleteComment: (postId, commentId) =>
+    req<{ comments: ClientComment[] }>(`/api/posts/${postId}/comments/${commentId}`, { method: "DELETE" }),
 
   // Leaderboard
   leaderboard: <K extends LeaderboardKind>(params: LeaderboardParams<K>) => {

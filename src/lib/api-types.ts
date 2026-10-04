@@ -87,7 +87,7 @@ export interface Api {
   // Users
   onboard(handle: string, bio?: string): Promise<{ user: ClientUser }>;
   updateMe(
-    patch: Partial<Pick<ClientUser, "bio" | "handle" | "hidePumpHistory" | "anonymizePumps">>,
+    patch: Partial<Pick<ClientUser, "bio" | "handle" | "hidePumpHistory" | "anonymizePumps" | "avatarUrl">>,
   ): Promise<{ user: ClientUser }>;
   profile(handle: string): Promise<ProfilePage>;
 
@@ -121,6 +121,10 @@ export interface Api {
   uploadMedia(file: File, walletProvider?: unknown): Promise<UploadedMedia>;
   createPost(input: { text: string; media?: UploadedMedia | null }): Promise<{ post: ClientPost }>;
   post(id: string): Promise<{ post: ClientPost; pumpers: ClientPumper[]; comments: ClientComment[] }>;
+  /** Author only, and only while the post has no zap (ApiError code has_zaps otherwise). */
+  deletePost(id: string): Promise<{ ok: boolean }>;
+  /** Live posts (text, #tags, author) and users (handle). */
+  search(q: string): Promise<{ posts: ClientPost[]; users: ClientUser[] }>;
 
   // Pump
   pumpConfig(): Promise<PumpConfig>;
@@ -139,6 +143,8 @@ export interface Api {
 
   // Comments
   addComment(postId: string, text: string): Promise<{ comments: ClientComment[] }>;
+  /** The comment's author or the post's author. Returns the updated list. */
+  deleteComment(postId: string, commentId: string): Promise<{ comments: ClientComment[] }>;
 
   // Leaderboard
   leaderboard<K extends LeaderboardKind>(params: LeaderboardParams<K>): Promise<LeaderboardPage<K>>;

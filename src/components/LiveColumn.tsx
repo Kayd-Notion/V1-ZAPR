@@ -114,7 +114,7 @@ function LiveCard({ post, now, fresh }: { post: ClientPost; now: number; fresh: 
           // eslint-disable-next-line @next/next/no-img-element
           <img src={post.mediaUrl} alt="" loading="lazy" />
         ) : (
-          <Avatar id={post.author.id} handle={post.author.handle} />
+          <Avatar id={post.author.id} handle={post.author.handle} src={post.author.avatarUrl} />
         )}
       </div>
       <div className="lc-body">

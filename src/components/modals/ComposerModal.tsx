@@ -112,7 +112,7 @@ export function ComposerModal() {
   return (
     <Modal title="New post" onClose={closeModal}>
       <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
-        <Avatar id={user.id} handle={user.handle} size="sm" />
+        <Avatar id={user.id} handle={user.handle} src={user.avatarUrl} size="sm" />
         <textarea
           className="field"
           rows={4}

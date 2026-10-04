@@ -53,7 +53,7 @@ export function TopDegens() {
         items.map(({ user: u, total }, i) => (
           <Link key={u.id} href={`/profile/${u.handle}`} className={`td-row${i < 3 ? " top" + (i + 1) : ""}`}>
             <span className="td-rank">{i + 1}</span>
-            <Avatar id={u.id} handle={u.handle} size="sm" />
+            <Avatar id={u.id} handle={u.handle} src={u.avatarUrl} size="sm" />
             <span className="td-handle">{u.handle}</span>
             <span className="td-amount">
               <IconZap />+{fmtSol(total)}

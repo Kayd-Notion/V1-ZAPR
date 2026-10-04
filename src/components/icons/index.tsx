@@ -229,6 +229,21 @@ export const IconLink = (p: IconProps) => (
   </Icon>
 );
 
+/** Share: a tray with an arrow leaving it, angled like the bolt. */
+export const IconShare = (p: IconProps) => (
+  <Icon name="share" {...p}>
+    <path d="M4.5 12.5v7h15v-7" />
+    <path d="M12 15V3.8M7.5 8 12 3.5 16.5 8" />
+  </Icon>
+);
+
+/** More (menu): three small diamonds, like the boost gauge ticks. */
+export const IconMore = (p: IconProps) => (
+  <Icon name="more" {...p}>
+    <path d="m5 10.4 1.6 1.6L5 13.6 3.4 12zM12 10.4l1.6 1.6-1.6 1.6-1.6-1.6zM19 10.4l1.6 1.6-1.6 1.6-1.6-1.6z" fill="currentColor" strokeWidth={1.5} />
+  </Icon>
+);
+
 export const IconTrash = (p: IconProps) => (
   <Icon name="trash" {...p}>
     <path d="M3.5 6.5h17M9.5 6.5v-3h5v3" />

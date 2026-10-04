@@ -213,6 +213,14 @@ export default function HowItWorksPage() {
           </p>
         </details>
         <details>
+          <summary>Can I delete a post?</summary>
+          <p>
+            Yes, from its &ldquo;⋯&rdquo; menu, as long as nobody has zapped it. Once SOL moved for a post, it stays
+            until its time runs out: the people who paid keep what they paid for. You can always delete your comments,
+            and the comments under your posts.
+          </p>
+        </details>
+        <details>
           <summary>Can a zap be refunded?</summary>
           <p>
             No. A blockchain transaction is final. Check the amount before you sign: the zap window shows exactly what

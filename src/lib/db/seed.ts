@@ -33,6 +33,7 @@ export function buildSeed(now: number = Date.now()): {
     zapped: 0,
     hidePumpHistory: false,
     anonymizePumps: false,
+    avatarUrl: null,
   });
 
   const users: User[] = [

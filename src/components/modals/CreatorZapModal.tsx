@@ -64,7 +64,7 @@ export function CreatorZapModal() {
       ) : (
         <>
           <div className="pump-target">
-            <Avatar id={creator.id} handle={creator.handle} size="sm" />
+            <Avatar id={creator.id} handle={creator.handle} src={creator.avatarUrl} size="sm" />
             <div className="pt-text">
               You&apos;re zapping <b>@{creator.handle}</b> directly
               <br />

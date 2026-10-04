@@ -1,7 +1,10 @@
 "use client";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { IconComment, IconLink, IconZap } from "@/components/icons";
+import { IconComment, IconShare, IconZap } from "@/components/icons";
 import { Avatar } from "./Avatar";
+import { PostMenu } from "./PostMenu";
+import { RichText } from "./RichText";
 import { TimeGauge } from "./TimeGauge";
 
 import { useUI } from "@/context/UIContext";
@@ -9,16 +12,18 @@ import { useSession } from "@/context/SessionContext";
 import { useNow } from "@/context/LiveContext";
 import { fmtSol, timeAgo } from "@/lib/format";
 import { lifespanInfo } from "@/lib/lifespan";
+import { postUrl, shareLink } from "@/lib/share";
 import type { ClientPost } from "@/lib/client-types";
 
 export function PostCard({ post, fresh = false }: { post: ClientPost; fresh?: boolean }) {
   const router = useRouter();
   const { openPump, toast } = useUI();
   const { requireAuth } = useSession();
+  const [removed, setRemoved] = useState(false);
 
   // Expired posts are deleted: one that expires while on screen disappears.
   const now = useNow(10_000);
-  if (lifespanInfo(post.createdAt, post.pumped, now).expired) return null;
+  if (removed || lifespanInfo(post.createdAt, post.pumped, now).expired) return null;
 
   const go = () => router.push(`/post/${post.id}`);
   const stop = (e: React.MouseEvent) => e.stopPropagation();
@@ -27,19 +32,18 @@ export function PostCard({ post, fresh = false }: { post: ClientPost; fresh?: bo
     if (!requireAuth("Connect your wallet to send a zap.")) return;
     openPump(post);
   };
-  const copyLink = () => {
-    const url = `${window.location.origin}/post/${post.id}`;
-    navigator.clipboard?.writeText(url).then(
-      () => toast("Link copied. Go shill it."),
-      () => toast(url),
-    );
+  const share = async () => {
+    const url = postUrl(post.id);
+    const r = await shareLink(url, `@${post.author.handle} on ZAPR`);
+    if (r === "copied") toast("Link copied. Go shill it.");
+    else if (r === "failed") toast(url);
   };
 
   return (
     <article className={`post${fresh ? " fresh" : ""}`} onClick={go}>
       <div onClick={stop}>
         <button className="avatar-link" onClick={() => router.push(`/profile/${post.author.handle}`)}>
-          <Avatar id={post.author.id} handle={post.author.handle} />
+          <Avatar id={post.author.id} handle={post.author.handle} src={post.author.avatarUrl} />
         </button>
       </div>
       <div className="post-body">
@@ -47,7 +51,7 @@ export function PostCard({ post, fresh = false }: { post: ClientPost; fresh?: bo
           <span className="name">{post.author.handle}</span>
           <span className="time">{timeAgo(post.createdAt)} ago</span>
         </div>
-        <div className="post-text">{post.text}</div>
+        <RichText className="post-text" text={post.text} />
 
         {post.mediaUrl && (
           <div className={`post-media${post.mediaType === "video" ? " video" : ""}`}>
@@ -77,9 +81,10 @@ export function PostCard({ post, fresh = false }: { post: ClientPost; fresh?: bo
             <IconComment />
             <span>{post.comments}</span>
           </button>
-          <button className="pa-btn" onClick={copyLink} title="Copy link">
-            <IconLink />
+          <button className="pa-btn" onClick={share} title="Share" aria-label="Share">
+            <IconShare />
           </button>
+          <PostMenu post={post} onDeleted={() => setRemoved(true)} />
           {!post.deleted && (
             <button className="pump-btn" onClick={doPump}>
               <IconZap /> Zap

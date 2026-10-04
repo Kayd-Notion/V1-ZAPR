@@ -123,7 +123,7 @@ function NotificationRow({ n, fresh }: { n: ClientNotification; fresh: boolean }
     >
       <div className="notif-avatar">
         {n.actor ? (
-          <Avatar id={n.actor.id} handle={n.actor.handle} size="sm" />
+          <Avatar id={n.actor.id} handle={n.actor.handle} src={n.actor.avatarUrl} size="sm" />
         ) : (
           <Avatar id={n.id} handle="?" size="sm" anonymous />
         )}

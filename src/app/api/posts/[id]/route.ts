@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStore } from "@/lib/db";
 import { shortWallet } from "@/lib/format";
+import { currentUser } from "@/lib/current-user";
 
 export const runtime = "nodejs";
 
@@ -32,7 +33,7 @@ export async function GET(
         createdAt: p.createdAt,
         anonymous: true,
         isSelfPump,
-        label: `Zappeur #${i + 1}`,
+        label: `Anonymous zapper #${i + 1}`,
         author: null as null,
       };
     }
@@ -43,9 +44,38 @@ export async function GET(
       anonymous: false,
       isSelfPump,
       label: p.author.handle,
-      author: { handle: p.author.handle, wallet: shortWallet(p.author.wallet) },
+      author: {
+        id: p.author.id,
+        handle: p.author.handle,
+        wallet: shortWallet(p.author.wallet),
+        avatarUrl: p.author.avatarUrl,
+      },
     };
   });
 
   return NextResponse.json({ post, pumpers, comments });
+}
+
+/** Delete a post: its author only, and only while it has received no zap. */
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const me = await currentUser();
+  if (!me) return NextResponse.json({ error: "Connect your wallet first." }, { status: 401 });
+  const { id } = await params;
+  const result = await getStore().deletePost(id, me.id);
+  switch (result) {
+    case "deleted":
+      return NextResponse.json({ ok: true });
+    case "has_zaps":
+      return NextResponse.json(
+        { error: "This post got zaps: it can't be deleted anymore.", code: "has_zaps" },
+        { status: 409 },
+      );
+    case "not_author":
+      return NextResponse.json({ error: "Only the author can delete this post." }, { status: 403 });
+    default:
+      return NextResponse.json({ error: "Post not found." }, { status: 404 });
+  }
 }

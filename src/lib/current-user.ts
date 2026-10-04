@@ -23,6 +23,7 @@ export function publicUser(u: User) {
     zapped: u.zapped,
     hidePumpHistory: u.hidePumpHistory,
     anonymizePumps: u.anonymizePumps,
+    avatarUrl: u.avatarUrl,
     createdAt: u.createdAt,
   };
 }

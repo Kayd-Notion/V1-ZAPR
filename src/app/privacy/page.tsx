@@ -20,7 +20,7 @@ export default function PrivacyPage() {
       <h2>What ZAPR stores</h2>
       <ul>
         <li>
-          <b>Account</b>: your wallet&apos;s public address, username, bio, country code,
+          <b>Account</b>: your wallet&apos;s public address, username, bio, profile picture link, country code,
           sign-up date and privacy settings.
         </li>
         <li>
@@ -51,8 +51,8 @@ export default function PrivacyPage() {
           wallets and the amount. &ldquo;Anonymous zaps&rdquo; only hide your username on ZAPR.
         </li>
         <li>
-          <b>Photos and videos</b> are stored on Arweave (through Irys): public and permanent, even if the post is
-          deleted on ZAPR.
+          <b>Photos, videos and profile pictures</b> are stored on Arweave (through Irys): public and permanent,
+          even if they are deleted or replaced on ZAPR.
         </li>
       </ul>
 
@@ -74,7 +74,8 @@ export default function PrivacyPage() {
 
       <h2>Your rights</h2>
       <p>
-        You can change your username, bio and privacy settings in Settings. To get
+        You can change your username, bio, picture and privacy settings in Settings, and delete your comments and your
+        posts that have no zap yet. To get
         a copy of your data or delete your account, contact the ZAPR team (contact address to be published before the
         public launch).
       </p>

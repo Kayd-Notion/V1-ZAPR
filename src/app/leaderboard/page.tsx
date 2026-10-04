@@ -187,7 +187,7 @@ export default function LeaderboardPage() {
             >
               <div className="lb-rank">{i + 1}</div>
               {author ? (
-                <Avatar id={author.id} handle={author.handle} size="sm" />
+                <Avatar id={author.id} handle={author.handle} src={author.avatarUrl} size="sm" />
               ) : (
                 <Avatar id={it.postId} handle="?" size="sm" anonymous />
               )}
@@ -221,7 +221,7 @@ export default function LeaderboardPage() {
             onClick={() => router.push(`/profile/${u.handle}`)}
           >
             <div className="lb-rank">{i + 1}</div>
-            <Avatar id={u.id} handle={u.handle} size="sm" />
+            <Avatar id={u.id} handle={u.handle} src={u.avatarUrl} size="sm" />
             <div className="lb-info">
               <div className="lb-name">{u.handle}</div>
               <div className="lb-sub">@{u.handle}</div>

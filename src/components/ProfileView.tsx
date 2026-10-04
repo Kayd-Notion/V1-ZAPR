@@ -88,7 +88,7 @@ export function ProfileView({ handle }: { handle: string }) {
       </div>
       <div className="profile-head">
         <div className="profile-top-row">
-          <Avatar id={u.id} handle={u.handle} size="lg" />
+          <Avatar id={u.id} handle={u.handle} src={u.avatarUrl} size="lg" />
           {isMe ? (
             <button className="btn" style={{ marginTop: 12 }} onClick={() => router.push("/settings")}>
               Edit profile

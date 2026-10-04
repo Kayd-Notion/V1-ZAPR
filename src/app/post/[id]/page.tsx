@@ -1,10 +1,12 @@
 "use client";
 import { use, useCallback, useEffect, useState } from "react";
-import { IconBack, IconComment, IconTrash, IconZap } from "@/components/icons";
+import { IconBack, IconComment, IconShare, IconTrash, IconZap } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { Avatar } from "@/components/Avatar";
 import { TimeGauge } from "@/components/TimeGauge";
 import { BoostGauge } from "@/components/BoostGauge";
+import { PostMenu } from "@/components/PostMenu";
+import { RichText } from "@/components/RichText";
 import { ZaprEmpty, ZaprLoader } from "@/components/ZaprMark";
 import { useSession } from "@/context/SessionContext";
 import { useUI } from "@/context/UIContext";
@@ -12,12 +14,13 @@ import { useLive, useNow } from "@/context/LiveContext";
 import { api } from "@/lib/api";
 import { fmtSol, shortWallet, timeAgo } from "@/lib/format";
 import { lifespanInfo } from "@/lib/lifespan";
+import { postUrl, shareLink } from "@/lib/share";
 import type { ClientComment, ClientPost, ClientPumper } from "@/lib/client-types";
 
 export default function PostDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const { requireAuth } = useSession();
+  const { requireAuth, user } = useSession();
   const { openPump, toast, dataVersion } = useUI();
 
   const [post, setPost] = useState<ClientPost | null>(null);
@@ -25,6 +28,8 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   const [comments, setComments] = useState<ClientComment[]>([]);
   const [commentText, setCommentText] = useState("");
   const [notFound, setNotFound] = useState(false);
+  // Comment waiting for its second tap before being deleted.
+  const [confirmComment, setConfirmComment] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -88,6 +93,30 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
     openPump(post);
   };
 
+  const share = async () => {
+    const url = postUrl(post.id);
+    const r = await shareLink(url, `@${post.author.handle} on ZAPR`);
+    if (r === "copied") toast("Link copied. Go shill it.");
+    else if (r === "failed") toast(url);
+  };
+
+  // Its author, or the post's author, can delete a comment (second tap confirms).
+  const deleteComment = async (commentId: string) => {
+    if (confirmComment !== commentId) {
+      setConfirmComment(commentId);
+      return;
+    }
+    setConfirmComment(null);
+    try {
+      const res = await api.deleteComment(post.id, commentId);
+      setComments(res.comments);
+      setPost({ ...post, comments: Math.max(0, post.comments - 1) });
+      toast("Comment deleted.");
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "Couldn't delete the comment.");
+    }
+  };
+
   return (
     <section>
       <div className="subbar">
@@ -95,13 +124,24 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
           <IconBack />
         </button>
         <div className="page-title">Post</div>
+        <div className="subbar-actions">
+          <button className="icon-btn" onClick={share} aria-label="Share" title="Share">
+            <IconShare />
+          </button>
+          <PostMenu
+            post={post}
+            onDeleted={() => {
+              router.push("/");
+            }}
+          />
+        </div>
       </div>
 
       <div className="detail-grid">
         <div className="detail-main">
           <div className="detail-post">
             <div className="dp-head">
-              <Avatar id={post.author.id} handle={post.author.handle} />
+              <Avatar id={post.author.id} handle={post.author.handle} src={post.author.avatarUrl} />
               <div style={{ cursor: "pointer" }} onClick={() => router.push(`/profile/${post.author.handle}`)}>
                 <div className="name">{post.author.handle}</div>
                 <div className="faint">
@@ -115,7 +155,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                 This post expired and its content was deleted.
               </div>
             ) : (
-              <div className="dp-text">{post.text}</div>
+              <RichText className="dp-text" text={post.text} />
             )}
 
             {post.mediaUrl && (
@@ -175,18 +215,35 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
               Send
             </button>
           </div>
-          {comments.map((c) => (
-            <div className="comment" key={c.id}>
-              <Avatar id={c.author.id} handle={c.author.handle} size="sm" />
-              <div className="c-body">
-                <div className="c-head">
-                  <span className="name">{c.author.handle}</span>
-                  <span className="faint">{timeAgo(c.createdAt)} ago</span>
+          {comments.map((c) => {
+            const canDelete = Boolean(user && (user.id === c.userId || user.id === post.userId));
+            return (
+              <div className="comment" key={c.id}>
+                <Avatar id={c.author.id} handle={c.author.handle} src={c.author.avatarUrl} size="sm" />
+                <div className="c-body">
+                  <div className="c-head">
+                    <span className="name" onClick={() => router.push(`/profile/${c.author.handle}`)}>
+                      {c.author.handle}
+                    </span>
+                    <span className="faint">{timeAgo(c.createdAt)} ago</span>
+                    {canDelete && (
+                      <button
+                        className={`c-del${confirmComment === c.id ? " confirm" : ""}`}
+                        onClick={() => deleteComment(c.id)}
+                        onBlur={() => setConfirmComment(null)}
+                        aria-label="Delete comment"
+                        title="Delete comment"
+                      >
+                        <IconTrash />
+                        {confirmComment === c.id && <span>Delete?</span>}
+                      </button>
+                    )}
+                  </div>
+                  <RichText className="c-text" text={c.text} />
                 </div>
-                <div className="c-text">{c.text}</div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <aside className="panel zappers">
@@ -205,7 +262,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                 {masked ? (
                   <Avatar id={pp.id} handle="?" size="sm" anonymous />
                 ) : (
-                  <Avatar id={pp.author!.handle} handle={pp.author!.handle} size="sm" />
+                  <Avatar id={pp.author!.id} handle={pp.author!.handle} src={pp.author!.avatarUrl} size="sm" />
                 )}
                 <div className="pr-info">
                   <div className="pr-name">

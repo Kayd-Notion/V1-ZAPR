@@ -25,7 +25,7 @@ export async function POST(
   const { id } = await params;
   const body = await req.json().catch(() => null);
   const text = typeof body?.text === "string" ? body.text.trim() : "";
-  if (!text) return NextResponse.json({ error: "Commentaire vide." }, { status: 400 });
+  if (!text) return NextResponse.json({ error: "Write something." }, { status: 400 });
   if (text.length > 300) {
     return NextResponse.json({ error: "Comment too long (max 300)." }, { status: 400 });
   }

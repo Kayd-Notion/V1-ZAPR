@@ -10,8 +10,8 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: "en-US",
     start_url: "/",
     display: "standalone",
-    background_color: BRAND.ink,
-    theme_color: BRAND.ink,
+    background_color: BRAND.night,
+    theme_color: BRAND.night,
     icons: [
       { src: "/brand/zapr-icon.svg", sizes: "any", type: "image/svg+xml" },
       { src: "/brand/zapr-icon-192.png", sizes: "192x192", type: "image/png" },

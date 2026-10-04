@@ -40,7 +40,7 @@ export default async function PostImage({ params }: { params: Promise<{ id: stri
     flexDirection: "column" as const,
     justifyContent: "space-between",
     padding: "64px 72px",
-    background: BRAND.ink,
+    background: BRAND.night,
     color: "#ffffff",
     fontSize: 32,
   };

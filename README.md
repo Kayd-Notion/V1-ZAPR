@@ -205,7 +205,7 @@ une encoche, sur un carré arrondi crème) :
 - **Tokens** : toutes les couleurs, arrondis, ombres, lueurs, espacements et
   durées d'animation sont en tête de `src/app/globals.css` (bloc « Tokens ») ;
   le reste du fichier ne fait que les réutiliser. Jaune du logo `#FED202`,
-  noir `#0A0A0B`, crème `#FEFDF8`. Copie pour les métadonnées :
+  fond **bleu nuit** sobre `#0B0F17` (bleu désaturé, complémentaire du jaune : il le fait ressortir ; surfaces de la même teinte, dégradé vertical à peine visible ; l'ancien noir `#0A0A0B` est gardé en commentaire dans les tokens), crème `#FEFDF8`. Copie pour les métadonnées :
   `src/lib/brand.ts`.
 - **Sombre uniquement** : le thème clair (crème) reste dans le CSS mais est
   désactivé ; pour le remettre, `LIGHT_MODE_ENABLED = true` dans

@@ -53,7 +53,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: BRAND.ink,
+  themeColor: BRAND.night,
 };
 
 // Set the theme before paint to avoid a flash of the wrong theme.

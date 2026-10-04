@@ -1,5 +1,7 @@
 /** Contract between the UI and the app's API routes (implemented in lib/api.ts). */
 import type {
+  ClientActivity,
+  ActivityFilter,
   ClientComment,
   ClientNotification,
   ClientPost,
@@ -77,6 +79,11 @@ export interface NotificationsPage {
   nextCursor: string | null;
 }
 
+export interface ActivityPage {
+  items: ClientActivity[];
+  nextCursor: string | null;
+}
+
 export interface Api {
   // Auth
   nonce(wallet: string): Promise<{ message: string }>;
@@ -109,6 +116,9 @@ export interface Api {
   /** 0 for visitors. */
   unreadNotifications(): Promise<{ unread: number }>;
   markNotificationsSeen(): Promise<{ unread: number }>;
+
+  // Wallet → Activity (signed-in users)
+  activity(filter: ActivityFilter, cursor?: string | null): Promise<ActivityPage>;
 
   // Creator zaps (90/10 by default; no effect on posts)
   /** Server re-check before signing (auth, not self, minimum). Throws ApiError → nothing is signed. */

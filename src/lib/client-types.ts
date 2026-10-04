@@ -79,6 +79,24 @@ export interface LeaderboardCreatorItem {
   total: number;
 }
 
+export type ActivityKind = "zap_sent" | "creator_zap_sent" | "zap_received" | "creator_zap_received";
+export type ActivityFilter = "all" | "in" | "out";
+
+/** A line of Wallet → Activity (see /api/activity). */
+export interface ClientActivity {
+  id: string;
+  kind: ActivityKind;
+  direction: "in" | "out";
+  createdAt: number;
+  amount: number;
+  total: number;
+  counterpart: { id: string; handle: string; avatarUrl: string | null } | null;
+  postId: string | null;
+  postText: string | null;
+  self: boolean;
+  signature: string;
+}
+
 export type NotificationKind = "post_zap" | "creator_zap" | "follow" | "comment";
 
 /** Something that happened to the signed-in user (see /api/notifications). */

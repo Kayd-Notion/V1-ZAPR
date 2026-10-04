@@ -112,6 +112,34 @@ export interface Notification {
   text: string | null;
 }
 
+/**
+ * A line of a user's money history (Wallet → Activity), from the zap logs:
+ * zaps they sent (to posts or creators) and creator shares they received.
+ */
+export type ActivityKind = "zap_sent" | "creator_zap_sent" | "zap_received" | "creator_zap_received";
+export type ActivityFilter = "all" | "in" | "out";
+
+export interface Activity {
+  /** Stable id: kind prefix + source row id. Also the keyset tie-breaker. */
+  id: string;
+  kind: ActivityKind;
+  direction: "in" | "out";
+  createdAt: number;
+  /** SOL that left the user's wallet (out: the whole zap) or reached it (in: the creator share). */
+  amount: number;
+  /** The whole zap, as sent by the zapper. */
+  total: number;
+  /** The other side: the creator paid, or the zapper (null if they zapped anonymously). */
+  counterpart: Pick<User, "id" | "handle" | "avatarUrl"> | null;
+  /** The zapped post, while it is alive. */
+  postId: string | null;
+  postText: string | null;
+  /** The user zapped their own post (shows on both sides). */
+  self: boolean;
+  /** Solana transaction signature (explorer link). */
+  signature: string;
+}
+
 export interface NotificationCursor {
   createdAt: number;
   id: string;
@@ -279,6 +307,11 @@ export interface Store {
   listNotifications(userId: string, opts: { limit: number; before?: NotificationCursor }): Promise<Notification[]>;
   /** Notifications newer than `after` (capped at 100). */
   countNotificationsSince(userId: string, after: number): Promise<number>;
+  /** Money history (newest first); keyset pagination on (createdAt, id), like notifications. */
+  listActivity(
+    userId: string,
+    opts: { limit: number; filter: ActivityFilter; before?: NotificationCursor },
+  ): Promise<Activity[]>;
   /** When the user last opened their notifications (0 = never). */
   getNotificationsSeenAt(userId: string): Promise<number>;
   setNotificationsSeenAt(userId: string, at: number): Promise<void>;

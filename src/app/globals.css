@@ -1148,6 +1148,30 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
 .su-text b { font-size: 14.5px; }
 .su-text small { font-size: 12.5px; color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
+/* -------- Wallet activity ------------------------------------------- */
+.activity-tabs { display: flex; gap: 6px; padding: 0 20px 10px; }
+.activity-empty { padding: 8px 20px 24px; font-size: 14px; }
+.act-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--border-soft); }
+.act-ico {
+  flex: none; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+  border-radius: 30%; background: var(--bg-elev-2); color: var(--text-faint);
+}
+.act-row.in .act-ico { background: var(--accent-soft); color: var(--accent-text); }
+.act-ico svg.icon { width: 18px; height: 18px; }
+.act-body { flex: 1; min-width: 0; }
+.act-line { font-size: 14.5px; line-height: 1.4; }
+.act-line a { color: var(--text); }
+.act-line a:hover b { color: var(--accent-text); }
+.act-sub { display: block; margin-top: 2px; font-size: 13px; color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+a.act-sub:hover { color: var(--text-dim); }
+.act-side { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+.act-amount { font-family: var(--font-mono); font-weight: 700; font-size: 14px; color: var(--text); white-space: nowrap; }
+.act-row.in .act-amount { color: var(--accent-text); }
+.act-meta { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-faint); white-space: nowrap; }
+.act-meta a { display: inline-flex; color: var(--text-faint); }
+.act-meta a:hover { color: var(--accent-text); }
+.act-meta svg.icon { width: 14px; height: 14px; }
+
 @media (max-width: 1360px) {
   .home-grid { grid-template-columns: minmax(0, 1fr); }
   .home-grid > .panel { display: none; }
@@ -1191,6 +1215,8 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
   .hiw-cta { margin: 24px 14px 8px; }
   .legal-body { padding: 4px 14px 0; }
   .site-footer { padding: 16px 14px; }
+  .activity-tabs { padding: 0 14px 10px; }
+  .act-row { padding: 12px 14px; }
 }
 @media (max-width: 400px) {
   .net-badge { display: none; }

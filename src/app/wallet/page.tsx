@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { IconDroplet, IconExternal, IconZap } from "@/components/icons";
 import { ZaprEmpty } from "@/components/ZaprMark";
+import { ActivityList } from "@/components/ActivityList";
 import { useSession } from "@/context/SessionContext";
 import { useUI } from "@/context/UIContext";
 import { fmtSol, lamportsToSol } from "@/lib/format";
@@ -115,6 +116,9 @@ export default function WalletPage() {
           </>
         )}
       </p>
+
+      <div className="section-title">Activity</div>
+      <ActivityList />
     </section>
   );
 }

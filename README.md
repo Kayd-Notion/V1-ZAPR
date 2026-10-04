@@ -59,8 +59,7 @@ dans le navigateur : Storage → ta base → **Open in Neon** → **SQL Editor**
 | `CRON_SECRET` | facultatif | protège le nettoyage quotidien (`/api/cron/purge`, appelé par Vercel Cron) |
 | `NEXT_PUBLIC_SOLANA_CLUSTER` | `devnet` (défaut) | réseau ; `mainnet-beta` bloque les zaps |
 | `NEXT_PUBLIC_SOLANA_RPC` | vide ou URL Helius/QuickNode | RPC custom |
-| `NEXT_PUBLIC_FOUNDER_WALLET` | adresse devnet du fondateur | reçoit les 30 % ; est aussi **admin** |
-| `ADMIN_WALLETS` | vide, ou adresses séparées par des virgules | admins en plus du fondateur (page `/admin`) |
+| `NEXT_PUBLIC_FOUNDER_WALLET` | adresse devnet du fondateur | reçoit les 30 % ; c'est aussi le **seul admin** (page `/admin`) |
 | `NEXT_PUBLIC_PUMP_CREATOR_BPS` / `_FOUNDER_BPS` | `7000` / `3000` | ratio des zaps de post |
 | `NEXT_PUBLIC_CREATOR_ZAP_CREATOR_BPS` | `9000` | part créateur des zaps de créateur (le reste va à la plateforme) |
 | `NEXT_PUBLIC_IRYS_NETWORK` | `devnet` | upload des médias (Arweave via Irys) |
@@ -121,7 +120,8 @@ textes, messages d'erreur du serveur, nombres (`98.40`), durées (`3d left`,
   (arnaque, spam, harcèlement, haine, contenu sexuel, illégal, autre) et un
   détail facultatif ; un seul signalement par personne et par contenu.
 - **Admin** (`/admin`, lien « Admin » dans le rail et dans Settings, visible
-  seulement pour le wallet fondateur et `ADMIN_WALLETS`, vérifié côté serveur) :
+  seulement pour le wallet fondateur, vérifié côté serveur ; pour tout autre
+  visiteur, la page et ses API répondent « page introuvable ») :
   chiffres clés (utilisateurs, posts, zaps, SOL zappés, revenus plateforme,
   signalements ouverts), signalements groupés par contenu avec actions en un
   clic (**masquer** le post, **supprimer** le commentaire, **bannir** l'auteur,

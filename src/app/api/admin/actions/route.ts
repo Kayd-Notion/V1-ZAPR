@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStore } from "@/lib/db";
 import { currentUser } from "@/lib/current-user";
-import { isAdmin } from "@/lib/admin";
+import { isAdmin, NOT_FOUND } from "@/lib/admin";
 
 export const runtime = "nodejs";
 
@@ -14,7 +14,7 @@ const ACTIONS: Action[] = ["hide_post", "unhide_post", "delete_comment", "ban_us
  */
 export async function POST(req: NextRequest) {
   const me = await currentUser();
-  if (!me || !isAdmin(me)) return NextResponse.json({ error: "Admins only." }, { status: 403 });
+  if (!me || !isAdmin(me)) return NextResponse.json(NOT_FOUND, { status: 404 });
 
   const body = await req.json().catch(() => null);
   const action = body?.action as Action;

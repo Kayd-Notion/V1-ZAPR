@@ -5,24 +5,26 @@
  *  - rule 3: nothing below MIN_PUMP_SOL.
  */
 import { LIFESPAN_CONFIG } from "./lifespan-config";
+import { HOURS_PER_SOL } from "./lifespan";
 import { MIN_PUMP_SOL, PUMP_SAVE_MIN_LIFETIME_SECONDS } from "./pump-config";
 
 const HOUR_MS = 3_600_000;
 
-/** Inverse of lifespanHours(): cumulative SOL needed to reach `targetHours`. */
+/**
+ * Inverse of lifespanHours(): the smallest cumulative total (a milestone)
+ * whose lifespan reaches `targetHours`.
+ */
 export function pumpedSolForLifespan(targetHours: number): number {
-  let remaining = targetHours - LIFESPAN_CONFIG.baseHours;
-  if (remaining <= 0) return 0;
-  const tiers = LIFESPAN_CONFIG.tiers;
-  for (let i = 0; i < tiers.length; i++) {
-    const { fromSol, hoursPerSol } = tiers[i];
-    if (hoursPerSol <= 0) continue;
-    const to = i + 1 < tiers.length ? tiers[i + 1].fromSol : Infinity;
-    const segmentHours = (to - fromSol) * hoursPerSol;
-    if (remaining <= segmentHours) return fromSol + remaining / hoursPerSol;
-    remaining -= segmentHours;
+  const needed = targetHours - LIFESPAN_CONFIG.baseHours;
+  if (needed <= 1e-9) return 0;
+  const fullSol = Math.floor(needed / HOURS_PER_SOL + 1e-9);
+  let rest = needed - fullSol * HOURS_PER_SOL;
+  if (rest <= 1e-9) return fullSol;
+  for (const step of LIFESPAN_CONFIG.stepsPerSol) {
+    rest -= step.hours;
+    if (rest <= 1e-9) return fullSol + step.at;
   }
-  return Infinity;
+  return fullSol + 1;
 }
 
 export type PumpPostStatus = "active" | "expired" | "deleted";

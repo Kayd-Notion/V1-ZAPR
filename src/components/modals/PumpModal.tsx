@@ -2,21 +2,20 @@
 import { useEffect, useState } from "react";
 import { IconAlert, IconHourglass, IconPlatform, IconTrash, IconUser, IconZap } from "@/components/icons";
 import { Modal } from "../Modal";
+import { BoostGauge } from "../BoostGauge";
 import { Avatar } from "../Avatar";
 import { ZaprMark } from "../ZaprMark";
 import { useUI } from "@/context/UIContext";
 import { useSession } from "@/context/SessionContext";
 import { usePump } from "@/hooks/usePump";
 import { quotePump } from "@/lib/pump";
-import { MIN_PUMP_SOL, resolvedSplitBps } from "@/lib/pump-config";
+import { MIN_PUMP_SOL, QUICK_ZAP_AMOUNTS, resolvedSplitBps } from "@/lib/pump-config";
 import { formatSol } from "@/lib/pump-rules";
 import { api } from "@/lib/api";
 import { ApiError } from "@/lib/api-error";
 import type { PumpQuote } from "@/lib/api-types";
-import { fmtSol } from "@/lib/format";
 import { IS_MAINNET } from "@/lib/solana";
 
-const QUICK_AMOUNTS = [0.01, 0.1, 0.5, 1];
 const EPS = 1e-9;
 
 /** Reads the new minimum from a refusal body. */
@@ -109,7 +108,7 @@ export function PumpModal() {
       bumpData();
       setTimeout(() => {
         closeModal();
-        toast(`${fmtSol(safeAmount)} SOL zapped. LFG.`);
+        toast(`${formatSol(safeAmount)} SOL zapped. LFG.`);
       }, 1200);
     } catch (e) {
       setPhase("form");
@@ -152,7 +151,7 @@ export function PumpModal() {
           <ZaprMark className="ps-mark" />
           <h3>Zap sent. LFG.</h3>
           <p className="muted">
-            <b>+{fmtSol(safeAmount)} SOL</b> on this post.
+            <b>+{formatSol(safeAmount)} SOL</b> on this post.
             <br />
             It just got more time to live.
           </p>
@@ -192,7 +191,7 @@ export function PumpModal() {
 
           <label className="field-label">How much are you sending?</label>
           <div className="quick-amounts">
-            {QUICK_AMOUNTS.map((a) => (
+            {QUICK_ZAP_AMOUNTS.map((a) => (
               <button
                 key={a}
                 className={`qa-btn${a === amount ? " active" : ""}`}
@@ -219,18 +218,21 @@ export function PumpModal() {
           />
           {amountError && <p className="field-error">{amountError}</p>}
 
+          {/* What this zap does to the post's life, before paying. */}
+          <BoostGauge total={post.pumped} adding={safeAmount} />
+
           <div className="split-box">
             <div className="split-row creator">
               <span>
                 <IconUser /> Creator ({creatorBps / 100}%)
               </span>
-              <b>{fmtSol(quoteSplit.creatorSol)} SOL</b>
+              <b>{formatSol(quoteSplit.creatorSol)} SOL</b>
             </div>
             <div className="split-row">
               <span>
                 <IconPlatform /> Platform ({founderBps / 100}%)
               </span>
-              <b>{fmtSol(quoteSplit.founderSol)} SOL</b>
+              <b>{formatSol(quoteSplit.founderSol)} SOL</b>
             </div>
             <div className="split-bar">
               <div className="s-creator" style={{ width: `${creatorBps / 100}%` }} />
@@ -241,7 +243,7 @@ export function PumpModal() {
               style={{ borderTop: "1px solid var(--border-soft)", marginTop: 6, paddingTop: 8 }}
             >
               <span>Total</span>
-              <b>{fmtSol(safeAmount)} SOL</b>
+              <b>{formatSol(safeAmount)} SOL</b>
             </div>
           </div>
 

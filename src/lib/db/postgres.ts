@@ -66,6 +66,14 @@ async function applySchema(sql: Sql): Promise<void> {
     for (const r of missing) {
       await tx`update posts set expires_at = ${expiresAt(Number(r.created_at), Number(r.pumped))} where id = ${r.id}`;
     }
+    // Live posts follow the current lifespan rules (they may have changed
+    // since the post was last zapped): the stored expiry always matches what
+    // the UI computes from (created_at, pumped).
+    const live = await tx`select id, created_at, pumped, expires_at from posts where expires_at > ${Date.now()}`;
+    for (const r of live) {
+      const e = expiresAt(Number(r.created_at), Number(r.pumped));
+      if (Number(r.expires_at) !== e) await tx`update posts set expires_at = ${e} where id = ${r.id}`;
+    }
   });
 }
 

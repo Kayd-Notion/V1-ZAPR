@@ -1,40 +1,35 @@
 /**
- * Dynamic post lifespan configuration.
+ * Post lifespan rules ("the power of a zap").
  *
- * A post lives at least 24h. Each cumulative SOL pumped extends its life by
- * tiers, with NO cap (guide §Phase 1: "24h + paliers à chaque pump").
+ * A post is born with `baseHours` of life. Every zap adds to the post's total;
+ * each time that total crosses a milestone, the post gains time, added to the
+ * time it has left. There is no cap: a post that keeps being zapped lives
+ * forever.
  *
- * The exact tier thresholds are NOT finalized yet, so they live here in an
- * isolated config with reasonable defaults, rather than being baked into the
- * business logic. Tune these once real usage data exists.
+ * Milestones repeat inside every SOL (0→1, 1→2, 2→3…): reaching x.10, x.25,
+ * x.50 and the next whole SOL each unlock a step. With the defaults below a
+ * full SOL is always worth +24 h, earned in four steps (3 h, 3 h, 6 h, 12 h),
+ * so small zaps count too. Zaps below a milestone fill the gauge without
+ * adding time until the milestone is reached.
  *
- * Model: base 24h, then for the total SOL pumped on a post we add extra hours
- * according to a piecewise/linear tier schedule. `tiers` is a list of segments
- * evaluated in order: within each segment, every SOL above `fromSol` grants
- * `hoursPerSol` additional hours, until the next segment takes over. This gives
- * generous early boosts with diminishing (but never zero) returns — while
- * remaining trivially adjustable.
+ * All the numbers live here; the logic in lifespan.ts reads them.
  */
 
-export interface LifespanTier {
-  /** Lower bound of cumulative pumped SOL for this segment (inclusive). */
-  fromSol: number;
-  /** Extra hours granted per SOL pumped while within this segment. */
-  hoursPerSol: number;
+export interface BoostStep {
+  /** Position inside the current SOL (0 < at ≤ 1; 1 = the next whole SOL). */
+  at: number;
+  /** Hours added when the post's total reaches this position. */
+  hours: number;
 }
 
 export const LIFESPAN_CONFIG = {
-  /** Minimum lifespan of every post, in hours. */
+  /** Life every post starts with, in hours. */
   baseHours: 24,
-  /**
-   * Tier schedule (must be sorted by `fromSol` ascending, first entry = 0).
-   * Defaults: the first SOL is worth a lot of life, later SOL less, unbounded.
-   */
-  tiers: [
-    { fromSol: 0, hoursPerSol: 24 }, // 0–1 SOL   : +24h / SOL
-    { fromSol: 1, hoursPerSol: 12 }, // 1–5 SOL   : +12h / SOL
-    { fromSol: 5, hoursPerSol: 6 }, //  5–20 SOL  : +6h / SOL
-    { fromSol: 20, hoursPerSol: 3 }, // 20–100 SOL : +3h / SOL
-    { fromSol: 100, hoursPerSol: 1.5 }, // 100+ SOL : +1.5h / SOL (no cap)
-  ] as LifespanTier[],
+  /** Milestones inside each SOL, sorted by `at`, the last one at 1. */
+  stepsPerSol: [
+    { at: 0.1, hours: 3 },
+    { at: 0.25, hours: 3 },
+    { at: 0.5, hours: 6 },
+    { at: 1, hours: 12 },
+  ] as BoostStep[],
 } as const;

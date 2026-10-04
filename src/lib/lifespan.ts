@@ -2,28 +2,52 @@
  * Lifespan computation — pure functions built on top of `lifespan-config.ts`.
  * Kept separate from the config so thresholds can change without touching logic.
  */
-import { LIFESPAN_CONFIG, type LifespanTier } from "./lifespan-config";
+import { LIFESPAN_CONFIG } from "./lifespan-config";
 
 const HOUR_MS = 3600_000;
+const LAMPORTS = 1_000_000_000;
+const STEPS = LIFESPAN_CONFIG.stepsPerSol;
+/** Hours earned by one full SOL (sum of the milestones inside a SOL). */
+export const HOURS_PER_SOL = STEPS.reduce((h, s) => h + s.hours, 0);
 
-/**
- * Total lifespan (in hours) for a post given the cumulative SOL pumped on it.
- * base + sum over tiers of (SOL within tier * hoursPerSol). No cap.
- */
-export function lifespanHours(totalPumpedSol: number): number {
-  const pumped = Math.max(0, totalPumpedSol);
-  const tiers: LifespanTier[] = LIFESPAN_CONFIG.tiers;
-  let extra = 0;
+/** Integer lamports, so milestones like 0.1 compare exactly (no float noise). */
+function toLamports(sol: number): number {
+  return Math.max(0, Math.round(sol * LAMPORTS));
+}
 
-  for (let i = 0; i < tiers.length; i++) {
-    const from = tiers[i].fromSol;
-    const to = i + 1 < tiers.length ? tiers[i + 1].fromSol : Infinity;
-    if (pumped <= from) break;
-    const solInTier = Math.min(pumped, to) - from;
-    extra += solInTier * tiers[i].hoursPerSol;
+/** Hours earned by milestones for a post that received `totalPumpedSol`. */
+export function boostHours(totalPumpedSol: number): number {
+  const lamports = toLamports(totalPumpedSol);
+  const fullSol = Math.floor(lamports / LAMPORTS);
+  const inSol = lamports - fullSol * LAMPORTS;
+  let hours = fullSol * HOURS_PER_SOL;
+  for (const step of STEPS) {
+    if (step.at < 1 && inSol >= Math.round(step.at * LAMPORTS)) hours += step.hours;
   }
+  return hours;
+}
 
-  return LIFESPAN_CONFIG.baseHours + extra;
+/** Total lifespan (in hours) of a post: base life + milestones reached. No cap. */
+export function lifespanHours(totalPumpedSol: number): number {
+  return LIFESPAN_CONFIG.baseHours + boostHours(totalPumpedSol);
+}
+
+/** The next milestone above `totalPumpedSol`: the total to reach and the hours it adds. */
+export function nextBoost(totalPumpedSol: number): { atSol: number; hours: number } {
+  const lamports = toLamports(totalPumpedSol);
+  const fullSol = Math.floor(lamports / LAMPORTS);
+  const inSol = lamports - fullSol * LAMPORTS;
+  for (const step of STEPS) {
+    const at = Math.round(step.at * LAMPORTS);
+    if (inSol < at) return { atSol: (fullSol * LAMPORTS + at) / LAMPORTS, hours: step.hours };
+  }
+  // Exactly on a whole SOL: the first milestone of the next SOL.
+  return { atSol: (lamports + Math.round(STEPS[0].at * LAMPORTS)) / LAMPORTS, hours: STEPS[0].hours };
+}
+
+/** Hours a zap of `amountSol` adds to a post that already received `totalPumpedSol`. */
+export function zapBoostHours(totalPumpedSol: number, amountSol: number): number {
+  return boostHours(totalPumpedSol + amountSol) - boostHours(totalPumpedSol);
 }
 
 /**

@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { IconAlert, IconHourglass, IconPlatform, IconTrash, IconUser, IconZap } from "@/components/icons";
 import { Modal } from "../Modal";
-import { BoostGauge } from "../BoostGauge";
+import { BoostGauge, fmtHours } from "../BoostGauge";
 import { Avatar } from "../Avatar";
 import { ZaprMark } from "../ZaprMark";
 import { useUI } from "@/context/UIContext";
@@ -11,6 +11,7 @@ import { usePump } from "@/hooks/usePump";
 import { quotePump } from "@/lib/pump";
 import { MIN_PUMP_SOL, QUICK_ZAP_AMOUNTS, resolvedSplitBps } from "@/lib/pump-config";
 import { formatSol } from "@/lib/pump-rules";
+import { solToNextBoost, zapBoostHours } from "@/lib/lifespan";
 import { api } from "@/lib/api";
 import { ApiError } from "@/lib/api-error";
 import type { PumpQuote } from "@/lib/api-types";
@@ -84,6 +85,9 @@ export function PumpModal() {
   const q = quote;
   const expired = q?.status === "expired";
   const requiredMin = Math.max(minPump, q?.requiredMinSol ?? minPump);
+  // The amount that takes the post to its next milestone, and what it unlocks.
+  const nextAmount = Math.max(requiredMin, solToNextBoost(post.pumped).amount);
+  const nextHours = zapBoostHours(post.pumped, nextAmount);
   const tooLow = safeAmount + EPS < requiredMin;
   const quoteSplit = quotePump(safeAmount, founderBps);
 
@@ -190,6 +194,18 @@ export function PumpModal() {
           )}
 
           <label className="field-label">How much are you sending?</label>
+          {/* Shortcut: exactly what the post still needs for its next boost
+              (never below the zap minimum). */}
+          <button
+            className={`qa-next${Math.abs(amount - nextAmount) < EPS ? " active" : ""}`}
+            onClick={() => setAmount(nextAmount)}
+          >
+            <IconZap />
+            <span className="qa-next-label">
+              Next boost <b>+{fmtHours(nextHours)}</b>
+            </span>
+            <span className="qa-next-amt">{formatSol(nextAmount)} SOL</span>
+          </button>
           <div className="quick-amounts">
             {QUICK_ZAP_AMOUNTS.map((a) => (
               <button

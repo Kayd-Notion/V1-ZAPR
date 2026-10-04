@@ -730,6 +730,19 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
 }
 .pump-target .pt-text { font-size: 13px; color: var(--text-dim); min-width: 0; }
 .pump-target .pt-text b { color: var(--text); }
+/* "Next boost" shortcut above the quick amounts. */
+.qa-next {
+  width: 100%; display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+  padding: 10px 12px; border-radius: var(--radius-sm);
+  background: transparent; border: 1px dashed var(--accent-text); color: var(--text);
+  font-size: 13.5px; text-align: left;
+  transition: background var(--dur-fast) ease, box-shadow var(--dur-fast) ease, border-color var(--dur-fast) ease;
+}
+.qa-next .zap-ico { color: var(--accent-text); }
+.qa-next-label b { color: var(--accent-text); font-family: var(--font-mono); }
+.qa-next-amt { margin-left: auto; font-family: var(--font-mono); font-weight: 700; color: var(--accent-text); }
+.qa-next:hover { background: var(--accent-soft); }
+.qa-next.active { background: var(--accent-soft); border-style: solid; box-shadow: var(--glow-sm); }
 .quick-amounts { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 14px; }
 .qa-btn {
   padding: 12px 4px; border-radius: var(--radius-sm);

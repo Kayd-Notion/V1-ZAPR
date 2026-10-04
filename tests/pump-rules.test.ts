@@ -10,7 +10,7 @@ import {
   PUMP_SAVE_MIN_LIFETIME_SECONDS,
   QUICK_ZAP_AMOUNTS,
 } from "../src/lib/pump-config";
-import { expiresAt, lifespanHours, nextBoost, zapBoostHours } from "../src/lib/lifespan";
+import { expiresAt, lifespanHours, nextBoost, solToNextBoost, zapBoostHours } from "../src/lib/lifespan";
 
 const H = 3_600_000;
 const NOW = Date.parse("2026-09-01T00:00:00Z");
@@ -75,6 +75,12 @@ test("lifespan: next milestone and what a zap adds", () => {
   assert.equal(zapBoostHours(0.8, 2.3), 63, "0.8 → 3.1: SOL 1, 2, 3 (+12 h each) + 2.10/2.25/2.50 + 3.10");
   assert.equal(zapBoostHours(0, 1), 24, "a full SOL is always +24 h");
   assert.equal(zapBoostHours(5, 1), 24, "…at any level: no diminishing returns");
+  // Exact amount to the next milestone (the zap window's shortcut).
+  assert.deepEqual(solToNextBoost(0), { amount: 0.1, hours: 3 });
+  assert.deepEqual(solToNextBoost(3.2), { amount: 0.05, hours: 3 });
+  assert.deepEqual(solToNextBoost(0.83), { amount: 0.17, hours: 12 });
+  assert.deepEqual(solToNextBoost(1), { amount: 0.1, hours: 3 });
+  assert.equal(zapBoostHours(0.83, solToNextBoost(0.83).amount), 12, "paying it unlocks the boost");
 });
 
 test("rule 2: inverse of the lifespan (smallest milestone reaching a lifespan)", () => {

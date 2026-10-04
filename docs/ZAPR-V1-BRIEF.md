@@ -1,5 +1,8 @@
 # ZAPR — Brief de passation pour la V1
 
+> **Document historique** (début de la V1). L'état actuel du projet est dans le
+> `README.md` (section « État de la V1 »).
+
 > Ce document résume **tout le projet** tel qu'il existe à la fin de la phase
 > prototype (nom de travail « pump.social »), pour démarrer la **V1 sous le nom
 > ZAPR**. À lire en entier avant de toucher au code.

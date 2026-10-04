@@ -165,7 +165,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                   <video src={post.mediaUrl} controls />
                 ) : (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={post.mediaUrl} alt="" />
+                  <img src={post.mediaUrl} alt={`Image posted by @${post.author.handle}`} />
                 )}
               </div>
             )}

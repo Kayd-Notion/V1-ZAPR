@@ -161,7 +161,9 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
   return (
     <Ctx.Provider value={value}>
       {children}
-      <div className={`toast${toastShown ? " show" : ""}`}>{toastMsg}</div>
+      <div className={`toast${toastShown ? " show" : ""}`} role="status" aria-live="polite">
+        {toastMsg}
+      </div>
     </Ctx.Provider>
   );
 }

@@ -6,6 +6,7 @@ import type {
   ClientUser,
 } from "./client-types";
 import type {
+  ActivityPage,
   Api,
   FollowStats,
   LeaderboardKind,
@@ -102,6 +103,13 @@ export const api: Api = {
     req<NotificationsPage>(cursor ? `/api/notifications?cursor=${encodeURIComponent(cursor)}` : "/api/notifications"),
   unreadNotifications: () => req<{ unread: number }>("/api/notifications/unread"),
   markNotificationsSeen: () => req<{ unread: number }>("/api/notifications/seen", { method: "POST" }),
+
+  // Activity
+  activity: (filter, cursor) => {
+    const p = new URLSearchParams({ filter });
+    if (cursor) p.set("cursor", cursor);
+    return req<ActivityPage>(`/api/activity?${p}`);
+  },
 
   // Creator zaps
   prepareCreatorZap: async (handle, amountSol) => {

@@ -32,7 +32,12 @@ export function getConnection(): Connection {
   return _conn;
 }
 
-/** Explorer URL for a signature, cluster-aware. */
+/** Explorer URL for a transaction signature, cluster-aware. */
+export function explorerTxUrl(signature: string): string {
+  const suffix = IS_MAINNET ? "" : `?cluster=${CLUSTER}`;
+  return `https://explorer.solana.com/tx/${signature}${suffix}`;
+}
+
 /** Explorer URL for an address, cluster-aware. */
 export function explorerAddressUrl(address: string): string {
   const suffix = IS_MAINNET ? "" : `?cluster=${CLUSTER}`;

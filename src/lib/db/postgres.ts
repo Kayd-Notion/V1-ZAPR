@@ -10,6 +10,8 @@ import path from "node:path";
 import { databaseUrl } from "./url";
 import { expiresAt } from "../lifespan";
 import type {
+  Activity,
+  ActivityKind,
   CommentWithAuthor,
   CreatorRankEntry,
   CreatorZap,
@@ -184,6 +186,32 @@ function notificationEvents(db: Sql, userId: string) {
            false, null::float8, c.post_id, c.text
     from comments c join posts cp on cp.id = c.post_id
     where cp.user_id = ${userId} and c.user_id <> ${userId}`;
+}
+
+/**
+ * The money history of `userId` as one row shape (kind, aid, created_at, dir,
+ * amount, total, cp_id, cp_hidden, post_id, signature, self): zaps sent to
+ * posts and creators, creator shares received from both.
+ */
+function activityEvents(db: Sql, userId: string) {
+  return db`
+    select 'zap_sent' as kind, 'zs:' || pm.id as aid, pm.created_at, 'out' as dir,
+           pm.amount, pm.amount as total, pm.creator_user_id as cp_id, false as cp_hidden,
+           pm.post_id, pm.signature, (pm.creator_user_id = ${userId}) as self
+    from pumps pm where pm.pumper_user_id = ${userId}
+    union all
+    select 'creator_zap_sent', 'cs:' || cz.id, cz.created_at, 'out',
+           cz.amount, cz.amount, cz.creator_user_id, false, null::uuid, cz.signature, false
+    from creator_zaps cz where cz.zapper_user_id = ${userId}
+    union all
+    select 'zap_received', 'zr:' || pm.id, pm.created_at, 'in',
+           pm.creator_amount, pm.amount, pm.pumper_user_id, (pm.anonymous and pm.pumper_user_id <> ${userId}),
+           pm.post_id, pm.signature, (pm.pumper_user_id = ${userId})
+    from pumps pm where pm.creator_user_id = ${userId}
+    union all
+    select 'creator_zap_received', 'cr:' || cz.id, cz.created_at, 'in',
+           cz.creator_amount, cz.amount, cz.zapper_user_id, cz.anonymous, null::uuid, cz.signature, false
+    from creator_zaps cz where cz.creator_user_id = ${userId}`;
 }
 
 function rowToPostRank(r: Row): PostRankEntry {
@@ -518,6 +546,34 @@ export function createPostgresStore(): Store {
           select 1 from (${notificationEvents(db, userId)}) e where e.created_at > ${after} limit 100
         ) x`;
       return r.n;
+    },
+    async listActivity(userId, { limit, filter, before }) {
+      const db = await getSql();
+      const rows = await db`
+        select e.*, u.handle as cp_handle, u.avatar_url as cp_avatar, p.text as post_text
+        from (${activityEvents(db, userId)}) e
+        left join users u on u.id = e.cp_id and not e.cp_hidden
+        left join posts p on p.id = e.post_id and p.expires_at > ${Date.now()}
+        where true
+          ${filter === "all" ? db`` : db`and e.dir = ${filter}`}
+          ${before ? db`and (e.created_at < ${before.createdAt} or (e.created_at = ${before.createdAt} and e.aid < ${before.id}))` : db``}
+        order by e.created_at desc, e.aid desc
+        limit ${limit}`;
+      return rows.map(
+        (r): Activity => ({
+          id: r.aid,
+          kind: r.kind as ActivityKind,
+          direction: r.dir,
+          createdAt: Number(r.created_at),
+          amount: Number(r.amount),
+          total: Number(r.total),
+          counterpart: r.cp_handle ? { id: r.cp_id, handle: r.cp_handle, avatarUrl: r.cp_avatar ?? null } : null,
+          postId: r.post_text === null ? null : r.post_id,
+          postText: r.post_text ?? null,
+          self: r.self,
+          signature: r.signature,
+        }),
+      );
     },
     async getNotificationsSeenAt(userId) {
       const db = await getSql();

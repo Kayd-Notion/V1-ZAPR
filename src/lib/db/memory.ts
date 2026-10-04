@@ -12,6 +12,7 @@ import { randomUUID } from "node:crypto";
 import { buildSeed } from "./seed";
 import { expiresAt } from "../lifespan";
 import type {
+  Activity,
   Comment,
   CommentWithAuthor,
   CreatorRankEntry,
@@ -182,6 +183,54 @@ function notificationEvents(d: DbShape, userId: string, now: number): Notificati
       actor: actor(c.userId), amount: null,
       postId: live ? post.id : null, postText: live ? post.text : null, text: c.text,
     });
+  }
+  return out.sort((a, b) => b.createdAt - a.createdAt || (a.id < b.id ? 1 : a.id > b.id ? -1 : 0));
+}
+
+/** The money history of `userId`, newest first (see Store.listActivity). */
+function activityEvents(d: DbShape, userId: string, now: number): Activity[] {
+  const ref = (id: string) => {
+    const u = d.users.find((x) => x.id === id);
+    return u ? { id: u.id, handle: u.handle, avatarUrl: u.avatarUrl } : null;
+  };
+  const live = (id: string) => d.posts.find((p) => p.id === id && isAlive(p, now)) ?? null;
+  const out: Activity[] = [];
+  for (const pm of d.pumps) {
+    if (pm.pumperUserId === userId) {
+      const post = live(pm.postId);
+      out.push({
+        id: `zs:${pm.id}`, kind: "zap_sent", direction: "out", createdAt: pm.createdAt,
+        amount: pm.amount, total: pm.amount, counterpart: ref(pm.creatorUserId),
+        postId: post?.id ?? null, postText: post?.text ?? null,
+        self: pm.creatorUserId === userId, signature: pm.signature,
+      });
+    }
+    if (pm.creatorUserId === userId) {
+      const post = live(pm.postId);
+      const self = pm.pumperUserId === userId;
+      out.push({
+        id: `zr:${pm.id}`, kind: "zap_received", direction: "in", createdAt: pm.createdAt,
+        amount: pm.creatorAmount, total: pm.amount,
+        counterpart: pm.anonymous && !self ? null : ref(pm.pumperUserId),
+        postId: post?.id ?? null, postText: post?.text ?? null, self, signature: pm.signature,
+      });
+    }
+  }
+  for (const z of d.creatorZaps) {
+    if (z.zapperUserId === userId) {
+      out.push({
+        id: `cs:${z.id}`, kind: "creator_zap_sent", direction: "out", createdAt: z.createdAt,
+        amount: z.amount, total: z.amount, counterpart: ref(z.creatorUserId),
+        postId: null, postText: null, self: false, signature: z.signature,
+      });
+    }
+    if (z.creatorUserId === userId) {
+      out.push({
+        id: `cr:${z.id}`, kind: "creator_zap_received", direction: "in", createdAt: z.createdAt,
+        amount: z.creatorAmount, total: z.amount, counterpart: z.anonymous ? null : ref(z.zapperUserId),
+        postId: null, postText: null, self: false, signature: z.signature,
+      });
+    }
   }
   return out.sort((a, b) => b.createdAt - a.createdAt || (a.id < b.id ? 1 : a.id > b.id ? -1 : 0));
 }
@@ -475,6 +524,13 @@ export function createMemoryStore(): Store {
     async countNotificationsSince(userId, after) {
       const d = await load();
       return Math.min(100, notificationEvents(d, userId, Date.now()).filter((n) => n.createdAt > after).length);
+    },
+    async listActivity(userId, { limit, filter, before }) {
+      const d = await load();
+      return activityEvents(d, userId, Date.now())
+        .filter((a) => filter === "all" || a.direction === filter)
+        .filter((a) => !before || a.createdAt < before.createdAt || (a.createdAt === before.createdAt && a.id < before.id))
+        .slice(0, limit);
     },
     async getNotificationsSeenAt(userId) {
       const d = await load();

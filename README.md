@@ -96,6 +96,11 @@ textes, messages d'erreur du serveur, nombres (`98.40`), durées (`3d left`,
   même transaction atomique à deux transferts, partagée **90/10**
   créateur/plateforme. Compte dans le classement **Creators** du Top. Aucun
   effet sur ses posts (ni durée de vie, ni total du post).
+- **Wallet → Activity** : l'historique de l'argent, du plus récent au plus ancien,
+  filtrable (All / Received / Sent) : zaps envoyés (posts et créateurs) et parts
+  reçues (70 % d'un zap de post, 90 % d'un zap direct), avec le pseudo de l'autre
+  personne (sauf zap anonyme), le post concerné et un lien vers la transaction
+  sur l'explorateur Solana. Un auto-zap apparaît des deux côtés.
 - **Profil**, **Wallet** (solde devnet + airdrop), **Paramètres** (pseudo, bio,
   confidentialité), **Explorer** (ouvert par la loupe en haut à gauche),
   **Classements** : deux onglets, **Posts** (les posts les plus zappés) et

@@ -116,3 +116,6 @@ create table if not exists creator_zaps (
 );
 create index if not exists creator_zaps_created_idx on creator_zaps (created_at);
 create index if not exists creator_zaps_creator_idx on creator_zaps (creator_user_id, created_at);
+-- Wallet activity: what a user sent.
+create index if not exists pumps_pumper_idx on pumps (pumper_user_id, created_at);
+create index if not exists creator_zaps_zapper_idx on creator_zaps (zapper_user_id, created_at);

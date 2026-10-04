@@ -229,6 +229,20 @@ export const IconLink = (p: IconProps) => (
   </Icon>
 );
 
+/** Money in: an arrow landing bottom-left, with a base line. */
+export const IconArrowIn = (p: IconProps) => (
+  <Icon name="arrow-in" {...p}>
+    <path d="M18 6 7 17M7 8.5V17h8.5" />
+  </Icon>
+);
+
+/** Money out: an arrow leaving top-right. */
+export const IconArrowOut = (p: IconProps) => (
+  <Icon name="arrow-out" {...p}>
+    <path d="M6 18 17 7M8.5 7H17v8.5" />
+  </Icon>
+);
+
 /** Share: a tray with an arrow leaving it, angled like the bolt. */
 export const IconShare = (p: IconProps) => (
   <Icon name="share" {...p}>

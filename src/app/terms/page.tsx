@@ -42,7 +42,8 @@ export default function TermsPage() {
 
       <h2>4. Moderation</h2>
       <p>
-        ZAPR may hide content or ban an account that breaks these terms, without notice. A ban blocks posting and zapping on ZAPR; it cannot cancel transactions already made on the blockchain.
+        Anyone signed in can report a post or a comment (&ldquo;⋯&rdquo; menu, or the flag on a comment). ZAPR may hide
+        content or ban an account that breaks these terms, without notice. A ban blocks posting and zapping on ZAPR; it cannot cancel transactions already made on the blockchain.
       </p>
 
       <h2>5. Zaps</h2>

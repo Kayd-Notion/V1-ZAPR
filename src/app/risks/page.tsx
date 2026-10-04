@@ -42,7 +42,8 @@ export default function RisksPage() {
       <h2>Scams</h2>
       <p>
         Watch out for fake giveaways, accounts copying a famous username, and links promising free SOL. ZAPR never
-        sends you private messages asking you to connect or sign anything elsewhere.
+        sends you private messages asking you to connect or sign anything elsewhere. Report suspicious posts from
+        their &ldquo;⋯&rdquo; menu.
       </p>
 
       <h2>Prototype software</h2>

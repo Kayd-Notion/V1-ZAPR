@@ -1,6 +1,6 @@
 "use client";
 import { use, useCallback, useEffect, useState } from "react";
-import { IconBack, IconComment, IconShare, IconTrash, IconZap } from "@/components/icons";
+import { IconBack, IconComment, IconFlag, IconShare, IconTrash, IconZap } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { Avatar } from "@/components/Avatar";
 import { TimeGauge } from "@/components/TimeGauge";
@@ -21,7 +21,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   const { id } = use(params);
   const router = useRouter();
   const { requireAuth, user } = useSession();
-  const { openPump, toast, dataVersion } = useUI();
+  const { openPump, toast, dataVersion, openReport } = useUI();
 
   const [post, setPost] = useState<ClientPost | null>(null);
   const [pumpers, setPumpers] = useState<ClientPumper[]>([]);
@@ -216,7 +216,8 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
             </button>
           </div>
           {comments.map((c) => {
-            const canDelete = Boolean(user && (user.id === c.userId || user.id === post.userId));
+            const canDelete = Boolean(user && (user.id === c.userId || user.id === post.userId || user.isAdmin));
+            const canReport = user?.id !== c.userId;
             return (
               <div className="comment" key={c.id}>
                 <Avatar id={c.author.id} handle={c.author.handle} src={c.author.avatarUrl} size="sm" />
@@ -226,6 +227,19 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                       {c.author.handle}
                     </span>
                     <span className="faint">{timeAgo(c.createdAt)} ago</span>
+                    {canReport && (
+                      <button
+                        className={`c-report${canDelete ? "" : " solo"}`}
+                        onClick={() => {
+                          if (!requireAuth("Connect your wallet to report a comment.")) return;
+                          openReport({ type: "comment", id: c.id, label: `@${c.author.handle}'s comment` });
+                        }}
+                        aria-label="Report comment"
+                        title="Report comment"
+                      >
+                        <IconFlag />
+                      </button>
+                    )}
                     {canDelete && (
                       <button
                         className={`c-del${confirmComment === c.id ? " confirm" : ""}`}

@@ -12,6 +12,7 @@ import { randomUUID } from "node:crypto";
 import { buildSeed } from "./seed";
 import { expiresAt } from "../lifespan";
 import type {
+  AdminStats,
   Activity,
   Comment,
   CommentWithAuthor,
@@ -27,9 +28,24 @@ import type {
   PostWithAuthor,
   Pump,
   PumpWithAuthor,
+  ReportGroup,
+  ReportReason,
+  ReportTargetType,
   Store,
   User,
 } from "./types";
+
+interface Report {
+  id: string;
+  targetType: ReportTargetType;
+  targetId: string;
+  reporterId: string;
+  reason: ReportReason;
+  details: string;
+  status: "open" | "actioned" | "dismissed";
+  createdAt: number;
+  resolvedAt: number | null;
+}
 
 interface Follow {
   followerId: string;
@@ -46,6 +62,7 @@ interface DbShape {
   creatorZaps: CreatorZap[];
   /** userId → when they last opened their notifications (ms epoch). */
   notificationsSeenAt: Record<string, number>;
+  reports: Report[];
 }
 
 // On serverless/read-only filesystems (e.g. Vercel) `process.cwd()` isn't
@@ -76,13 +93,15 @@ async function load(): Promise<DbShape> {
       db.follows ??= [];
       db.creatorZaps ??= [];
       db.notificationsSeenAt ??= {};
+      db.reports ??= [];
       for (const u of db.users) {
         u.zapped ??= 0;
         u.avatarUrl ??= null;
+        u.banned ??= false;
       }
       if (backfillPumpSnapshots(db)) await persistNow(db);
     } catch {
-      db = { ...buildSeed(), follows: [], creatorZaps: [], notificationsSeenAt: {} };
+      db = { ...buildSeed(), follows: [], creatorZaps: [], notificationsSeenAt: {}, reports: [] };
       await persistNow(db); // best-effort; safe if the FS is read-only
     }
     return db;
@@ -235,6 +254,11 @@ function activityEvents(d: DbShape, userId: string, now: number): Activity[] {
   return out.sort((a, b) => b.createdAt - a.createdAt || (a.id < b.id ? 1 : a.id > b.id ? -1 : 0));
 }
 
+/** Not hidden by moderation, and its author isn't banned. */
+function isVisible(d: DbShape, p: Post): boolean {
+  return !p.hidden && !d.users.find((u) => u.id === p.userId)?.banned;
+}
+
 /** Still alive at `now` (expired posts appear nowhere). */
 function isAlive(p: Post, now: number = Date.now()): boolean {
   return expiresAt(p.createdAt, p.pumped) > now;
@@ -272,6 +296,7 @@ export function createMemoryStore(): Store {
         hidePumpHistory: false,
         anonymizePumps: false,
         avatarUrl: null,
+        banned: false,
       };
       d.users.push(user);
       persist();
@@ -308,6 +333,7 @@ export function createMemoryStore(): Store {
       const d = await load();
       const p = d.posts.find((x) => x.id === id);
       if (!p || !isAlive(p, Date.now() - (opts?.graceMs ?? 0))) return null;
+      if (!opts?.includeHidden && !isVisible(d, p)) return null;
       const author = findUser(d, p.userId);
       if (!author) return null;
       return { ...p, author: authorOf(author) };
@@ -315,7 +341,7 @@ export function createMemoryStore(): Store {
     async listPosts(q: FeedQuery) {
       const d = await load();
       const now = Date.now();
-      let list = d.posts.filter((p) => isAlive(p, now));
+      let list = d.posts.filter((p) => isAlive(p, now) && isVisible(d, p));
       if (q.authorId) list = list.filter((p) => p.userId === q.authorId);
       if (q.authorIds) list = list.filter((p) => q.authorIds!.includes(p.userId));
       if (q.before) list = list.filter((p) => p.createdAt < q.before!);
@@ -388,7 +414,7 @@ export function createMemoryStore(): Store {
       const h = q.replace(/^@/, "");
       const now = Date.now();
       const posts = d.posts
-        .filter((p) => isAlive(p, now))
+        .filter((p) => isAlive(p, now) && isVisible(d, p))
         .map((p) => ({ p, author: findUser(d, p.userId) }))
         .filter(
           ({ p, author }) =>
@@ -399,7 +425,7 @@ export function createMemoryStore(): Store {
         .slice(0, limit)
         .map(({ p, author }) => ({ ...p, author: authorOf(author!) }));
       const users = d.users
-        .filter((u) => u.handle.toLowerCase().includes(h))
+        .filter((u) => !u.banned && u.handle.toLowerCase().includes(h))
         .sort((a, b) => b.received - a.received || a.handle.localeCompare(b.handle))
         .slice(0, Math.min(limit, 10));
       return { posts, users };
@@ -445,9 +471,7 @@ export function createMemoryStore(): Store {
         .sort((a, b) => b.createdAt - a.createdAt)
         .map((c) => {
           const author = findUser(d, c.userId);
-          return author
-            ? { ...c, author: refOf(author) }
-            : null;
+          return author && !author.banned ? { ...c, author: refOf(author) } : null;
         })
         .filter((x): x is CommentWithAuthor => x !== null);
     },
@@ -532,6 +556,134 @@ export function createMemoryStore(): Store {
         .filter((a) => !before || a.createdAt < before.createdAt || (a.createdAt === before.createdAt && a.id < before.id))
         .slice(0, limit);
     },
+    async createReport({ reporterId, targetType, targetId, reason, details }) {
+      const d = await load();
+      const exists =
+        targetType === "post"
+          ? d.posts.some((p) => p.id === targetId && isAlive(p))
+          : d.comments.some((c) => c.id === targetId);
+      if (!exists) return "not_found";
+      if (d.reports.some((r) => r.targetType === targetType && r.targetId === targetId && r.reporterId === reporterId)) {
+        return "duplicate";
+      }
+      d.reports.push({
+        id: randomUUID(), targetType, targetId, reporterId, reason, details,
+        status: "open", createdAt: Date.now(), resolvedAt: null,
+      });
+      persist();
+      return "created";
+    },
+    async listOpenReports(limit) {
+      const d = await load();
+      const groups = new Map<string, Report[]>();
+      for (const r of d.reports) {
+        if (r.status !== "open") continue;
+        const k = `${r.targetType}:${r.targetId}`;
+        groups.set(k, [...(groups.get(k) ?? []), r]);
+      }
+      return [...groups.values()]
+        .map((rs): ReportGroup => {
+          const { targetType, targetId } = rs[0];
+          const post = targetType === "post" ? d.posts.find((p) => p.id === targetId) : undefined;
+          const comment = targetType === "comment" ? d.comments.find((c) => c.id === targetId) : undefined;
+          const authorId = post?.userId ?? comment?.userId;
+          const author = authorId ? findUser(d, authorId) : null;
+          return {
+            targetType,
+            targetId,
+            count: rs.length,
+            reasons: [...new Set(rs.map((r) => r.reason))],
+            details: rs.map((r) => r.details).filter(Boolean),
+            firstAt: Math.min(...rs.map((r) => r.createdAt)),
+            lastAt: Math.max(...rs.map((r) => r.createdAt)),
+            text: post?.text ?? comment?.text ?? null,
+            mediaUrl: post?.mediaUrl ?? null,
+            postId: post?.id ?? comment?.postId ?? null,
+            author: author ? { id: author.id, handle: author.handle, avatarUrl: author.avatarUrl, banned: author.banned } : null,
+            hidden: Boolean(post?.hidden),
+          };
+        })
+        .sort((a, b) => b.count - a.count || b.lastAt - a.lastAt)
+        .slice(0, limit);
+    },
+    async resolveReports(targetType, targetId, status) {
+      const d = await load();
+      let n = 0;
+      for (const r of d.reports) {
+        if (r.status === "open" && r.targetType === targetType && r.targetId === targetId) {
+          r.status = status;
+          r.resolvedAt = Date.now();
+          n++;
+        }
+      }
+      if (n) persist();
+      return n;
+    },
+    async setPostHidden(postId, hidden) {
+      const d = await load();
+      const p = d.posts.find((x) => x.id === postId);
+      if (!p) return false;
+      p.hidden = hidden;
+      persist();
+      return true;
+    },
+    async setUserBanned(userId, banned) {
+      const d = await load();
+      const u = findUser(d, userId);
+      if (!u) return false;
+      u.banned = banned;
+      persist();
+      return true;
+    },
+    async removeComment(commentId) {
+      const d = await load();
+      const c = d.comments.find((x) => x.id === commentId);
+      if (!c) return false;
+      d.comments = d.comments.filter((x) => x.id !== commentId);
+      const post = d.posts.find((p) => p.id === c.postId);
+      if (post) post.comments = Math.max(0, post.comments - 1);
+      persist();
+      return true;
+    },
+    async listHiddenPosts(limit) {
+      const d = await load();
+      const now = Date.now();
+      return d.posts
+        .filter((p) => p.hidden && isAlive(p, now))
+        .sort((a, b) => b.createdAt - a.createdAt)
+        .slice(0, limit)
+        .map((p) => {
+          const author = findUser(d, p.userId);
+          return author ? { ...p, author: authorOf(author) } : null;
+        })
+        .filter((x): x is PostWithAuthor => x !== null);
+    },
+    async listBannedUsers(limit) {
+      const d = await load();
+      return d.users.filter((u) => u.banned).sort((a, b) => a.handle.localeCompare(b.handle)).slice(0, limit);
+    },
+    async adminStats(): Promise<AdminStats> {
+      const d = await load();
+      const now = Date.now();
+      const day = now - 24 * 3600_000;
+      const zaps = [...d.pumps, ...d.creatorZaps];
+      const sum = (xs: { amount: number }[]) => Math.round(xs.reduce((s, x) => s + x.amount, 0) * 1e9) / 1e9;
+      const open = new Set(d.reports.filter((r) => r.status === "open").map((r) => `${r.targetType}:${r.targetId}`));
+      return {
+        users: d.users.length,
+        bannedUsers: d.users.filter((u) => u.banned).length,
+        newUsers24h: d.users.filter((u) => u.createdAt >= day).length,
+        livePosts: d.posts.filter((p) => isAlive(p, now) && !p.hidden).length,
+        hiddenPosts: d.posts.filter((p) => isAlive(p, now) && p.hidden).length,
+        zaps: zaps.length,
+        solZapped: sum(zaps),
+        platformRevenue: Math.round(zaps.reduce((s, x) => s + x.founderAmount, 0) * 1e9) / 1e9,
+        zaps24h: zaps.filter((z) => z.createdAt >= day).length,
+        solZapped24h: sum(zaps.filter((z) => z.createdAt >= day)),
+        openReports: open.size,
+      };
+    },
+
     async getNotificationsSeenAt(userId) {
       const d = await load();
       return d.notificationsSeenAt[userId] ?? 0;
@@ -548,7 +700,7 @@ export function createMemoryStore(): Store {
       let rows: { id: string; total: number; creatorUserId: string | null }[];
 
       const now = Date.now();
-      const alive = new Set(d.posts.filter((p) => isAlive(p, now)).map((p) => p.id));
+      const alive = new Set(d.posts.filter((p) => isAlive(p, now) && isVisible(d, p)).map((p) => p.id));
       if (q.since === undefined) {
         // All time: cumulative total kept on the post.
         rows = d.posts
@@ -605,7 +757,7 @@ export function createMemoryStore(): Store {
       for (const [id, raw] of sums) {
         const user = findUser(d, id);
         const total = Math.round(raw * 1e9) / 1e9; // lamport precision, no float noise
-        if (user && total > 0) rows.push({ id, total, user });
+        if (user && !user.banned && total > 0) rows.push({ id, total, user });
       }
       return rows
         .filter((r) => !byCountry || r.user.country === byCountry)

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { IconBack, IconEyeOff, IconUserCheck, IconUserPlus, IconWallet, IconZap } from "@/components/icons";
+import { IconBack, IconBan, IconEyeOff, IconUserCheck, IconUserPlus, IconWallet, IconZap } from "@/components/icons";
 import { PostCard } from "./PostCard";
 import { Avatar } from "./Avatar";
 import { ZaprEmpty, ZaprLoader } from "./ZaprMark";
@@ -93,7 +93,7 @@ export function ProfileView({ handle }: { handle: string }) {
             <button className="btn" style={{ marginTop: 12 }} onClick={() => router.push("/settings")}>
               Edit profile
             </button>
-          ) : (
+          ) : u.banned ? null : (
             <div className="profile-actions">
               <button
                 className={`btn${follow.isFollowing ? "" : " btn-accent-soft"}`}
@@ -112,6 +112,11 @@ export function ProfileView({ handle }: { handle: string }) {
         </div>
         <div className="profile-name">{u.handle}</div>
         <div className="profile-handle">@{u.handle}</div>
+        {u.banned && (
+          <p className="suspended-note">
+            <IconBan /> This account is suspended for breaking the rules. Its posts are hidden.
+          </p>
+        )}
         <div className="profile-bio">{u.bio}</div>
         <div className="profile-follow">
           <span>

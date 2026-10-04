@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStore } from "@/lib/db";
-import { currentUser } from "@/lib/current-user";
+import { currentUser, suspended } from "@/lib/current-user";
 import { expiresAt } from "@/lib/lifespan";
 import { MIN_PUMP_SOL } from "@/lib/pump-config";
 import { formatSol, pumpRequirements } from "@/lib/pump-rules";
@@ -14,6 +14,7 @@ export const runtime = "nodejs";
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const me = await currentUser();
   if (!me) return NextResponse.json({ error: "Connect your wallet to send a zap.", code: "auth_required" }, { status: 401 });
+  if (me.banned) return suspended();
 
   const { id } = await params;
   const body = await req.json().catch(() => null);

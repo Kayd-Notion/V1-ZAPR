@@ -147,7 +147,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       setUser(res.user);
       setStatus("authed");
       closeModal();
-      toast(`Bienvenue ${res.user.handle}. LFG.`);
+      toast(`Welcome ${res.user.handle}. LFG.`);
     },
     [closeModal, toast],
   );

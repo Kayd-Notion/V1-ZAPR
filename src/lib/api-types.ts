@@ -1,5 +1,9 @@
 /** Contract between the UI and the app's API routes (implemented in lib/api.ts). */
 import type {
+  ClientAdminStats,
+  ClientReportGroup,
+  ReportReason,
+  ReportTargetType,
   ClientActivity,
   ActivityFilter,
   ClientComment,
@@ -84,6 +88,15 @@ export interface ActivityPage {
   nextCursor: string | null;
 }
 
+export interface AdminOverview {
+  stats: ClientAdminStats;
+  reports: ClientReportGroup[];
+  hiddenPosts: ClientPost[];
+  bannedUsers: ClientUser[];
+}
+
+export type AdminAction = "hide_post" | "unhide_post" | "delete_comment" | "ban_user" | "unban_user" | "dismiss";
+
 export interface Api {
   // Auth
   nonce(wallet: string): Promise<{ message: string }>;
@@ -116,6 +129,22 @@ export interface Api {
   /** 0 for visitors. */
   unreadNotifications(): Promise<{ unread: number }>;
   markNotificationsSeen(): Promise<{ unread: number }>;
+
+  // Moderation
+  report(input: {
+    targetType: ReportTargetType;
+    targetId: string;
+    reason: ReportReason;
+    details?: string;
+  }): Promise<{ ok: boolean; duplicate: boolean }>;
+  adminOverview(): Promise<AdminOverview>;
+  /** `id` is the post, comment or user acted on; `target*` the report it answers (ban, dismiss). */
+  adminAction(input: {
+    action: AdminAction;
+    id: string;
+    targetType?: ReportTargetType;
+    targetId?: string;
+  }): Promise<{ ok: boolean }>;
 
   // Wallet → Activity (signed-in users)
   activity(filter: ActivityFilter, cursor?: string | null): Promise<ActivityPage>;

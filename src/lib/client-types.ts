@@ -14,6 +14,10 @@ export interface ClientUser {
   hidePumpHistory: boolean;
   anonymizePumps: boolean;
   avatarUrl: string | null;
+  /** Moderation: suspended account (can't post, comment, zap or follow). */
+  banned: boolean;
+  /** Only on the signed-in user's own record. */
+  isAdmin?: boolean;
   createdAt: number;
 }
 
@@ -95,6 +99,39 @@ export interface ClientActivity {
   postText: string | null;
   self: boolean;
   signature: string;
+}
+
+export type ReportTargetType = "post" | "comment";
+export type ReportReason = "spam" | "scam" | "harassment" | "hate" | "sexual" | "illegal" | "other";
+
+/** Admin: the open reports about one post or comment. */
+export interface ClientReportGroup {
+  targetType: ReportTargetType;
+  targetId: string;
+  count: number;
+  reasons: ReportReason[];
+  details: string[];
+  firstAt: number;
+  lastAt: number;
+  text: string | null;
+  mediaUrl: string | null;
+  postId: string | null;
+  author: { id: string; handle: string; avatarUrl: string | null; banned: boolean } | null;
+  hidden: boolean;
+}
+
+export interface ClientAdminStats {
+  users: number;
+  bannedUsers: number;
+  livePosts: number;
+  hiddenPosts: number;
+  zaps: number;
+  solZapped: number;
+  platformRevenue: number;
+  zaps24h: number;
+  solZapped24h: number;
+  newUsers24h: number;
+  openReports: number;
 }
 
 export type NotificationKind = "post_zap" | "creator_zap" | "follow" | "comment";

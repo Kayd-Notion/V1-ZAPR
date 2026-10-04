@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { IconBell, IconFeed, IconInfo, IconLive, IconMoon, IconPlus, IconSearch, IconSettings, IconSun, IconTop, IconUser, IconWallet } from "@/components/icons";
+import { IconBan, IconBell, IconFeed, IconInfo, IconLive, IconMoon, IconShield, IconPlus, IconSearch, IconSettings, IconSun, IconTop, IconUser, IconWallet } from "@/components/icons";
 import { LIGHT_MODE_ENABLED } from "@/lib/brand";
 import { useUI } from "@/context/UIContext";
 import { useSession } from "@/context/SessionContext";
@@ -17,6 +17,7 @@ import { PumpModal } from "./modals/PumpModal";
 import { CreatorZapModal } from "./modals/CreatorZapModal";
 import { OnboardModal } from "./modals/OnboardModal";
 import { WelcomeModal } from "./modals/WelcomeModal";
+import { ReportModal } from "./modals/ReportModal";
 import { SiteFooter } from "./SiteFooter";
 
 const NAV = [
@@ -141,12 +142,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <IconInfo />
             <span>Guide</span>
           </Link>
+          {user?.isAdmin && (
+            <Link href="/admin" className={`rail-item${isActive("/admin", pathname) ? " active" : ""}`} title="Admin">
+              <IconShield />
+              <span>Admin</span>
+            </Link>
+          )}
           <button className="rail-post" onClick={onPost} aria-label="Post" title="Post">
             <IconPlus />
           </button>
         </nav>
 
         <main className="main">
+          {user?.banned && (
+            <div className="suspended-banner" role="alert">
+              <IconBan />
+              <span>
+                <b>Your account is suspended.</b> You can still browse, but you can&apos;t post, comment, zap or follow.
+              </span>
+            </div>
+          )}
           {children}
           <SiteFooter />
         </main>
@@ -172,6 +187,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {activeModal === "pump" && <PumpModal />}
       {activeModal === "creatorZap" && <CreatorZapModal />}
       {activeModal === "onboard" && <OnboardModal />}
+      {activeModal === "report" && <ReportModal />}
       <WelcomeModal />
     </>
   );

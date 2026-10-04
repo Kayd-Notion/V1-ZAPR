@@ -3,7 +3,7 @@ import { getSession, createSession } from "@/lib/session";
 import { getStore } from "@/lib/db";
 import { normalizeHandle } from "@/lib/auth";
 import { countryFromRequest } from "@/lib/geo";
-import { publicUser } from "@/lib/current-user";
+import { selfUser } from "@/lib/current-user";
 
 export const runtime = "nodejs";
 
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
   if (existing) {
     // Already onboarded — make sure the session carries the userId.
     await createSession({ wallet: session.wallet, userId: existing.id });
-    return NextResponse.json({ user: publicUser(existing) });
+    return NextResponse.json({ user: selfUser(existing) });
   }
 
   const body = await req.json().catch(() => null);
@@ -43,5 +43,5 @@ export async function POST(req: NextRequest) {
     country,
   });
   await createSession({ wallet: session.wallet, userId: user.id });
-  return NextResponse.json({ user: publicUser(user) });
+  return NextResponse.json({ user: selfUser(user) });
 }

@@ -11,7 +11,15 @@ import {
 import type { ClientPost, ClientUser } from "@/lib/client-types";
 import { LIGHT_MODE_ENABLED } from "@/lib/brand";
 
-type ModalKind = "connect" | "composer" | "pump" | "creatorZap" | "onboard" | null;
+type ModalKind = "connect" | "composer" | "pump" | "creatorZap" | "onboard" | "report" | null;
+
+/** What the report modal is about. */
+export interface ReportTarget {
+  type: "post" | "comment";
+  id: string;
+  /** e.g. "@bob's post" */
+  label: string;
+}
 
 interface UIContextValue {
   // Toast
@@ -30,6 +38,8 @@ interface UIContextValue {
   openPump: (post: ClientPost) => void;
   openCreatorZap: (user: ClientUser) => void;
   openOnboard: () => void;
+  reportTarget: ReportTarget | null;
+  openReport: (target: ReportTarget) => void;
   closeModal: () => void;
   // Cross-view data invalidation (feed/leaderboard re-fetch on change)
   dataVersion: number;
@@ -44,6 +54,7 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
   const [pumpTarget, setPumpTarget] = useState<ClientPost | null>(null);
   const [creatorZapTarget, setCreatorZapTarget] = useState<ClientUser | null>(null);
   const [connectMessage, setConnectMessage] = useState("");
+  const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
   const [toastMsg, setToastMsg] = useState("");
   const [toastShown, setToastShown] = useState(false);
   const [dataVersion, setDataVersion] = useState(0);
@@ -99,6 +110,10 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
     setActiveModal("creatorZap");
   }, []);
   const openOnboard = useCallback(() => setActiveModal("onboard"), []);
+  const openReport = useCallback((target: ReportTarget) => {
+    setReportTarget(target);
+    setActiveModal("report");
+  }, []);
   const closeModal = useCallback(() => setActiveModal(null), []);
   const bumpData = useCallback(() => setDataVersion((v) => v + 1), []);
 
@@ -116,6 +131,8 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
       openPump,
       openCreatorZap,
       openOnboard,
+      reportTarget,
+      openReport,
       closeModal,
       dataVersion,
       bumpData,
@@ -133,6 +150,8 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
       openPump,
       openCreatorZap,
       openOnboard,
+      reportTarget,
+      openReport,
       closeModal,
       dataVersion,
       bumpData,

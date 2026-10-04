@@ -11,7 +11,7 @@ Dans Vercel → projet → **Settings → Environment Variables**, vérifier :
 | --- | --- | --- |
 | `DATABASE_URL` | posée par Neon | sinon les données s'effacent |
 | `SESSION_SECRET` | 32+ caractères au hasard | sécurité des connexions |
-| `NEXT_PUBLIC_FOUNDER_WALLET` | **ton** adresse Phantom (devnet) | reçoit les 30 % / 10 %, et te donne l'accès **Admin** |
+| `NEXT_PUBLIC_FOUNDER_WALLET` | **ton** adresse Phantom (devnet) | reçoit les 30 % / 10 %, et fait de toi le **seul admin** |
 | `NEXT_PUBLIC_SOLANA_RPC` | conseillé : une URL devnet Helius (gratuit) | le RPC public devnet est souvent saturé |
 | `CRON_SECRET` | facultatif, des caractères au hasard | protège le nettoyage quotidien |
 | `PUMP_REQUIRE_ONCHAIN_VERIFY` | ne rien mettre | la vérification on-chain est **active par défaut en production** |

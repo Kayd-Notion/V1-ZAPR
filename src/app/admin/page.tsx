@@ -3,7 +3,8 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { IconBan, IconCheck, IconEyeOff, IconFlag, IconShield, IconTrash, IconZap } from "@/components/icons";
 import { Avatar } from "@/components/Avatar";
-import { ZaprEmpty, ZaprLoader } from "@/components/ZaprMark";
+import { ZaprLoader } from "@/components/ZaprMark";
+import NotFound from "../not-found";
 import { useSession } from "@/context/SessionContext";
 import { useUI } from "@/context/UIContext";
 import { useNow } from "@/context/LiveContext";
@@ -24,7 +25,7 @@ const REASON_LABEL: Record<ReportReason, string> = {
 };
 
 /**
- * Moderation for admins (founder wallet / ADMIN_WALLETS): key numbers, open
+ * Moderation, for the founder only (NEXT_PUBLIC_FOUNDER_WALLET): key numbers, open
  * reports with one-click actions, hidden posts and banned accounts. The
  * server checks the admin rights on every call.
  */
@@ -40,7 +41,7 @@ export default function AdminPage() {
       setData(await api.adminOverview());
       setDenied(false);
     } catch (e) {
-      if (e instanceof ApiError && e.status === 403) setDenied(true);
+      if (e instanceof ApiError && e.status === 404) setDenied(true);
       else toast("Couldn't load the admin data.");
     }
   }, [toast]);
@@ -50,13 +51,8 @@ export default function AdminPage() {
   }, [user?.isAdmin, load]);
 
   if (status === "loading") return <ZaprLoader />;
-  if (!user?.isAdmin || denied) {
-    return (
-      <ZaprEmpty title="Admins only.">
-        <span>This page is for the ZAPR team.</span>
-      </ZaprEmpty>
-    );
-  }
+  // Anyone but the founder sees a plain "page not found".
+  if (!user?.isAdmin || denied) return <NotFound />;
   if (!data) return <ZaprLoader label="Loading moderation…" />;
 
   const act = async (key: string, input: Parameters<typeof api.adminAction>[0], done: string) => {

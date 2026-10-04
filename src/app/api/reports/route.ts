@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
 import { getStore } from "@/lib/db";
 import { currentUser, suspended } from "@/lib/current-user";
 import { REPORT_REASONS, type ReportReason } from "@/lib/db/types";
@@ -10,6 +11,8 @@ export async function POST(req: NextRequest) {
   const me = await currentUser();
   if (!me) return NextResponse.json({ error: "Connect your wallet to report." }, { status: 401 });
   if (me.banned) return suspended();
+  const limited = await rateLimit("report", me.id);
+  if (limited) return limited;
 
   const body = await req.json().catch(() => null);
   const targetType = body?.targetType;

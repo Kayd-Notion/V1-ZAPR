@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getStore } from "@/lib/db";
 import { currentUser } from "@/lib/current-user";
 import { resolvedSplitBps } from "@/lib/pump-config";
-import { verifyPumpTransaction } from "@/lib/verify-pump";
+import { onchainVerifyRequired, verifyPumpTransaction } from "@/lib/verify-pump";
 import { solToLamports } from "@/lib/format";
 import { lifespanInfo, PURGE_GRACE_MS } from "@/lib/lifespan";
 import { MIN_PUMP_SOL } from "@/lib/pump-config";
@@ -10,7 +10,8 @@ import { formatSol } from "@/lib/pump-rules";
 
 export const runtime = "nodejs";
 
-const REQUIRE_VERIFY = process.env.PUMP_REQUIRE_ONCHAIN_VERIFY === "true";
+// Waiting for Solana (verification retries) can take a few seconds.
+export const maxDuration = 30;
 
 /**
  * Record a completed pump. The on-chain transfer(s) already happened client-side
@@ -55,11 +56,11 @@ export async function POST(
 
   // Idempotency: a transaction is recorded once, as a post zap OR a creator zap.
   if ((await store.getPumpBySignature(signature)) || (await store.getCreatorZapBySignature(signature))) {
-    return NextResponse.json({ error: "This zap was already recorded." }, { status: 409 });
+    return NextResponse.json({ error: "This zap was already recorded.", code: "already_recorded" }, { status: 409 });
   }
 
   // Integrity: re-check the transaction on-chain (prod). Skipped in dev.
-  if (REQUIRE_VERIFY) {
+  if (onchainVerifyRequired()) {
     const v = await verifyPumpTransaction({
       signature,
       pumperWallet: me.wallet,
@@ -67,7 +68,10 @@ export async function POST(
       amountSol: amount,
     });
     if (!v.ok) {
-      return NextResponse.json({ error: v.reason || "On-chain verification failed." }, { status: 400 });
+      return NextResponse.json(
+        { error: v.reason || "On-chain verification failed.", code: v.retryable ? "verify_pending" : "verify_failed" },
+        { status: v.retryable ? 503 : 400 },
+      );
     }
   }
 

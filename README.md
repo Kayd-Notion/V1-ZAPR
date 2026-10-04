@@ -36,7 +36,8 @@ dans le navigateur : Storage → ta base → **Open in Neon** → **SQL Editor**
 | --- | --- | --- |
 | `DATABASE_URL` | posée par Neon | Postgres (sinon données de démo éphémères) |
 | `SESSION_SECRET` | 32+ caractères aléatoires | signe les sessions de connexion |
-| `PUMP_REQUIRE_ONCHAIN_VERIFY` | `true` | le serveur vérifie chaque zap sur Solana |
+| `PUMP_REQUIRE_ONCHAIN_VERIFY` | vide (défaut), `true` ou `false` | vérification de chaque zap sur Solana : **active par défaut en production**, coupée en local et en preview |
+| `CRON_SECRET` | facultatif | protège le nettoyage quotidien (`/api/cron/purge`, appelé par Vercel Cron) |
 | `NEXT_PUBLIC_SOLANA_CLUSTER` | `devnet` (défaut) | réseau ; `mainnet-beta` bloque les zaps |
 | `NEXT_PUBLIC_SOLANA_RPC` | vide ou URL Helius/QuickNode | RPC custom |
 | `NEXT_PUBLIC_FOUNDER_WALLET` | adresse devnet du fondateur | reçoit les 30 % ; est aussi **admin** |
@@ -150,6 +151,24 @@ Règles des zaps, vérifiées **dans l'interface et côté serveur** :
    palier, il ressuscite le post. Le post est supprimé 10 min après expiration.
 3. **Minimum 0,005 SOL** par zap.
 
+**Sécurité.**
+
+- **Vérification on-chain** de chaque zap avant de l'enregistrer (production) :
+  bon payeur, bon créateur, bonne répartition (70/30 ou 90/10), bon montant,
+  transaction réussie ; une transaction ne compte qu'une fois. Si Solana met du
+  temps à la montrer, le serveur réessaie (~12 s) puis répond « pending », et
+  l'app réessaie à son tour (`src/lib/record-retry.ts`).
+- **Anti-spam** (`src/lib/rate-limit.ts`) : posts 8 / 10 min, commentaires
+  30 / 10 min, follows 60 / 10 min, signalements 20 / h, profil 20 / 10 min,
+  connexions 10 / 10 min par wallet. Compteurs en base, **par compte ou par
+  wallet, jamais par IP**.
+- **En-têtes de sécurité** (`next.config.mjs`) : CSP (scripts, styles et polices
+  uniquement de ZAPR, pas d'iframe, pas de plugin), HSTS, nosniff,
+  Referrer-Policy, Permissions-Policy.
+- **Médias** : seules les URL Irys/Arweave sont acceptées.
+- **Nettoyage** : posts expirés supprimés au fil de l'eau et chaque nuit (Vercel
+  Cron, `vercel.json`).
+
 Règles des zaps de créateur, vérifiées **dans l'interface et côté serveur** :
 minimum **0,01 SOL** (les deux parts restent au-dessus du minimum de rente
 Solana), **pas de zap à soi-même**, une transaction n'est enregistrée qu'une
@@ -210,7 +229,9 @@ src/
     verify-pump.ts     vérification on-chain d'un zap côté serveur
     db/                Postgres (tables créées automatiquement) + fichier de démo
   db/schema.sql        schéma Postgres
-tests/                 tests unitaires (npm test) + pump-send.local.mts (validateur local)
+tests/                 tests unitaires (npm test) + tests sur validateur Solana local :
+                       pump-send.local.mts (envoi) et zap-e2e.local.mts (vrais zaps vérifiés par le serveur)
+docs/TEST-CHECKLIST.md checklist de test pas à pas avec Phantom (devnet)
 ```
 
 Développeurs, en local :

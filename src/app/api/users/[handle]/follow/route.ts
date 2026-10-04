@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
 import { getStore } from "@/lib/db";
 import { currentUser, suspended } from "@/lib/current-user";
 
@@ -9,6 +10,10 @@ async function handle(method: "follow" | "unfollow", params: Promise<{ handle: s
   const me = await currentUser();
   if (!me) return NextResponse.json({ error: "Connect your wallet to follow creators." }, { status: 401 });
   if (me.banned && method === "follow") return suspended();
+  if (method === "follow") {
+    const limited = await rateLimit("follow", me.id);
+    if (limited) return limited;
+  }
   const store = getStore();
   const target = await store.getUserByHandle((await params).handle);
   if (!target) return NextResponse.json({ error: "Profile not found." }, { status: 404 });

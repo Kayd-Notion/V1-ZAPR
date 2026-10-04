@@ -56,7 +56,7 @@ const target = { platformWallet: platform, platformBps: 3000 };
   const w = signer(broke);
   await assert.rejects(
     sendPump({ connection: conn, payer: broke.publicKey, creatorWallet: creator.publicKey.toBase58(), amountSol: 0.01, target, sendTransaction: noSend, signTransaction: w.signTransaction }),
-    (e) => /Solde insuffisant/.test(humanizePumpError(e)),
+    (e) => /Not enough SOL in your wallet/.test(humanizePumpError(e)),
   );
   assert.equal(w.calls, 0);
   console.log("✓ empty wallet: readable error, wallet never opened");
@@ -67,7 +67,7 @@ const target = { platformWallet: platform, platformBps: 3000 };
   const w = signer(pumper);
   await assert.rejects(
     sendPump({ connection: conn, payer: pumper.publicKey, creatorWallet: Keypair.generate().publicKey.toBase58(), amountSol: 0.0007, target, sendTransaction: noSend, signTransaction: w.signTransaction }),
-    (e) => /wallets qui le reçoit est vide/.test(humanizePumpError(e)),
+    (e) => /receiving wallets is empty/.test(humanizePumpError(e)),
   );
   assert.equal(w.calls, 0);
   console.log("✓ rent minimum: readable error, wallet never opened");

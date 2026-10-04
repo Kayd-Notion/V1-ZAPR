@@ -355,6 +355,12 @@ export interface Store {
     userId: string,
     opts: { limit: number; filter: ActivityFilter; before?: NotificationCursor },
   ): Promise<Activity[]>;
+  /**
+   * Anti-spam counter: counts one more hit for `key` in the current fixed
+   * window of `windowMs` and returns the count so far in that window.
+   */
+  hitRateLimit(key: string, windowMs: number): Promise<number>;
+
   // Moderation
   /** One report per user and target; "not_found" if the target doesn't exist. */
   createReport(input: {

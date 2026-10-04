@@ -1,7 +1,7 @@
 import "server-only";
 import { getConnection } from "./solana";
-import { FOUNDER_WALLET, splitLamports } from "./pump-config";
-import { solToLamports } from "./format";
+import { FOUNDER_WALLET } from "./pump-config";
+import { checkTransferTx, type ParsedTransferTx } from "./verify-pump-core";
 
 /**
  * Server-side integrity check for a client-submitted pump.
@@ -22,48 +22,48 @@ export interface VerifyPumpArgs {
 export interface VerifyResult {
   ok: boolean;
   reason?: string;
+  /** Not a wrong transaction: Solana couldn't be read (yet). Worth retrying. */
+  retryable?: boolean;
 }
 
-// Allow tiny rounding differences (lamports) between client and server split.
-const TOLERANCE_LAMPORTS = 10;
+/**
+ * Is the on-chain check on? Explicit PUMP_REQUIRE_ONCHAIN_VERIFY wins
+ * ("true" / "false"); otherwise it is on in production (Vercel) and off in
+ * local development and previews.
+ */
+export function onchainVerifyRequired(): boolean {
+  const v = process.env.PUMP_REQUIRE_ONCHAIN_VERIFY;
+  if (v === "true") return true;
+  if (v === "false") return false;
+  return process.env.VERCEL_ENV === "production";
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export async function verifyPumpTransaction(args: VerifyPumpArgs): Promise<VerifyResult> {
   const { signature, pumperWallet, creatorWallet, amountSol, founderBps } = args;
   if (!FOUNDER_WALLET) return { ok: false, reason: "Founder wallet not configured." };
 
+  // A transaction the wallet just confirmed can take a moment to be readable
+  // from another RPC node, and a public RPC can rate-limit: retry a few times.
   const conn = getConnection();
-  const tx = await conn.getParsedTransaction(signature, {
-    maxSupportedTransactionVersion: 0,
-    commitment: "confirmed",
+  let tx: Awaited<ReturnType<typeof conn.getParsedTransaction>> = null;
+  for (let attempt = 0; attempt < 5 && !tx; attempt++) {
+    if (attempt) await sleep(1200 * attempt);
+    try {
+      tx = await conn.getParsedTransaction(signature, { maxSupportedTransactionVersion: 0, commitment: "confirmed" });
+    } catch {
+      tx = null;
+    }
+  }
+  if (!tx) {
+    return { ok: false, retryable: true, reason: "Solana hasn't confirmed this transaction yet. Retrying…" };
+  }
+  return checkTransferTx(tx as unknown as ParsedTransferTx, {
+    pumperWallet,
+    creatorWallet,
+    founderWallet: FOUNDER_WALLET,
+    amountSol,
+    founderBps,
   });
-  if (!tx) return { ok: false, reason: "Transaction not found on-chain." };
-  if (tx.meta?.err) return { ok: false, reason: "Transaction failed on-chain." };
-
-  const expected = splitLamports(solToLamports(amountSol), founderBps);
-  let toCreator = 0;
-  let toFounder = 0;
-  let fromPayer = false;
-
-  const instructions = tx.transaction.message.instructions as Array<{
-    program?: string;
-    parsed?: { type?: string; info?: Record<string, unknown> };
-  }>;
-
-  for (const ix of instructions) {
-    if (ix.program !== "system" || ix.parsed?.type !== "transfer") continue;
-    const info = ix.parsed.info as { source?: string; destination?: string; lamports?: number };
-    if (info.source !== pumperWallet) continue;
-    fromPayer = true;
-    if (info.destination === creatorWallet) toCreator += Number(info.lamports || 0);
-    else if (info.destination === FOUNDER_WALLET) toFounder += Number(info.lamports || 0);
-  }
-
-  if (!fromPayer) return { ok: false, reason: "The payer doesn't match the connected wallet." };
-  if (Math.abs(toCreator - expected.creatorLamports) > TOLERANCE_LAMPORTS) {
-    return { ok: false, reason: "Wrong creator share." };
-  }
-  if (Math.abs(toFounder - expected.founderLamports) > TOLERANCE_LAMPORTS) {
-    return { ok: false, reason: "Wrong platform share." };
-  }
-  return { ok: true };
 }

@@ -264,6 +264,9 @@ function isAlive(p: Post, now: number = Date.now()): boolean {
   return expiresAt(p.createdAt, p.pumped) > now;
 }
 
+// Anti-spam counters (per process; fine for the demo store).
+const rateLimits = new Map<string, { windowStart: number; count: number }>();
+
 export function createMemoryStore(): Store {
   const findUser = (d: DbShape, id: string) => d.users.find((u) => u.id === id) || null;
 
@@ -555,6 +558,14 @@ export function createMemoryStore(): Store {
         .filter((a) => filter === "all" || a.direction === filter)
         .filter((a) => !before || a.createdAt < before.createdAt || (a.createdAt === before.createdAt && a.id < before.id))
         .slice(0, limit);
+    },
+    async hitRateLimit(key, windowMs) {
+      const now = Date.now();
+      const windowStart = now - (now % windowMs);
+      const cur = rateLimits.get(key);
+      const next = cur && cur.windowStart === windowStart ? { windowStart, count: cur.count + 1 } : { windowStart, count: 1 };
+      rateLimits.set(key, next);
+      return next.count;
     },
     async createReport({ reporterId, targetType, targetId, reason, details }) {
       const d = await load();

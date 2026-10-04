@@ -3,6 +3,7 @@ import { useCallback } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { sendPump } from "@/lib/pump";
 import { api } from "@/lib/api";
+import { recordWithRetry } from "@/lib/record-retry";
 import { CREATOR_ZAP_SPLIT, FOUNDER_WALLET } from "@/lib/pump-config";
 import { humanizePumpError } from "@/lib/pump-errors";
 import type { ClientUser } from "@/lib/client-types";
@@ -40,9 +41,12 @@ export function useCreatorZap() {
         throw new Error(humanizePumpError(e));
       }
 
-      // 3. Record it.
-      const { user } = await api.recordCreatorZap(creator.handle, { amount: amountSol, signature, anonymous });
-      return user;
+      // 3. Record it (verified on Solana in production, with retries).
+      return recordWithRetry(
+        async () => (await api.recordCreatorZap(creator.handle, { amount: amountSol, signature, anonymous })).user,
+        async () => (await api.profile(creator.handle)).user,
+        signature,
+      );
     },
     [connection, publicKey, sendTransaction, signTransaction],
   );

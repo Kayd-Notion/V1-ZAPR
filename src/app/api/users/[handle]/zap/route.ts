@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { getStore } from "@/lib/db";
 import { currentUser, publicUser } from "@/lib/current-user";
 import { CREATOR_ZAP_SPLIT, MIN_CREATOR_ZAP_SOL, splitLamports } from "@/lib/pump-config";
-import { verifyPumpTransaction } from "@/lib/verify-pump";
+import { onchainVerifyRequired, verifyPumpTransaction } from "@/lib/verify-pump";
 import { solToLamports } from "@/lib/format";
 import { formatSol } from "@/lib/pump-rules";
 
 export const runtime = "nodejs";
 
-const REQUIRE_VERIFY = process.env.PUMP_REQUIRE_ONCHAIN_VERIFY === "true";
+// Waiting for Solana (verification retries) can take a few seconds.
+export const maxDuration = 30;
 
 /**
  * Record a creator zap. The on-chain transfers (90/10 by default) already
@@ -36,11 +37,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ han
 
   // Idempotency: a transaction is recorded once, as a post zap OR a creator zap.
   if ((await store.getCreatorZapBySignature(signature)) || (await store.getPumpBySignature(signature))) {
-    return NextResponse.json({ error: "This zap was already recorded." }, { status: 409 });
+    return NextResponse.json({ error: "This zap was already recorded.", code: "already_recorded" }, { status: 409 });
   }
 
   const { founderBps } = CREATOR_ZAP_SPLIT;
-  if (REQUIRE_VERIFY) {
+  if (onchainVerifyRequired()) {
     const v = await verifyPumpTransaction({
       signature,
       pumperWallet: me.wallet,
@@ -48,7 +49,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ han
       amountSol: amount,
       founderBps,
     });
-    if (!v.ok) return NextResponse.json({ error: v.reason || "On-chain verification failed." }, { status: 400 });
+    if (!v.ok) {
+      return NextResponse.json(
+        { error: v.reason || "On-chain verification failed.", code: v.retryable ? "verify_pending" : "verify_failed" },
+        { status: v.retryable ? 503 : 400 },
+      );
+    }
   }
 
   // Split computed server-side, never trusted from the client.

@@ -6,7 +6,8 @@ post et le fait monter dans les classements (posts / créateurs, monde / pays).
 
 - **70 %** au créateur, **30 %** à la plateforme, dans **une seule transaction
   atomique** à deux transferts (ratio réglable, jamais codé en dur).
-- Un post vit **24 h**, puis gagne du temps selon le SOL reçu, **sans plafond**.
+- Un post vit **24 h**, puis gagne du temps par **mini-paliers** de SOL reçu,
+  **sans plafond** (voir « Puissance du zap » plus bas).
 
 > Anciennement « pump.social » (prototype : dépôt `Kayd-Notion/MVP-pump.social`).
 > Brief complet du projet : [`docs/ZAPR-V1-BRIEF.md`](docs/ZAPR-V1-BRIEF.md).
@@ -79,11 +80,30 @@ textes, messages d'erreur du serveur, nombres (`98.40`), durées (`3d left`,
   posts + leur part des zaps reçus directement) ; période All time / 24h /
   7 days / 30 days, monde ou par pays ; thème sombre.
 
+**Puissance du zap (durée de vie d'un post).** Un post naît avec **24 h**. Chaque
+zap s'ajoute au total du post ; chaque fois que le total franchit un palier, le
+post gagne du temps, **ajouté au temps qui lui reste** :
+
+| Dans chaque SOL (0→1, 1→2, 2→3…), le total atteint | Temps gagné | Cumul dans ce SOL |
+|---|---|---|
+| x,10 | +3 h | 3 h |
+| x,25 | +3 h | 6 h |
+| x,50 | +6 h | 12 h |
+| SOL entier | +12 h | 24 h |
+
+Un SOL complet vaut donc toujours **+24 h**. Pas de plafond : un post vit
+éternellement tant qu'on le zappe. Seul le total compte (découper ses zaps ne
+change rien). Montants rapides : 0.01 · 0.05 · 0.1 · 0.5 · 1. La jauge de boost
+(fenêtre de zap et page du post) montre la progression et l'effet d'un zap avant
+de payer. Tous les chiffres : `src/lib/lifespan-config.ts`.
+
 Règles des zaps, vérifiées **dans l'interface et côté serveur** :
 
 1. **Auto-zap autorisé** (badge « self-zap »), compte normalement.
-2. **Post expiré** : il faut au moins le montant qui le sauve (≥ 1 h de vie en
-   plus) ; le serveur revérifie juste avant la signature.
+2. **Post expiré** : il disparaît immédiatement de partout et ne peut plus
+   recevoir de nouveau zap. Seul un zap déjà en cours de signature au moment
+   de l'expiration est encore enregistré (l'argent est parti) ; s'il atteint un
+   palier, il ressuscite le post. Le post est supprimé 10 min après expiration.
 3. **Minimum 0,005 SOL** par zap.
 
 Règles des zaps de créateur, vérifiées **dans l'interface et côté serveur** :
@@ -141,7 +161,7 @@ src/
     pump-config.ts     ratios 70/30 et 90/10, minimums, wallet plateforme
     pump-rules.ts      « minimum pour sauver un post expiré »
     pump-errors.ts     erreurs wallet/Solana traduites en messages clairs
-    lifespan(-config).ts  paliers de durée de vie
+    lifespan(-config).ts  puissance du zap : 24 h de base + mini-paliers par SOL
     solana.ts          réseau (devnet par défaut) + garde anti-mainnet
     verify-pump.ts     vérification on-chain d'un zap côté serveur
     db/                Postgres (tables créées automatiquement) + fichier de démo

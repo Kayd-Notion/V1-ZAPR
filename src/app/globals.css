@@ -673,6 +673,31 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
 .pump-btn:hover .zap-ico, .lc-zap:hover .zap-ico, .btn-primary:hover .zap-ico { animation: bolt-jolt 0.5s var(--ease-snap); }
 .pump-btn:active .zap-ico, .lc-zap:active .zap-ico, .btn-primary:active .zap-ico { animation: bolt-strike 0.35s ease-out; }
 
+/* Boost gauge: progress inside the current SOL toward the next milestone
+   (.10 / .25 / .50 / next SOL), and the effect of the zap being prepared. */
+.boost-gauge {
+  max-width: 560px; margin: 14px 0; padding: 12px 14px;
+  background: var(--bg-elev-2); border: 1px solid var(--border-soft); border-radius: var(--radius-sm);
+}
+.detail-post .boost-gauge { margin: 0 0 12px; }
+.bg-effect { display: flex; align-items: center; gap: 7px; font-size: 13.5px; color: var(--text-dim); margin-bottom: 10px; }
+.bg-effect .zap-ico { color: var(--text-faint); }
+.bg-effect.on { color: var(--text); }
+.bg-effect.on .zap-ico { color: var(--accent-text); }
+.bg-effect.on b { color: var(--accent-text); font-family: var(--font-mono); }
+.bg-bar { position: relative; height: 8px; background: var(--bg-hover); border-radius: var(--radius-bar); }
+.bg-fill {
+  position: absolute; inset: 0 auto 0 0; background: var(--accent); border-radius: var(--radius-bar);
+  box-shadow: var(--glow-line); transition: width var(--dur) var(--ease-snap);
+}
+.bg-tick {
+  position: absolute; top: -3px; width: 8px; height: 14px; margin-left: -4px;
+  background: var(--border); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+.bg-tick.hit { background: var(--accent-hot); }
+.bg-legend { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 8px; font-size: 12px; color: var(--text-faint); font-family: var(--font-mono); }
+.bg-legend b { color: var(--accent-text); font-weight: 700; }
+
 /* -------- 6. Modales -------------------------------------------------- */
 .modal-overlay {
   position: fixed; inset: 0; z-index: 100;

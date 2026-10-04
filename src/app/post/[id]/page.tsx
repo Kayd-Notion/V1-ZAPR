@@ -4,6 +4,7 @@ import { IconBack, IconComment, IconTrash, IconZap } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { Avatar } from "@/components/Avatar";
 import { TimeGauge } from "@/components/TimeGauge";
+import { BoostGauge } from "@/components/BoostGauge";
 import { ZaprEmpty, ZaprLoader } from "@/components/ZaprMark";
 import { useSession } from "@/context/SessionContext";
 import { useUI } from "@/context/UIContext";
@@ -149,9 +150,12 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                 It expired and its content was deleted: it can&apos;t get zaps anymore.
               </div>
             ) : (
-              <button className="pump-btn pump-btn-lg" onClick={doPump}>
-                <IconZap /> Send a zap
-              </button>
+              <>
+                <BoostGauge total={post.pumped} />
+                <button className="pump-btn pump-btn-lg" onClick={doPump}>
+                  <IconZap /> Send a zap
+                </button>
+              </>
             )}
           </div>
 

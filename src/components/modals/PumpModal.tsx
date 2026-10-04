@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { IconAlert, IconHourglass, IconPlatform, IconTrash, IconUser, IconZap } from "@/components/icons";
 import { Modal } from "../Modal";
+import { BoostGauge } from "../BoostGauge";
 import { Avatar } from "../Avatar";
 import { ZaprMark } from "../ZaprMark";
 import { useUI } from "@/context/UIContext";
@@ -216,6 +217,9 @@ export function PumpModal() {
             aria-invalid={Boolean(amountError)}
           />
           {amountError && <p className="field-error">{amountError}</p>}
+
+          {/* What this zap does to the post's life, before paying. */}
+          <BoostGauge total={post.pumped} adding={safeAmount} />
 
           <div className="split-box">
             <div className="split-row creator">

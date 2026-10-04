@@ -16,6 +16,25 @@ post et le fait monter dans les classements (posts / créateurs, monde / pays).
 > zaps sont bloqués sur `mainnet` tant qu'un programme on-chain audité n'existe
 > pas (`src/lib/pump.ts`).
 
+## État de la V1 (prototype fonctionnel)
+
+Fait : connexion wallet, posts (texte, photo, vidéo, #tags, @mentions),
+commentaires, zaps de post (70/30) et de créateur (90/10) vérifiés on-chain,
+durée de vie par paliers avec jauge, fil + Following + Live, classements Posts /
+Creators, notifications, historique Wallet → Activity, recherche, partage avec
+aperçu, suppression, photo de profil, signalements + page Admin (masquer,
+bannir), page How it works, pages légales (brouillons), anti-spam, en-têtes de
+sécurité, nettoyage quotidien. Test pas à pas : `docs/TEST-CHECKLIST.md`.
+
+Hors V1 (à faire avant du vrai SOL) : programme Solana (Anchor) **audité**,
+passage mainnet, relecture juridique des pages légales (+ adresse de contact),
+suppression de compte en libre-service. Pistes ensuite : bot Telegram, app
+mobile, serveur dédié.
+
+Décisions encore ouvertes : montants rapides (aujourd'hui 0.01 · 0.05 · 0.1 ·
+0.5 · 1), classements à 100 % du SOL zappé ou à la part créateur (actuel),
+auto-zap dans les classements (compte aujourd'hui), niveaux de créateur.
+
 ## Tester en ligne, sans rien installer
 
 Vercel redéploie le site à chaque mise à jour de `main`. Sans base de données,

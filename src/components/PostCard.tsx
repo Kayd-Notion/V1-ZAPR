@@ -60,7 +60,7 @@ export function PostCard({ post, fresh = false }: { post: ClientPost; fresh?: bo
               <video src={post.mediaUrl} preload="metadata" />
             ) : (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={post.mediaUrl} alt="" loading="lazy" />
+              <img src={post.mediaUrl} alt={`Image posted by @${post.author.handle}`} loading="lazy" />
             )}
           </div>
         )}

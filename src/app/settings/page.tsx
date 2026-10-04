@@ -165,24 +165,30 @@ export default function SettingsPage() {
             Hide my zap history
             <small>Hides the &ldquo;SOL sent&rdquo; total on your public profile</small>
           </div>
-          <div
+          <button
+            role="switch"
+            aria-checked={user.hidePumpHistory}
+            aria-label="Hide my zap history"
             className={`toggle${user.hidePumpHistory ? " on" : ""}`}
             onClick={() => setPrivacy({ hidePumpHistory: !user.hidePumpHistory })}
           >
             <span className="tg-switch" />
-          </div>
+          </button>
         </div>
         <div className="settings-row">
           <div className="sr-text">
             Make my zaps anonymous by default
             <small>Show up as &ldquo;Anonymous zapper&rdquo; in zap histories</small>
           </div>
-          <div
+          <button
+            role="switch"
+            aria-checked={user.anonymizePumps}
+            aria-label="Make my zaps anonymous by default"
             className={`toggle${user.anonymizePumps ? " on" : ""}`}
             onClick={() => setPrivacy({ anonymizePumps: !user.anonymizePumps })}
           >
             <span className="tg-switch" />
-          </div>
+          </button>
         </div>
       </div>
 
@@ -191,9 +197,15 @@ export default function SettingsPage() {
           <div className="sg-title">Appearance</div>
           <div className="settings-row">
             <div className="sr-text">Dark mode</div>
-            <div className={`toggle${theme === "dark" ? " on" : ""}`} onClick={toggleTheme}>
+            <button
+              role="switch"
+              aria-checked={theme === "dark"}
+              aria-label="Dark mode"
+              className={`toggle${theme === "dark" ? " on" : ""}`}
+              onClick={toggleTheme}
+            >
               <span className="tg-switch" />
-            </div>
+            </button>
           </div>
         </div>
       )}

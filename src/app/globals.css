@@ -725,6 +725,7 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
   display: flex; align-items: center; justify-content: center;
   padding: 16px;
 }
+.modal:focus, .modal:focus-visible { outline: none; }
 .modal {
   background: var(--bg-elev); border: 1px solid var(--border);
   border-top: 2px solid var(--accent);
@@ -1163,6 +1164,7 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
 .act-line a { color: var(--text); }
 .act-line a:hover b { color: var(--accent-text); }
 .act-sub { display: block; margin-top: 2px; font-size: 13px; color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+a.act-sub { padding: 3px 0; margin: -1px 0; }
 a.act-sub:hover { color: var(--text-dim); }
 .act-side { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
 .act-amount { font-family: var(--font-mono); font-weight: 700; font-size: 14px; color: var(--text); white-space: nowrap; }
@@ -1220,6 +1222,11 @@ a.act-sub:hover { color: var(--text-dim); }
 .ar-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .ar-body a { color: var(--text); }
 .ar-text { font-size: 13px; color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* -------- Touch targets: at least ~32px to tap ------------------------ */
+.site-footer nav a { display: inline-flex; align-items: center; min-height: 32px; }
+.toggle { min-height: 32px; min-width: 44px; justify-content: center; }
+.act-meta a { padding: 8px; margin: -8px -8px -8px -2px; }
 
 @media (max-width: 1360px) {
   .home-grid { grid-template-columns: minmax(0, 1fr); }

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { IconClose } from "@/components/icons";
 
 export function Modal({
@@ -14,6 +14,15 @@ export function Modal({
   onClose: () => void;
   children: React.ReactNode;
 }) {
+  // Keyboard and screen readers land in the dialog; focus goes back where it
+  // was when it closes.
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const before = document.activeElement as HTMLElement | null;
+    ref.current?.focus();
+    return () => before?.focus?.();
+  }, []);
+
   // Close on Escape.
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
@@ -30,7 +39,7 @@ export function Modal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="modal" role="dialog" aria-modal="true" aria-label={title}>
+      <div className="modal" role="dialog" aria-modal="true" aria-label={title} ref={ref} tabIndex={-1}>
         <div className="modal-head">
           <h3>
             {icon}

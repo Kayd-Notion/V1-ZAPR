@@ -140,3 +140,11 @@ create table if not exists reports (
   unique (target_type, target_id, reporter_id)
 );
 create index if not exists reports_open_idx on reports (status, created_at desc);
+
+-- Anti-spam: fixed-window counters (one row per action and user / wallet).
+-- Never keyed by IP address: visitor IPs are not stored.
+create table if not exists rate_limits (
+  key           text primary key,
+  window_start  bigint not null,
+  count         integer not null
+);

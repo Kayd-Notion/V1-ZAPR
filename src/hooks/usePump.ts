@@ -4,6 +4,7 @@ import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { sendPump } from "@/lib/pump";
 import { api } from "@/lib/api";
 import { humanizePumpError } from "@/lib/pump-errors";
+import { recordWithRetry } from "@/lib/record-retry";
 import type { ClientPost } from "@/lib/client-types";
 
 /**
@@ -53,10 +54,13 @@ export function usePump() {
         throw new Error(humanizePumpError(e));
       }
 
-      // 3. Record it (the server verifies the transaction on-chain when
-      //    PUMP_REQUIRE_ONCHAIN_VERIFY=true).
-      const { post: updated } = await api.recordPump(post.id, { amount: amountSol, signature, anonymous });
-      return updated;
+      // 3. Record it (in production the server first checks the transaction
+      //    on Solana; it retries if Solana is slow to show it).
+      return recordWithRetry(
+        async () => (await api.recordPump(post.id, { amount: amountSol, signature, anonymous })).post,
+        async () => (await api.post(post.id)).post,
+        signature,
+      );
     },
     [connection, publicKey, sendTransaction, signTransaction],
   );

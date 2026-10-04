@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
 import { currentUser, selfUser, suspended } from "@/lib/current-user";
 import { getStore } from "@/lib/db";
 import { normalizeHandle } from "@/lib/auth";
@@ -11,6 +12,8 @@ export async function PATCH(req: NextRequest) {
   const me = await currentUser();
   if (!me) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
   if (me.banned) return suspended();
+  const limited = await rateLimit("profile", me.id);
+  if (limited) return limited;
 
   const body = await req.json().catch(() => null);
   const store = getStore();

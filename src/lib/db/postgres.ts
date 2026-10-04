@@ -582,6 +582,20 @@ export function createPostgresStore(): Store {
         }),
       );
     },
+    async hitRateLimit(key, windowMs) {
+      const db = await getSql();
+      const now = Date.now();
+      const windowStart = now - (now % windowMs);
+      const [r] = await db`
+        insert into rate_limits (key, window_start, count) values (${key}, ${windowStart}, 1)
+        on conflict (key) do update set
+          count = case when rate_limits.window_start = excluded.window_start then rate_limits.count + 1 else 1 end,
+          window_start = excluded.window_start
+        returning count`;
+      // Now and then, drop counters nobody has touched for a day.
+      if (Math.random() < 0.01) await db`delete from rate_limits where window_start < ${now - 86_400_000}`;
+      return r.count;
+    },
     async createReport({ reporterId, targetType, targetId, reason, details }) {
       const db = await getSql();
       if (!UUID_RE.test(targetId)) return "not_found";

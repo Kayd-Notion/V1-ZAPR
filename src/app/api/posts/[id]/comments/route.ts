@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
 import { getStore } from "@/lib/db";
 import { currentUser, suspended } from "@/lib/current-user";
 
@@ -23,6 +24,8 @@ export async function POST(
     return NextResponse.json({ error: "Connect your wallet to comment." }, { status: 401 });
   }
   if (me.banned) return suspended();
+  const limited = await rateLimit("comment", me.id);
+  if (limited) return limited;
   const { id } = await params;
   const body = await req.json().catch(() => null);
   const text = typeof body?.text === "string" ? body.text.trim() : "";

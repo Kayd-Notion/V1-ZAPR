@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { IconAlert, IconHourglass, IconPlatform, IconTrash, IconUser, IconZap } from "@/components/icons";
 import { Modal } from "../Modal";
-import { BoostGauge } from "../BoostGauge";
+import { BoostGauge, fmtHours } from "../BoostGauge";
 import { Avatar } from "../Avatar";
 import { ZaprMark } from "../ZaprMark";
 import { useUI } from "@/context/UIContext";
@@ -11,6 +11,7 @@ import { usePump } from "@/hooks/usePump";
 import { quotePump } from "@/lib/pump";
 import { MIN_PUMP_SOL, QUICK_ZAP_AMOUNTS, resolvedSplitBps } from "@/lib/pump-config";
 import { formatSol } from "@/lib/pump-rules";
+import { solToNextBoost, zapBoostHours } from "@/lib/lifespan";
 import { api } from "@/lib/api";
 import { ApiError } from "@/lib/api-error";
 import type { PumpQuote } from "@/lib/api-types";
@@ -29,6 +30,8 @@ export function PumpModal() {
   const { user } = useSession();
   const { runPump, canSign } = usePump();
   const [amount, setAmount] = useState(0.1);
+  // Which control picked the amount, so only that one lights up.
+  const [picked, setPicked] = useState<"next" | "quick" | "custom">("quick");
   const [phase, setPhase] = useState<"form" | "sending" | "success">("form");
   const [split, setSplit] = useState(() => resolvedSplitBps());
   const [minPump, setMinPump] = useState(MIN_PUMP_SOL);
@@ -84,6 +87,9 @@ export function PumpModal() {
   const q = quote;
   const expired = q?.status === "expired";
   const requiredMin = Math.max(minPump, q?.requiredMinSol ?? minPump);
+  // The amount that takes the post to its next milestone, and what it unlocks.
+  const nextAmount = Math.max(requiredMin, solToNextBoost(post.pumped).amount);
+  const nextHours = zapBoostHours(post.pumped, nextAmount);
   const tooLow = safeAmount + EPS < requiredMin;
   const quoteSplit = quotePump(safeAmount, founderBps);
 
@@ -190,12 +196,34 @@ export function PumpModal() {
           )}
 
           <label className="field-label">How much are you sending?</label>
+          {/* Shortcut: exactly what the post still needs for its next boost
+              (never below the zap minimum). */}
+          <button
+            className={`qa-next${picked === "next" && Math.abs(amount - nextAmount) < EPS ? " active" : ""}`}
+            onClick={() => {
+              setAmount(nextAmount);
+              setPicked("next");
+            }}
+          >
+            <IconZap />
+            <span className="qa-next-text">
+              <b>Reach the next boost</b>
+              <small>
+                Gives this post <em>+{fmtHours(nextHours)}</em> of life
+              </small>
+            </span>
+            <span className="qa-next-amt">{formatSol(nextAmount)} SOL</span>
+          </button>
+          <label className="field-label">Or pick an amount</label>
           <div className="quick-amounts">
             {QUICK_ZAP_AMOUNTS.map((a) => (
               <button
                 key={a}
-                className={`qa-btn${a === amount ? " active" : ""}`}
-                onClick={() => setAmount(a)}
+                className={`qa-btn${picked === "quick" && a === amount ? " active" : ""}`}
+                onClick={() => {
+                  setAmount(a);
+                  setPicked("quick");
+                }}
                 // Only an expired post's save minimum disables quick amounts
                 // (they all start at 0.01, above MIN_PUMP_SOL).
                 disabled={expired && a + EPS < requiredMin}
@@ -213,7 +241,10 @@ export function PumpModal() {
             step="0.001"
             min={requiredMin}
             value={amount}
-            onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
+            onChange={(e) => {
+              setAmount(parseFloat(e.target.value) || 0);
+              setPicked("custom");
+            }}
             aria-invalid={Boolean(amountError)}
           />
           {amountError && <p className="field-error">{amountError}</p>}

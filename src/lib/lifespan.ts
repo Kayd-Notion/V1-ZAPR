@@ -45,6 +45,12 @@ export function nextBoost(totalPumpedSol: number): { atSol: number; hours: numbe
   return { atSol: (lamports + Math.round(STEPS[0].at * LAMPORTS)) / LAMPORTS, hours: STEPS[0].hours };
 }
 
+/** Exact SOL still missing to reach the next milestone (and the hours it adds). */
+export function solToNextBoost(totalPumpedSol: number): { amount: number; hours: number } {
+  const next = nextBoost(totalPumpedSol);
+  return { amount: (toLamports(next.atSol) - toLamports(totalPumpedSol)) / LAMPORTS, hours: next.hours };
+}
+
 /** Hours a zap of `amountSol` adds to a post that already received `totalPumpedSol`. */
 export function zapBoostHours(totalPumpedSol: number, amountSol: number): number {
   return boostHours(totalPumpedSol + amountSol) - boostHours(totalPumpedSol);

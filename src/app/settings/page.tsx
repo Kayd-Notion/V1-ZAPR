@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { IconBack, IconLogOut } from "@/components/icons";
@@ -132,6 +133,22 @@ export default function SettingsPage() {
           </div>
         </div>
       )}
+
+      <div className="settings-group">
+        <div className="sg-title">About</div>
+        <Link href="/how-it-works" className="settings-row">
+          <div className="sr-text">How it works</div>
+        </Link>
+        <Link href="/terms" className="settings-row">
+          <div className="sr-text">Terms of use</div>
+        </Link>
+        <Link href="/privacy" className="settings-row">
+          <div className="sr-text">Privacy policy</div>
+        </Link>
+        <Link href="/risks" className="settings-row">
+          <div className="sr-text">Risks</div>
+        </Link>
+      </div>
 
       <div className="settings-group">
         <div className="sg-title">Account</div>

@@ -54,6 +54,16 @@ textes, messages d'erreur du serveur, nombres (`98.40`), durées (`3d left`,
 - **Connexion wallet** Phantom / Solflare / Backpack (Wallet Standard), preuve
   de propriété par signature d'un message, choix d'un pseudo.
 - **Mode visiteur** : le fil se lit sans wallet (bandeau « You're just watching »).
+  À la première visite, une fenêtre « Welcome to ZAPR » résume le concept en
+  3 lignes (une seule fois, mémorisé dans le navigateur).
+- **How it works** (`/how-it-works`, « Guide » dans le rail) : le concept, la
+  répartition 70/30 et 90/10, la durée de vie et les paliers (tableau + jauge
+  d'exemple), les classements et une FAQ. Les chiffres sont lus dans la config,
+  jamais recopiés.
+- **Pages légales** `/terms`, `/privacy`, `/risks` (brouillons de prototype, à
+  faire relire par un juriste avant tout lancement public) ; liens en bas de
+  chaque page et dans Settings → About. Pages « introuvable » et « erreur »
+  aux couleurs de ZAPR.
 - **Live permanent** (style pump.fun) : colonne « New / Dying / On fire »
   mise à jour toutes les 4 s, nouveaux posts qui arrivent en direct dans le feed,
   panneau « Top degens ».

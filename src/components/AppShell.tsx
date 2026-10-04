@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { IconBell, IconFeed, IconLive, IconMoon, IconPlus, IconSearch, IconSettings, IconSun, IconTop, IconUser, IconWallet } from "@/components/icons";
+import { IconBell, IconFeed, IconInfo, IconLive, IconMoon, IconPlus, IconSearch, IconSettings, IconSun, IconTop, IconUser, IconWallet } from "@/components/icons";
 import { LIGHT_MODE_ENABLED } from "@/lib/brand";
 import { useUI } from "@/context/UIContext";
 import { useSession } from "@/context/SessionContext";
@@ -16,6 +16,8 @@ import { ComposerModal } from "./modals/ComposerModal";
 import { PumpModal } from "./modals/PumpModal";
 import { CreatorZapModal } from "./modals/CreatorZapModal";
 import { OnboardModal } from "./modals/OnboardModal";
+import { WelcomeModal } from "./modals/WelcomeModal";
+import { SiteFooter } from "./SiteFooter";
 
 const NAV = [
   { href: "/", Icon: IconFeed, label: "Feed" },
@@ -131,12 +133,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <IconSettings />
             <span>Settings</span>
           </Link>
+          <Link
+            href="/how-it-works"
+            className={`rail-item${isActive("/how-it-works", pathname) ? " active" : ""}`}
+            title="How it works"
+          >
+            <IconInfo />
+            <span>Guide</span>
+          </Link>
           <button className="rail-post" onClick={onPost} aria-label="Post" title="Post">
             <IconPlus />
           </button>
         </nav>
 
-        <main className="main">{children}</main>
+        <main className="main">
+          {children}
+          <SiteFooter />
+        </main>
 
         {showLiveCol && <LiveColumn />}
       </div>
@@ -159,6 +172,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {activeModal === "pump" && <PumpModal />}
       {activeModal === "creatorZap" && <CreatorZapModal />}
       {activeModal === "onboard" && <OnboardModal />}
+      <WelcomeModal />
     </>
   );
 }

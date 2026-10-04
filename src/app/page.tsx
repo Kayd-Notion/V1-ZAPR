@@ -112,7 +112,10 @@ export default function FeedPage() {
             <ZaprMark className="vb-mark" />
             <div className="vb-text">
               <b>You&apos;re just watching.</b>
-              Connect your wallet to light the bolt: post, send zaps and climb the leaderboard.
+              Connect your wallet to light the bolt: post, send zaps and climb the leaderboard.{" "}
+              <Link href="/how-it-works" className="vb-link">
+                How it works
+              </Link>
             </div>
             <button
               className="btn btn-primary btn-sm"

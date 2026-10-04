@@ -21,6 +21,8 @@ export interface User {
   anonymizePumps: boolean;
   /** Profile picture (Arweave URL through the Irys gateway), or null for initials. */
   avatarUrl: string | null;
+  /** Moderation: a banned user can't post, comment, zap or follow, and their content is hidden. */
+  banned: boolean;
 }
 
 /** How a user appears next to their content (posts, zaps, comments…). */
@@ -38,6 +40,8 @@ export interface Post {
   comments: number;
   country: string;
   tags: string[];
+  /** Moderation: hidden by an admin (appears nowhere). */
+  hidden?: boolean;
 }
 
 export interface Pump {
@@ -138,6 +142,43 @@ export interface Activity {
   self: boolean;
   /** Solana transaction signature (explorer link). */
   signature: string;
+}
+
+/** Moderation. Users report posts and comments; admins act on them. */
+export type ReportTargetType = "post" | "comment";
+export type ReportReason = "spam" | "scam" | "harassment" | "hate" | "sexual" | "illegal" | "other";
+export const REPORT_REASONS: ReportReason[] = ["spam", "scam", "harassment", "hate", "sexual", "illegal", "other"];
+
+/** All the open reports about one post or comment, with what they point to. */
+export interface ReportGroup {
+  targetType: ReportTargetType;
+  targetId: string;
+  count: number;
+  reasons: ReportReason[];
+  details: string[];
+  firstAt: number;
+  lastAt: number;
+  /** What was reported (null if it is gone already). */
+  text: string | null;
+  mediaUrl: string | null;
+  /** The post itself, or the post the comment is on. */
+  postId: string | null;
+  author: Pick<User, "id" | "handle" | "avatarUrl" | "banned"> | null;
+  hidden: boolean;
+}
+
+export interface AdminStats {
+  users: number;
+  bannedUsers: number;
+  livePosts: number;
+  hiddenPosts: number;
+  zaps: number;
+  solZapped: number;
+  platformRevenue: number;
+  zaps24h: number;
+  solZapped24h: number;
+  newUsers24h: number;
+  openReports: number;
 }
 
 export interface NotificationCursor {
@@ -246,10 +287,12 @@ export interface Store {
     tags?: string[];
   }): Promise<Post>;
   /**
-   * A live post, or null once it has expired. `graceMs` also returns a post
-   * that expired less than that long ago (recording an in-flight zap).
+   * A live post, or null once it has expired or when it is hidden by
+   * moderation. `graceMs` also returns a post that expired less than that
+   * long ago, and `includeHidden` a hidden one (recording an in-flight zap:
+   * the money has moved, the record must follow).
    */
-  getPost(id: string, opts?: { graceMs?: number }): Promise<PostWithAuthor | null>;
+  getPost(id: string, opts?: { graceMs?: number; includeHidden?: boolean }): Promise<PostWithAuthor | null>;
   /** Live posts only: expired posts never appear anywhere. */
   listPosts(q: FeedQuery): Promise<PostWithAuthor[]>;
   /**
@@ -312,6 +355,27 @@ export interface Store {
     userId: string,
     opts: { limit: number; filter: ActivityFilter; before?: NotificationCursor },
   ): Promise<Activity[]>;
+  // Moderation
+  /** One report per user and target; "not_found" if the target doesn't exist. */
+  createReport(input: {
+    reporterId: string;
+    targetType: ReportTargetType;
+    targetId: string;
+    reason: ReportReason;
+    details: string;
+  }): Promise<"created" | "duplicate" | "not_found">;
+  /** Open reports grouped by target, most reported first. */
+  listOpenReports(limit: number): Promise<ReportGroup[]>;
+  /** Closes every open report about a target. */
+  resolveReports(targetType: ReportTargetType, targetId: string, status: "actioned" | "dismissed"): Promise<number>;
+  setPostHidden(postId: string, hidden: boolean): Promise<boolean>;
+  setUserBanned(userId: string, banned: boolean): Promise<boolean>;
+  /** Admin: delete any comment. */
+  removeComment(commentId: string): Promise<boolean>;
+  listHiddenPosts(limit: number): Promise<PostWithAuthor[]>;
+  listBannedUsers(limit: number): Promise<User[]>;
+  adminStats(): Promise<AdminStats>;
+
   /** When the user last opened their notifications (0 = never). */
   getNotificationsSeenAt(userId: string): Promise<number>;
   setNotificationsSeenAt(userId: string, at: number): Promise<void>;

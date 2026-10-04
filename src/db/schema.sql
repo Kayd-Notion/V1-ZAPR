@@ -119,3 +119,24 @@ create index if not exists creator_zaps_creator_idx on creator_zaps (creator_use
 -- Wallet activity: what a user sent.
 create index if not exists pumps_pumper_idx on pumps (pumper_user_id, created_at);
 create index if not exists creator_zaps_zapper_idx on creator_zaps (zapper_user_id, created_at);
+
+-- Moderation. A hidden post, or any post of a banned user, disappears from
+-- every read; a banned user can't post, comment, zap or follow anymore.
+alter table posts add column if not exists hidden boolean not null default false;
+alter table users add column if not exists banned boolean not null default false;
+
+-- Reports from users: one per reporter and target. Resolved by an admin
+-- (hide / delete / ban = "actioned", or "dismissed").
+create table if not exists reports (
+  id           uuid primary key default gen_random_uuid(),
+  target_type  text not null check (target_type in ('post', 'comment')),
+  target_id    uuid not null,
+  reporter_id  uuid not null references users(id) on delete cascade,
+  reason       text not null,
+  details      text not null default '',
+  status       text not null default 'open' check (status in ('open', 'actioned', 'dismissed')),
+  created_at   bigint not null,
+  resolved_at  bigint,
+  unique (target_type, target_id, reporter_id)
+);
+create index if not exists reports_open_idx on reports (status, created_at desc);

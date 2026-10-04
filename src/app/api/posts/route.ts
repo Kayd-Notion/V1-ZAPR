@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStore, purgeIfDue } from "@/lib/db";
-import { currentUser } from "@/lib/current-user";
+import { currentUser, suspended } from "@/lib/current-user";
 import { countryFromRequest } from "@/lib/geo";
 import type { MediaType } from "@/lib/db/types";
 import { isIrysUrl } from "@/lib/media-url";
@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
   if (!me) {
     return NextResponse.json({ error: "Connect your wallet to post." }, { status: 401 });
   }
+  if (me.banned) return suspended();
 
   const body = await req.json().catch(() => null);
   const text = typeof body?.text === "string" ? body.text.trim() : "";

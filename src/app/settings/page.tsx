@@ -198,6 +198,18 @@ export default function SettingsPage() {
         </div>
       )}
 
+      {user.isAdmin && (
+        <div className="settings-group">
+          <div className="sg-title">Admin</div>
+          <Link href="/admin" className="settings-row">
+            <div className="sr-text">
+              Moderation &amp; stats
+              <small>Reports, hidden posts, banned accounts</small>
+            </div>
+          </Link>
+        </div>
+      )}
+
       <div className="settings-group">
         <div className="sg-title">About</div>
         <Link href="/how-it-works" className="settings-row">

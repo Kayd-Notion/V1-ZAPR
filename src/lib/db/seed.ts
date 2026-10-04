@@ -34,6 +34,7 @@ export function buildSeed(now: number = Date.now()): {
     hidePumpHistory: false,
     anonymizePumps: false,
     avatarUrl: null,
+    banned: false,
   });
 
   const users: User[] = [

@@ -24,7 +24,7 @@ export default function PrivacyPage() {
           sign-up date and privacy settings.
         </li>
         <li>
-          <b>Activity</b>: your posts, comments, follows, and the record of every zap (amount, split, date,
+          <b>Activity</b>: your posts, comments, follows, reports (seen only by the ZAPR team), and the record of every zap (amount, split, date,
           transaction signature, anonymous or not).
         </li>
         <li>

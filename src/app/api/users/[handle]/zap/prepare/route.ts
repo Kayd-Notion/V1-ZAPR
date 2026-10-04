@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStore } from "@/lib/db";
-import { currentUser } from "@/lib/current-user";
+import { currentUser, suspended } from "@/lib/current-user";
 import { MIN_CREATOR_ZAP_SOL } from "@/lib/pump-config";
 import { formatSol } from "@/lib/pump-rules";
 
@@ -13,9 +13,13 @@ export const runtime = "nodejs";
 export async function POST(req: NextRequest, { params }: { params: Promise<{ handle: string }> }) {
   const me = await currentUser();
   if (!me) return NextResponse.json({ error: "Connect your wallet to zap a creator.", code: "auth_required" }, { status: 401 });
+  if (me.banned) return suspended();
 
   const target = await getStore().getUserByHandle((await params).handle);
   if (!target) return NextResponse.json({ error: "Profile not found.", code: "not_found" }, { status: 404 });
+  if (target.banned) {
+    return NextResponse.json({ error: "This account is suspended.", code: "target_banned" }, { status: 403 });
+  }
   if (target.id === me.id) {
     return NextResponse.json({ error: "You can't zap yourself.", code: "self_zap" }, { status: 400 });
   }

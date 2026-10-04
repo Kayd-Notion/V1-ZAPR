@@ -6,7 +6,7 @@ import {
   readNonceCookie,
 } from "@/lib/session";
 import { getStore } from "@/lib/db";
-import { publicUser } from "@/lib/current-user";
+import { selfUser } from "@/lib/current-user";
 
 export const runtime = "nodejs";
 
@@ -47,5 +47,5 @@ export async function POST(req: NextRequest) {
   if (!user) {
     return NextResponse.json({ needsOnboarding: true, wallet });
   }
-  return NextResponse.json({ user: publicUser(user) });
+  return NextResponse.json({ user: selfUser(user) });
 }

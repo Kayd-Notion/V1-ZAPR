@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { currentUser, publicUser } from "@/lib/current-user";
+import { currentUser, selfUser, suspended } from "@/lib/current-user";
 import { getStore } from "@/lib/db";
 import { normalizeHandle } from "@/lib/auth";
 import { isIrysUrl } from "@/lib/media-url";
@@ -10,6 +10,7 @@ export const runtime = "nodejs";
 export async function PATCH(req: NextRequest) {
   const me = await currentUser();
   if (!me) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+  if (me.banned) return suspended();
 
   const body = await req.json().catch(() => null);
   const store = getStore();
@@ -39,5 +40,5 @@ export async function PATCH(req: NextRequest) {
   }
 
   const updated = await store.updateUser(me.id, patch);
-  return NextResponse.json({ user: publicUser(updated) });
+  return NextResponse.json({ user: selfUser(updated) });
 }

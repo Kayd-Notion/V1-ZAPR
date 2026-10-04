@@ -39,7 +39,8 @@ dans le navigateur : Storage → ta base → **Open in Neon** → **SQL Editor**
 | `PUMP_REQUIRE_ONCHAIN_VERIFY` | `true` | le serveur vérifie chaque zap sur Solana |
 | `NEXT_PUBLIC_SOLANA_CLUSTER` | `devnet` (défaut) | réseau ; `mainnet-beta` bloque les zaps |
 | `NEXT_PUBLIC_SOLANA_RPC` | vide ou URL Helius/QuickNode | RPC custom |
-| `NEXT_PUBLIC_FOUNDER_WALLET` | adresse devnet du fondateur | reçoit les 30 % |
+| `NEXT_PUBLIC_FOUNDER_WALLET` | adresse devnet du fondateur | reçoit les 30 % ; est aussi **admin** |
+| `ADMIN_WALLETS` | vide, ou adresses séparées par des virgules | admins en plus du fondateur (page `/admin`) |
 | `NEXT_PUBLIC_PUMP_CREATOR_BPS` / `_FOUNDER_BPS` | `7000` / `3000` | ratio des zaps de post |
 | `NEXT_PUBLIC_CREATOR_ZAP_CREATOR_BPS` | `9000` | part créateur des zaps de créateur (le reste va à la plateforme) |
 | `NEXT_PUBLIC_IRYS_NETWORK` | `devnet` | upload des médias (Arweave via Irys) |
@@ -96,6 +97,21 @@ textes, messages d'erreur du serveur, nombres (`98.40`), durées (`3d left`,
   même transaction atomique à deux transferts, partagée **90/10**
   créateur/plateforme. Compte dans le classement **Creators** du Top. Aucun
   effet sur ses posts (ni durée de vie, ni total du post).
+- **Signaler** (menu « ⋯ » d'un post, drapeau d'un commentaire) : une raison
+  (arnaque, spam, harcèlement, haine, contenu sexuel, illégal, autre) et un
+  détail facultatif ; un seul signalement par personne et par contenu.
+- **Admin** (`/admin`, lien « Admin » dans le rail et dans Settings, visible
+  seulement pour le wallet fondateur et `ADMIN_WALLETS`, vérifié côté serveur) :
+  chiffres clés (utilisateurs, posts, zaps, SOL zappés, revenus plateforme,
+  signalements ouverts), signalements groupés par contenu avec actions en un
+  clic (**masquer** le post, **supprimer** le commentaire, **bannir** l'auteur,
+  **ignorer**), posts masqués (« Unhide ») et comptes bannis (« Unban »). Un admin
+  peut aussi masquer un post depuis son menu « ⋯ ».
+- **Post masqué / compte banni** : disparaît de partout (fil, recherche,
+  classements, commentaires) ; un compte banni voit un bandeau « suspended » et
+  ne peut plus poster, commenter, zapper ni suivre (refusé par le serveur), et
+  personne ne peut lui envoyer de zap direct. Un zap déjà en cours de signature
+  est quand même enregistré (l'argent est parti).
 - **Wallet → Activity** : l'historique de l'argent, du plus récent au plus ancien,
   filtrable (All / Received / Sent) : zaps envoyés (posts et créateurs) et parts
   reçues (70 % d'un zap de post, 90 % d'un zap direct), avec le pseudo de l'autre

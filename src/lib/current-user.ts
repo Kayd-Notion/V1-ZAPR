@@ -1,5 +1,7 @@
 import "server-only";
+import { NextResponse } from "next/server";
 import { getSession } from "./session";
+import { isAdmin } from "./admin";
 import { getStore } from "./db";
 import type { User } from "./db/types";
 
@@ -24,8 +26,22 @@ export function publicUser(u: User) {
     hidePumpHistory: u.hidePumpHistory,
     anonymizePumps: u.anonymizePumps,
     avatarUrl: u.avatarUrl,
+    banned: u.banned,
     createdAt: u.createdAt,
   };
 }
 
 export type PublicUser = ReturnType<typeof publicUser>;
+
+/** The signed-in user as sent to themselves: also says whether they are an admin. */
+export function selfUser(u: User) {
+  return { ...publicUser(u), isAdmin: isAdmin(u) };
+}
+
+/** Answer for a banned user trying to post, comment, zap, follow or report. */
+export function suspended() {
+  return NextResponse.json(
+    { error: "Your account is suspended: you can't post, comment, zap or follow.", code: "banned" },
+    { status: 403 },
+  );
+}

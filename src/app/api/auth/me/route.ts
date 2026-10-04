@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
-import { currentUser, publicUser } from "@/lib/current-user";
+import { currentUser, selfUser } from "@/lib/current-user";
 
 export const runtime = "nodejs";
 
@@ -12,5 +12,5 @@ export async function GET() {
   if (!user) {
     return NextResponse.json({ user: null, needsOnboarding: true, wallet: session.wallet });
   }
-  return NextResponse.json({ user: publicUser(user) });
+  return NextResponse.json({ user: selfUser(user) });
 }

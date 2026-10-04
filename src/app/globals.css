@@ -1172,6 +1172,55 @@ a.act-sub:hover { color: var(--text-dim); }
 .act-meta a:hover { color: var(--accent-text); }
 .act-meta svg.icon { width: 14px; height: 14px; }
 
+/* -------- Moderation: report modal, suspended, admin ----------------- */
+.report-intro { margin: 0 0 12px; font-size: 14px; }
+.report-reasons { display: grid; gap: 6px; margin-bottom: 14px; }
+.report-reason {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding: 10px 12px; text-align: left;
+  border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-elev-2);
+}
+.report-reason b { font-size: 14px; }
+.report-reason small { font-size: 12.5px; color: var(--text-faint); }
+.report-reason:hover { border-color: var(--text-faint); }
+.report-reason.active { border-color: var(--accent-text); background: var(--accent-soft); }
+.c-report {
+  margin-left: auto; display: inline-flex; padding: 3px 6px; border-radius: var(--radius-xs); color: var(--text-faint);
+}
+.c-report:not(.solo) + .c-del { margin-left: 0; }
+.c-report svg.icon { width: 14px; height: 14px; }
+.c-report:hover { color: var(--text); background: var(--bg-hover); }
+.suspended-banner, .suspended-note {
+  display: flex; align-items: flex-start; gap: 10px; font-size: 14px; line-height: 1.45;
+  background: rgba(var(--danger-rgb), 0.12); border: 1px solid rgba(var(--danger-rgb), 0.4); border-radius: var(--radius-sm);
+}
+.suspended-banner { margin: 12px 20px; padding: 10px 14px; }
+.suspended-note { margin: 10px 0; padding: 8px 12px; color: var(--text); }
+.suspended-banner svg.icon, .suspended-note svg.icon { flex: none; margin-top: 2px; color: var(--danger); }
+.btn-danger { color: var(--danger); border-color: rgba(var(--danger-rgb), 0.45); }
+.btn-danger:hover:not(:disabled) { background: rgba(var(--danger-rgb), 0.12); border-color: var(--danger); }
+.admin .page-title { display: flex; align-items: center; gap: 8px; }
+.admin .page-title svg.icon { color: var(--accent-text); }
+.admin-stats { grid-template-columns: repeat(3, 1fr); }
+.stat-box .sb-sub { margin-top: 2px; font-size: 12px; color: var(--text-faint); }
+.stat-box.warn .sb-val { color: var(--danger); }
+.admin-empty { padding: 4px 20px 16px; font-size: 14px; }
+.report-card { margin: 0 20px 12px; padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-elev-2); }
+.rc-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13.5px; }
+.rc-type { padding: 2px 8px; border-radius: var(--radius-xs); background: var(--bg-hover); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+.rc-reasons { display: flex; flex-wrap: wrap; gap: 4px; margin-left: auto; }
+.rc-reason { padding: 2px 8px; border-radius: var(--radius-pill); font-size: 12px; font-weight: 700; background: rgba(var(--danger-rgb), 0.14); color: var(--danger); }
+.rc-author { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 13.5px; }
+.rc-author a { color: var(--text); font-weight: 700; }
+.rc-flag { padding: 1px 6px; border-radius: var(--radius-xs); font-size: 11px; font-weight: 700; background: var(--bg-hover); color: var(--text-faint); }
+.rc-text { margin-top: 6px; font-size: 14.5px; white-space: pre-wrap; word-wrap: break-word; }
+.rc-open { display: inline-block; margin-top: 4px; font-size: 13px; }
+.rc-details { margin: 8px 0 0; padding-left: 18px; font-size: 13px; color: var(--text-dim); }
+.rc-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.admin-row { display: flex; align-items: center; gap: 12px; padding: 10px 20px; border-bottom: 1px solid var(--border-soft); }
+.ar-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.ar-body a { color: var(--text); }
+.ar-text { font-size: 13px; color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
 @media (max-width: 1360px) {
   .home-grid { grid-template-columns: minmax(0, 1fr); }
   .home-grid > .panel { display: none; }
@@ -1216,6 +1265,10 @@ a.act-sub:hover { color: var(--text-dim); }
   .legal-body { padding: 4px 14px 0; }
   .site-footer { padding: 16px 14px; }
   .activity-tabs { padding: 0 14px 10px; }
+  .admin-stats { grid-template-columns: repeat(2, 1fr); }
+  .report-card { margin: 0 14px 12px; }
+  .admin-row { padding: 10px 14px; }
+  .suspended-banner { margin: 12px 14px; }
   .act-row { padding: 12px 14px; }
 }
 @media (max-width: 400px) {

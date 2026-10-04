@@ -10,6 +10,7 @@ import path from "node:path";
 import { databaseUrl } from "./url";
 import { expiresAt } from "../lifespan";
 import type {
+  AdminStats,
   Activity,
   ActivityKind,
   CommentWithAuthor,
@@ -24,6 +25,9 @@ import type {
   PostWithAuthor,
   Pump,
   PumpWithAuthor,
+  ReportGroup,
+  ReportReason,
+  ReportTargetType,
   Store,
   User,
 } from "./types";
@@ -97,6 +101,7 @@ function rowToUser(r: Row): User {
     hidePumpHistory: r.hide_pump_history,
     anonymizePumps: r.anonymize_pumps,
     avatarUrl: r.avatar_url ?? null,
+    banned: r.banned ?? false,
   };
 }
 
@@ -296,7 +301,9 @@ export function createPostgresStore(): Store {
       const rows = await db`
         select p.*, u.id as author_id, u.handle as author_handle, u.wallet as author_wallet, u.bio as author_bio, u.avatar_url as author_avatar
         from posts p join users u on u.id = p.user_id
-        where p.id = ${id} and p.expires_at > ${aliveAfter} limit 1`;
+        where p.id = ${id} and p.expires_at > ${aliveAfter}
+          ${opts?.includeHidden ? db`` : db`and not p.hidden and not u.banned`}
+        limit 1`;
       return rows[0] ? rowToPostWithAuthor(rows[0]) : null;
     },
     async listPosts(q: FeedQuery) {
@@ -304,7 +311,7 @@ export function createPostgresStore(): Store {
       const rows = await db`
         select p.*, u.id as author_id, u.handle as author_handle, u.wallet as author_wallet, u.bio as author_bio, u.avatar_url as author_avatar
         from posts p join users u on u.id = p.user_id
-        where p.expires_at > ${Date.now()}
+        where p.expires_at > ${Date.now()} and not p.hidden and not u.banned
           ${q.authorId ? db`and p.user_id = ${q.authorId}` : db``}
           ${q.authorIds ? db`and p.user_id = any(${db.array(q.authorIds)}::uuid[])` : db``}
           ${q.before ? db`and p.created_at < ${q.before}` : db``}
@@ -382,13 +389,13 @@ export function createPostgresStore(): Store {
           select p.*, u.id as author_id, u.handle as author_handle, u.wallet as author_wallet, u.bio as author_bio,
                  u.avatar_url as author_avatar
           from posts p join users u on u.id = p.user_id
-          where p.expires_at > ${Date.now()}
+          where p.expires_at > ${Date.now()} and not p.hidden and not u.banned
             and (p.text ilike ${like} or ${tag} = any(p.tags) or u.handle ilike ${handleLike})
           order by p.pumped desc, p.created_at desc
           limit ${limit}`,
         db`
           select * from users
-          where handle ilike ${handleLike}
+          where handle ilike ${handleLike} and not banned
           order by received desc, handle asc
           limit ${Math.min(limit, 10)}`,
       ]);
@@ -439,7 +446,7 @@ export function createPostgresStore(): Store {
       const rows = await db`
         select c.*, u.id as author_id, u.handle as author_handle, u.wallet as author_wallet, u.avatar_url as author_avatar
         from comments c join users u on u.id = c.user_id
-        where c.post_id = ${postId}
+        where c.post_id = ${postId} and not u.banned
         order by c.created_at desc`;
       return rows.map(
         (r): CommentWithAuthor => ({
@@ -575,6 +582,145 @@ export function createPostgresStore(): Store {
         }),
       );
     },
+    async createReport({ reporterId, targetType, targetId, reason, details }) {
+      const db = await getSql();
+      if (!UUID_RE.test(targetId)) return "not_found";
+      const exists =
+        targetType === "post"
+          ? await db`select 1 from posts where id = ${targetId} and expires_at > ${Date.now()}`
+          : await db`select 1 from comments where id = ${targetId}`;
+      if (!exists.length) return "not_found";
+      const rows = await db`
+        insert into reports (id, target_type, target_id, reporter_id, reason, details, created_at)
+        values (${randomUUID()}, ${targetType}, ${targetId}, ${reporterId}, ${reason}, ${details}, ${Date.now()})
+        on conflict (target_type, target_id, reporter_id) do nothing
+        returning id`;
+      return rows.length ? "created" : "duplicate";
+    },
+    async listOpenReports(limit) {
+      const db = await getSql();
+      const groups = await db`
+        select target_type, target_id, count(*)::int as n,
+               array_agg(distinct reason) as reasons,
+               array_remove(array_agg(nullif(details, '')), null) as details,
+               min(created_at) as first_at, max(created_at) as last_at
+        from reports where status = 'open'
+        group by target_type, target_id
+        order by n desc, last_at desc
+        limit ${limit}`;
+      const ids = (t: ReportTargetType) => groups.filter((g) => g.target_type === t).map((g) => g.target_id as string);
+      const postIds = ids("post");
+      const commentIds = ids("comment");
+      const posts = postIds.length
+        ? await db`
+            select p.id, p.text, p.media_url, p.hidden, u.id as uid, u.handle, u.avatar_url, u.banned
+            from posts p join users u on u.id = p.user_id where p.id = any(${db.array(postIds)}::uuid[])`
+        : [];
+      const comments = commentIds.length
+        ? await db`
+            select c.id, c.text, c.post_id, u.id as uid, u.handle, u.avatar_url, u.banned
+            from comments c join users u on u.id = c.user_id where c.id = any(${db.array(commentIds)}::uuid[])`
+        : [];
+      return groups.map((g): ReportGroup => {
+        const t = (g.target_type === "post" ? posts : comments).find((x) => x.id === g.target_id);
+        return {
+          targetType: g.target_type,
+          targetId: g.target_id,
+          count: g.n,
+          reasons: g.reasons as ReportReason[],
+          details: g.details ?? [],
+          firstAt: Number(g.first_at),
+          lastAt: Number(g.last_at),
+          text: t?.text ?? null,
+          mediaUrl: t?.media_url ?? null,
+          postId: t ? (g.target_type === "post" ? t.id : t.post_id) : null,
+          author: t ? { id: t.uid, handle: t.handle, avatarUrl: t.avatar_url ?? null, banned: t.banned } : null,
+          hidden: Boolean(t?.hidden),
+        };
+      });
+    },
+    async resolveReports(targetType, targetId, status) {
+      const db = await getSql();
+      if (!UUID_RE.test(targetId)) return 0;
+      const rows = await db`
+        update reports set status = ${status}, resolved_at = ${Date.now()}
+        where target_type = ${targetType} and target_id = ${targetId} and status = 'open'
+        returning id`;
+      return rows.length;
+    },
+    async setPostHidden(postId, hidden) {
+      const db = await getSql();
+      if (!UUID_RE.test(postId)) return false;
+      const rows = await db`update posts set hidden = ${hidden} where id = ${postId} returning id`;
+      return rows.length > 0;
+    },
+    async setUserBanned(userId, banned) {
+      const db = await getSql();
+      if (!UUID_RE.test(userId)) return false;
+      const rows = await db`update users set banned = ${banned} where id = ${userId} returning id`;
+      return rows.length > 0;
+    },
+    async removeComment(commentId) {
+      const db = await getSql();
+      if (!UUID_RE.test(commentId)) return false;
+      return db.begin(async (tx) => {
+        const rows = await tx`delete from comments where id = ${commentId} returning post_id`;
+        if (!rows[0]) return false;
+        await tx`update posts set comments = greatest(comments - 1, 0) where id = ${rows[0].post_id}`;
+        return true;
+      });
+    },
+    async listHiddenPosts(limit) {
+      const db = await getSql();
+      const rows = await db`
+        select p.*, u.id as author_id, u.handle as author_handle, u.wallet as author_wallet, u.bio as author_bio,
+               u.avatar_url as author_avatar
+        from posts p join users u on u.id = p.user_id
+        where p.hidden and p.expires_at > ${Date.now()}
+        order by p.created_at desc
+        limit ${limit}`;
+      return rows.map(rowToPostWithAuthor);
+    },
+    async listBannedUsers(limit) {
+      const db = await getSql();
+      const rows = await db`select * from users where banned order by handle limit ${limit}`;
+      return rows.map(rowToUser);
+    },
+    async adminStats(): Promise<AdminStats> {
+      const db = await getSql();
+      const now = Date.now();
+      const day = now - 24 * 3600_000;
+      const [r] = await db`
+        select
+          (select count(*) from users)::int as users,
+          (select count(*) from users where banned)::int as banned_users,
+          (select count(*) from users where created_at >= ${day})::int as new_users_24h,
+          (select count(*) from posts where expires_at > ${now} and not hidden)::int as live_posts,
+          (select count(*) from posts where expires_at > ${now} and hidden)::int as hidden_posts,
+          (select count(*) from pumps)::int + (select count(*) from creator_zaps)::int as zaps,
+          coalesce((select sum(amount::numeric) from pumps), 0) + coalesce((select sum(amount::numeric) from creator_zaps), 0) as sol,
+          coalesce((select sum(founder_amount::numeric) from pumps), 0)
+            + coalesce((select sum(founder_amount::numeric) from creator_zaps), 0) as revenue,
+          (select count(*) from pumps where created_at >= ${day})::int
+            + (select count(*) from creator_zaps where created_at >= ${day})::int as zaps_24h,
+          coalesce((select sum(amount::numeric) from pumps where created_at >= ${day}), 0)
+            + coalesce((select sum(amount::numeric) from creator_zaps where created_at >= ${day}), 0) as sol_24h,
+          (select count(distinct (target_type, target_id)) from reports where status = 'open')::int as open_reports`;
+      return {
+        users: r.users,
+        bannedUsers: r.banned_users,
+        livePosts: r.live_posts,
+        hiddenPosts: r.hidden_posts,
+        zaps: r.zaps,
+        solZapped: Number(r.sol),
+        platformRevenue: Number(r.revenue),
+        zaps24h: r.zaps_24h,
+        solZapped24h: Number(r.sol_24h),
+        newUsers24h: r.new_users_24h,
+        openReports: r.open_reports,
+      };
+    },
+
     async getNotificationsSeenAt(userId) {
       const db = await getSql();
       const rows = await db`select notifications_seen_at from users where id = ${userId}`;
@@ -598,7 +744,7 @@ export function createPostgresStore(): Store {
           select p.*, p.id as rank_post_id, p.pumped as rank_total,
                  u.id as author_id, u.handle as author_handle, u.wallet as author_wallet, u.bio as author_bio, u.avatar_url as author_avatar
           from posts p join users u on u.id = p.user_id
-          where p.expires_at > ${Date.now()}
+          where p.expires_at > ${Date.now()} and not p.hidden and not u.banned
             ${country ? db`and p.country = ${country}` : db``}
             ${c ? db`and (p.pumped < ${c.total}::float8 or (p.pumped = ${c.total}::float8 and p.id > ${c.id}::uuid))` : db``}
           order by p.pumped desc, p.id asc
@@ -622,7 +768,7 @@ export function createPostgresStore(): Store {
         from agg
         join posts p on p.id = agg.post_id
         join users u on u.id = p.user_id
-        where p.expires_at > ${Date.now()}
+        where p.expires_at > ${Date.now()} and not p.hidden and not u.banned
           ${c ? db`and (agg.total < ${c.total}::numeric or (agg.total = ${c.total}::numeric and agg.post_id > ${c.id}::uuid))` : db``}
         order by agg.total desc, agg.post_id asc
         limit ${q.limit}`;
@@ -667,7 +813,7 @@ export function createPostgresStore(): Store {
               join users u on u.id = agg.creator_user_id`;
       const rows = await db`
         select * from (${ranked}) r
-        where r.rank_total > 0
+        where r.rank_total > 0 and not r.banned
           ${country ? db`and r.country = ${country}` : db``}
           ${c ? db`and (r.rank_total < ${c.total}::numeric or (r.rank_total = ${c.total}::numeric and r.id > ${c.id}::uuid))` : db``}
         order by r.rank_total desc, r.id asc

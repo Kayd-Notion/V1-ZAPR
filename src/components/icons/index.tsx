@@ -229,6 +229,37 @@ export const IconLink = (p: IconProps) => (
   </Icon>
 );
 
+/** Report: a flag on a pole, the cloth cut at an angle. */
+export const IconFlag = (p: IconProps) => (
+  <Icon name="flag" {...p}>
+    <path d="M5 21V3.5" />
+    <path d="M5 4h13l-3 4.5 3 4.5H5" />
+  </Icon>
+);
+
+/** Admin: a shield with the bolt's notch. */
+export const IconShield = (p: IconProps) => (
+  <Icon name="shield" {...p}>
+    <path d="M12 3 4.5 6v6c0 4.5 3.2 7.6 7.5 9 4.3-1.4 7.5-4.5 7.5-9V6z" />
+    <path d="m13.2 7.5-3 4.5h3.6l-3 4.5" />
+  </Icon>
+);
+
+/** Check: a sharp tick. */
+export const IconCheck = (p: IconProps) => (
+  <Icon name="check" {...p}>
+    <path d="m4.5 12.5 5 5 10-11" />
+  </Icon>
+);
+
+/** Ban / suspended: a circle crossed at 45°. */
+export const IconBan = (p: IconProps) => (
+  <Icon name="ban" {...p}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="m6 6 12 12" />
+  </Icon>
+);
+
 /** Money in: an arrow landing bottom-left, with a base line. */
 export const IconArrowIn = (p: IconProps) => (
   <Icon name="arrow-in" {...p}>

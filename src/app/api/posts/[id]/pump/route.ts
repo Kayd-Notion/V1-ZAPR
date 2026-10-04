@@ -50,7 +50,7 @@ export async function POST(
   // The zap was checked (prepare) while the post was alive; it may have
   // expired while the wallet was signing. The money has moved, so record it
   // (which also extends the post's life) unless the post is already deleted.
-  const post = await store.getPost(id, { graceMs: PURGE_GRACE_MS });
+  const post = await store.getPost(id, { graceMs: PURGE_GRACE_MS, includeHidden: true });
   if (!post) return NextResponse.json({ error: "Post not found." }, { status: 404 });
 
   // Idempotency: a transaction is recorded once, as a post zap OR a creator zap.
@@ -87,7 +87,7 @@ export async function POST(
     anonymous: anonymous || me.anonymizePumps,
   });
 
-  const full = await store.getPost(id, { graceMs: PURGE_GRACE_MS });
+  const full = await store.getPost(id, { graceMs: PURGE_GRACE_MS, includeHidden: true });
   const info = lifespanInfo(updated.createdAt, updated.pumped);
   return NextResponse.json({
     post: full,

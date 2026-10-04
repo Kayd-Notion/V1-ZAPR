@@ -6,6 +6,7 @@ import type {
   ClientUser,
 } from "./client-types";
 import type {
+  AdminOverview,
   ActivityPage,
   Api,
   FollowStats,
@@ -103,6 +104,11 @@ export const api: Api = {
     req<NotificationsPage>(cursor ? `/api/notifications?cursor=${encodeURIComponent(cursor)}` : "/api/notifications"),
   unreadNotifications: () => req<{ unread: number }>("/api/notifications/unread"),
   markNotificationsSeen: () => req<{ unread: number }>("/api/notifications/seen", { method: "POST" }),
+
+  // Moderation
+  report: (input) => req<{ ok: boolean; duplicate: boolean }>("/api/reports", { method: "POST", body: JSON.stringify(input) }),
+  adminOverview: () => req<AdminOverview>("/api/admin/overview"),
+  adminAction: (input) => req<{ ok: boolean }>("/api/admin/actions", { method: "POST", body: JSON.stringify(input) }),
 
   // Activity
   activity: (filter, cursor) => {

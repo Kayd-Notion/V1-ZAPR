@@ -12,6 +12,9 @@
   --zapr-yellow-rgb: 254, 210, 2;
   --zapr-cream: #fefdf8;
   --zapr-ink: #0a0a0b;
+  /* Night blue: the dark background. A desaturated navy, the complement of the
+     yellow, so the yellow reads brighter than on pure black. */
+  --zapr-night: #0b0f17;
 
   /* Accent. Dark text on yellow: --on-accent. Yellow TEXT: --accent-text
      (turns dark gold in light theme, pure yellow is unreadable on cream).
@@ -83,23 +86,31 @@
 
 :root,
 :root[data-theme="dark"] {
-  --bg: var(--zapr-ink);
-  --bg-elev: #161618;
-  --bg-elev-2: #1e1e21;
-  --bg-hover: #26262a;
-  --border: #2a2a2e;
-  --border-soft: #202024;
-  --text: #f4f4f5;
-  --text-dim: #a1a1aa;
-  --text-faint: #71717a;
+  /* Night blue, sober and almost flat: every surface is the same navy hue,
+     only a touch lighter as it rises. The page itself has a barely visible
+     vertical gradient (--bg-top → --bg).
+     Original neutral black, to go back: --bg: var(--zapr-ink); --bg-top:
+     var(--zapr-ink); --bg-elev: #161618; --bg-elev-2: #1e1e21; --bg-hover:
+     #26262a; --border: #2a2a2e; --border-soft: #202024; --text: #f4f4f5;
+     --text-dim: #a1a1aa; --text-faint: #71717a. */
+  --bg: var(--zapr-night);
+  --bg-top: #0f1420;
+  --bg-elev: #131824;
+  --bg-elev-2: #181e2b;
+  --bg-hover: #1f2634;
+  --border: #262d3c;
+  --border-soft: #1c2230;
+  --text: #f4f5f7;
+  --text-dim: #a4aab8;
+  --text-faint: #737a8a;
   --overlay: rgba(var(--black-rgb), 0.6);
   --shadow-sm: 0 8px 24px rgba(var(--black-rgb), 0.35);
   --shadow: 0 10px 40px rgba(var(--black-rgb), 0.5);
   --accent-soft: rgba(var(--zapr-yellow-rgb), 0.14);
   --accent-text: var(--zapr-yellow);
   /* Bolts switched off (visitor not connected). */
-  --bolt-off-top: #5a5a61;
-  --bolt-off-bottom: #3d3d43;
+  --bolt-off-top: #5b6170;
+  --bolt-off-bottom: #3e4350;
   /* Logo: flat yellow, light halo. */
   --logo-top: var(--zapr-yellow);
   --logo-bottom: var(--zapr-yellow);
@@ -112,6 +123,7 @@
      src/lib/brand.ts). Kept so the light theme can come back in one line.
      The logo's cream, white cards. */
   --bg: var(--zapr-cream);
+  --bg-top: var(--zapr-cream);
   --bg-elev: #ffffff;
   --bg-elev-2: #f8f5ea;
   --bg-hover: #f2eee0;
@@ -141,7 +153,7 @@
 html, body { height: 100%; }
 body {
   font-family: var(--font);
-  background: var(--bg);
+  background: var(--bg) linear-gradient(180deg, var(--bg-top, var(--bg)) 0%, var(--bg) 70%) fixed;
   color: var(--text);
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;

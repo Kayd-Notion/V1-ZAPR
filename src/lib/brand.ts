@@ -7,6 +7,8 @@ export const BRAND = {
   yellow: "#fed202",
   cream: "#fefdf8",
   ink: "#0a0a0b",
+  /** Night blue: the dark background (page, browser bar, share images). */
+  night: "#0b0f17",
 } as const;
 
 /**

@@ -60,6 +60,10 @@ export default function PrivacyPage() {
       <ul>
         <li>Vercel (hosting), Neon (database).</li>
         <li>Irys / Arweave (media storage).</li>
+        <li>
+          Privy, only if you sign in with Google or Apple: it creates and secures your Solana wallet, and receives
+          the email of your Google / Apple account. You can export that wallet&apos;s key from Settings.
+        </li>
         <li>A Solana RPC provider (reads balances and sends transactions; it sees your wallet address).</li>
       </ul>
 

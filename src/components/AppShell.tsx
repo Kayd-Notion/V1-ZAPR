@@ -1,5 +1,6 @@
 "use client";
 import { useEffect } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { IconBan, IconBell, IconFeed, IconInfo, IconLive, IconMoon, IconShield, IconPlus, IconSearch, IconSettings, IconSun, IconTop, IconUser, IconWallet } from "@/components/icons";
@@ -19,6 +20,10 @@ import { OnboardModal } from "./modals/OnboardModal";
 import { WelcomeModal } from "./modals/WelcomeModal";
 import { ReportModal } from "./modals/ReportModal";
 import { SiteFooter } from "./SiteFooter";
+import { PRIVY_APP_ID } from "@/lib/social-login";
+
+// Google / Apple sign-in (Privy): only loaded when configured, never on the server.
+const PrivyBridge = PRIVY_APP_ID ? dynamic(() => import("./PrivyBridge"), { ssr: false }) : null;
 
 const NAV = [
   { href: "/", Icon: IconFeed, label: "Feed" },
@@ -189,6 +194,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {activeModal === "onboard" && <OnboardModal />}
       {activeModal === "report" && <ReportModal />}
       <WelcomeModal />
+      {PrivyBridge && <PrivyBridge />}
     </>
   );
 }

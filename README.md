@@ -56,6 +56,8 @@ dans le navigateur : Storage → ta base → **Open in Neon** → **SQL Editor**
 | `DATABASE_URL` | posée par Neon | Postgres (sinon données de démo éphémères) |
 | `SESSION_SECRET` | 32+ caractères aléatoires | signe les sessions de connexion |
 | `PUMP_REQUIRE_ONCHAIN_VERIFY` | vide (défaut), `true` ou `false` | vérification de chaque zap sur Solana : **active par défaut en production**, coupée en local et en preview |
+| `NEXT_PUBLIC_PRIVY_APP_ID` | vide, ou l'App ID Privy | active « Continue with Google / Apple » (voir `docs/PRIVY-SETUP.md`) |
+| `NEXT_PUBLIC_SOCIAL_LOGINS` | `google` (défaut) ou `google,apple` | boutons affichés quand Privy est actif |
 | `CRON_SECRET` | facultatif | protège le nettoyage quotidien (`/api/cron/purge`, appelé par Vercel Cron) |
 | `NEXT_PUBLIC_SOLANA_CLUSTER` | `devnet` (défaut) | réseau ; `mainnet-beta` bloque les zaps |
 | `NEXT_PUBLIC_SOLANA_RPC` | vide ou URL Helius/QuickNode | RPC custom |
@@ -72,7 +74,14 @@ textes, messages d'erreur du serveur, nombres (`98.40`), durées (`3d left`,
 `2h ago`), message de signature du wallet, image de partage.
 
 - **Connexion wallet** Phantom / Solflare / Backpack (Wallet Standard), preuve
-  de propriété par signature d'un message, choix d'un pseudo.
+  de propriété par signature d'un message, choix d'un pseudo. Fenêtre façon
+  pump.fun : wallets **détectés** d'abord, puis « More wallets » (liens
+  d'installation, ou « Open in app » sur téléphone).
+- **Continue with Google / Apple** (si `NEXT_PUBLIC_PRIVY_APP_ID` est posé) :
+  Privy crée un wallet Solana intégré, enregistré comme un wallet standard ; ZAPR
+  l'utilise comme Phantom (même signature de connexion, mêmes zaps vérifiés).
+  Export de la clé dans Settings. Privy n'est chargé que s'il est configuré.
+  Mise en place : `docs/PRIVY-SETUP.md`.
 - **Mode visiteur** : le fil se lit sans wallet (bandeau « You're just watching »).
   À la première visite, une fenêtre « Welcome to ZAPR » résume le concept en
   3 lignes (une seule fois, mémorisé dans le navigateur).

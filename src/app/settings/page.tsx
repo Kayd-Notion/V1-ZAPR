@@ -12,6 +12,7 @@ import { api } from "@/lib/api";
 import { shortWallet } from "@/lib/format";
 import { LIGHT_MODE_ENABLED } from "@/lib/brand";
 import { prepareAvatar } from "@/lib/avatar-image";
+import { PRIVY_WALLET_NAME, exportSocialWallet } from "@/lib/social-login";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -240,6 +241,18 @@ export default function SettingsPage() {
 
       <div className="settings-group">
         <div className="sg-title">Account</div>
+        {wallet?.adapter.name === PRIVY_WALLET_NAME && (
+          <div
+            className="settings-row"
+            style={{ cursor: "pointer" }}
+            onClick={() => exportSocialWallet().catch((e) => toast(e instanceof Error ? e.message : "Couldn't open it."))}
+          >
+            <div className="sr-text">
+              Export my wallet
+              <small>Your wallet was created with Google / Apple. Copy its private key to use it in Phantom.</small>
+            </div>
+          </div>
+        )}
         <div className="settings-row" style={{ cursor: "pointer" }} onClick={() => logout()}>
           <div className="sr-text">
             Disconnect wallet

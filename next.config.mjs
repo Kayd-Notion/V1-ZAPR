@@ -9,16 +9,21 @@
  * nonces. Network calls stay open to https/wss: Solana RPCs, Irys and Arweave
  * gateways change with the configuration.
  */
+// Google / Apple sign-in (Privy): its secure wallet runs in an iframe from
+// auth.privy.io, and its bot check may load Cloudflare Turnstile.
+const PRIVY_FRAMES = "https://auth.privy.io https://*.privy.io https://challenges.cloudflare.com https://verify.walletconnect.com https://verify.walletconnect.org";
+
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com",
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self' data:",
   "img-src 'self' data: blob: https:",
   "media-src 'self' data: blob: https:",
   "connect-src 'self' https: wss:",
   "worker-src 'self' blob:",
-  "frame-src 'none'",
+  `frame-src 'self' ${PRIVY_FRAMES}`,
+  `child-src 'self' ${PRIVY_FRAMES}`,
   "frame-ancestors 'none'",
   "object-src 'none'",
   "base-uri 'self'",
@@ -46,6 +51,11 @@ const nextConfig = {
       { protocol: "https", hostname: "gateway.irys.xyz" },
       { protocol: "https", hostname: "**.arweave.net" },
     ],
+  },
+  webpack(config) {
+    // Privy optionally imports the Farcaster mini-app SDK; ZAPR doesn't use it.
+    config.resolve.alias = { ...config.resolve.alias, "@farcaster/mini-app-solana": false };
+    return config;
   },
   async headers() {
     // Dev server: no CSP (hot reload uses eval and websockets on localhost).

@@ -141,6 +141,35 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     authenticate(walletAddress);
   }, [loginRequest, connected, walletAddress, user, status, authenticate, closeModal]);
 
+  // The account selected in the wallet is not the one signed in to ZAPR (the
+  // user switched accounts in Phantom, or reopened the site on another one):
+  // zaps would be signed by one wallet and recorded for another, and admin /
+  // profile would belong to the old account. End the old session and ask to
+  // sign in with the current account (no signature popup by itself).
+  useEffect(() => {
+    if (status !== "authed" || !user || !connected || !walletAddress) return;
+    if (authInFlight.current || walletAddress === user.wallet) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        await api.logout();
+      } catch {
+        /* ignore */
+      }
+      if (cancelled) return;
+      setUser(null);
+      setStatus("anonymous");
+      authedFor.current = null;
+      openConnect(
+        `You switched to another wallet (${walletAddress.slice(0, 4)}…${walletAddress.slice(-4)}). ` +
+          "Sign in again to use it on ZAPR.",
+      );
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [status, user, connected, walletAddress, openConnect]);
+
   const completeOnboarding = useCallback(
     async (handle: string, bio?: string) => {
       const res = await api.onboard(handle, bio);

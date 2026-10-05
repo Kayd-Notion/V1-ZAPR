@@ -10,6 +10,7 @@ import {
 } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import bs58 from "bs58";
+import { socialLogout } from "@/lib/social-login";
 import { api } from "@/lib/api";
 import type { ClientUser } from "@/lib/client-types";
 import { useUI } from "./UIContext";
@@ -191,6 +192,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     } catch {
       /* ignore */
     }
+    // Signed in with Google / Apple: end the Privy session too.
+    await socialLogout();
     try {
       await disconnect();
     } catch {

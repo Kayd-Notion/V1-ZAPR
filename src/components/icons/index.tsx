@@ -211,6 +211,13 @@ export const IconBack = (p: IconProps) => (
   </Icon>
 );
 
+/** Chevron: "go further" (a row that opens a sub-list). */
+export const IconChevronRight = (p: IconProps) => (
+  <Icon name="chevron-right" {...p}>
+    <path d="m9 5 7 7-7 7" />
+  </Icon>
+);
+
 export const IconClose = (p: IconProps) => (
   <Icon name="close" {...p}>
     <path d="m5.5 5.5 13 13M18.5 5.5l-13 13" />

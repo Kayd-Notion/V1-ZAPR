@@ -826,7 +826,6 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
   animation: zap-hit 0.6s cubic-bezier(0.2, 1.6, 0.4, 1);
 }
 @keyframes zap-hit { from { transform: scale(0.3) rotate(-25deg); opacity: 0; } to { transform: scale(1) rotate(-8deg); opacity: 1; } }
-.connect-mark { height: 64px; margin: 0 auto 12px; transform: rotate(-8deg); }
 .spinner {
   width: 20px; height: 20px; border-radius: 50%;
   border: 2px solid rgba(var(--white-rgb), 0.35); border-top-color: currentColor;
@@ -844,8 +843,43 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
 }
 .wallet-option { transition: background var(--dur-fast) ease, border-color var(--dur-fast) ease; }
 .wallet-option:hover { background: var(--bg-hover); border-color: var(--accent-text); }
-.wallet-option img { width: 26px; height: 26px; border-radius: var(--radius-xs); }
-.wallet-option .wo-tag { margin-left: auto; font-size: 12px; color: var(--text-faint); font-weight: 500; }
+.wallet-option img { width: 30px; height: 30px; border-radius: var(--radius-xs); }
+.wallet-option .wo-tag { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-faint); font-weight: 500; }
+.wallet-option .wo-tag svg.icon { width: 13px; height: 13px; }
+a.wallet-option { color: var(--text); }
+.wo-name { flex: 1; min-width: 0; }
+.wo-letter {
+  flex: none; width: 30px; height: 30px; border-radius: var(--radius-xs);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-weight: 700; font-size: 15px; color: var(--white);
+}
+.wo-generic { background: var(--bg-hover); color: var(--text-dim); }
+.wo-generic svg.icon { width: 17px; height: 17px; }
+.wo-badge {
+  flex: none; display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: var(--radius-pill);
+  background: var(--accent-soft); color: var(--accent-text);
+  font-family: var(--font-display); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+}
+.wo-badge i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: var(--glow-line); }
+.wo-chevron { flex: none; width: 18px; height: 18px; color: var(--text-faint); }
+.wo-more:hover .wo-chevron { color: var(--accent-text); }
+
+/* Connect window (bare modal, centered like pump.fun) */
+.modal.bare { position: relative; max-width: 400px; }
+.modal.bare .modal-body { padding: 28px 20px 20px; }
+.modal-x { position: absolute; top: 12px; right: 12px; z-index: 2; }
+.cx-head { text-align: center; margin-bottom: 20px; }
+.cx-logo {
+  display: inline-flex; align-items: center; justify-content: center; width: 60px; height: 60px; margin-bottom: 14px;
+  border-radius: 30%; background: var(--bg-elev-2); border: 1px solid var(--border);
+}
+.cx-mark { height: 34px; }
+.cx-head h2 { margin: 0 0 6px; font-family: var(--font-display); font-size: 22px; font-weight: 700; letter-spacing: 0.01em; }
+.cx-head p { margin: 0 auto; max-width: 300px; font-size: 14px; line-height: 1.45; color: var(--text-dim); }
+.cx-none { margin: 2px 0 4px; font-size: 13.5px; color: var(--text-dim); text-align: center; }
+.cx-legal { margin: 16px 0 0; font-size: 12px; line-height: 1.5; color: var(--text-faint); text-align: center; }
+.cx-subhead { display: flex; align-items: center; gap: 10px; margin: -8px 40px 16px 0; }
+.cx-subhead h3 { margin: 0; font-family: var(--font-display); font-size: 18px; font-weight: 700; }
 
 /* -------- 7. Leaderboard --------------------------------------------- */
 .lb-controls { padding: 12px 20px; display: flex; flex-direction: column; gap: 12px; }

@@ -7,8 +7,11 @@ export function Modal({
   icon,
   onClose,
   children,
+  bare = false,
 }: {
   title: string;
+  /** No title bar: just a close button in the corner (centered dialogs like Connect). */
+  bare?: boolean;
   /** Optional icon shown before the title. */
   icon?: React.ReactNode;
   onClose: () => void;
@@ -39,16 +42,22 @@ export function Modal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="modal" role="dialog" aria-modal="true" aria-label={title} ref={ref} tabIndex={-1}>
-        <div className="modal-head">
-          <h3>
-            {icon}
-            {title}
-          </h3>
-          <button className="icon-btn" onClick={onClose} aria-label="Close">
+      <div className={`modal${bare ? " bare" : ""}`} role="dialog" aria-modal="true" aria-label={title} ref={ref} tabIndex={-1}>
+        {bare ? (
+          <button className="icon-btn modal-x" onClick={onClose} aria-label="Close">
             <IconClose />
           </button>
-        </div>
+        ) : (
+          <div className="modal-head">
+            <h3>
+              {icon}
+              {title}
+            </h3>
+            <button className="icon-btn" onClick={onClose} aria-label="Close">
+              <IconClose />
+            </button>
+          </div>
+        )}
         <div className="modal-body">{children}</div>
       </div>
     </div>

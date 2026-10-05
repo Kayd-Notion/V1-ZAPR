@@ -50,7 +50,7 @@ function isActive(href: string, pathname: string): boolean {
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { theme, toggleTheme, openComposer, openConnect, activeModal } = useUI();
-  const { user, status, requireAuth, logout, walletAddress } = useSession();
+  const { user, status, requireAuth, logout } = useSession();
   const { unread } = useNotifications();
 
   // Visitors (wallet not connected) see every bolt of the site grey; each one
@@ -109,7 +109,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             onClick={onWalletBtn}
             title={user ? "Disconnect" : "Connect"}
           >
-            {user ? shortWallet(walletAddress || user.wallet) : "Connect"}
+            {user ? shortWallet(user.wallet) : "Connect"}
           </button>
         </div>
       </header>

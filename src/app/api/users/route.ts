@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
   if (existing) {
     // Already onboarded — make sure the session carries the userId.
     await createSession({ wallet: session.wallet, userId: existing.id });
-    return NextResponse.json({ user: selfUser(existing) });
+    return NextResponse.json({ user: await selfUser(existing) });
   }
 
   const body = await req.json().catch(() => null);
@@ -43,5 +43,5 @@ export async function POST(req: NextRequest) {
     country,
   });
   await createSession({ wallet: session.wallet, userId: user.id });
-  return NextResponse.json({ user: selfUser(user) });
+  return NextResponse.json({ user: await selfUser(user) });
 }

@@ -12,5 +12,5 @@ export async function GET() {
   if (!user) {
     return NextResponse.json({ user: null, needsOnboarding: true, wallet: session.wallet });
   }
-  return NextResponse.json({ user: selfUser(user) });
+  return NextResponse.json({ user: await selfUser(user) });
 }

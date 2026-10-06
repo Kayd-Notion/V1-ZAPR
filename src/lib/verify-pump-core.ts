@@ -19,7 +19,8 @@ export interface ParsedTransferTx {
 }
 
 export interface ExpectedTransfer {
-  pumperWallet: string;
+  /** The zapper's wallet, or every wallet of their account (main + linked). */
+  pumperWallet: string | string[];
   creatorWallet: string;
   founderWallet: string;
   amountSol: number;
@@ -34,12 +35,13 @@ export function checkTransferTx(tx: ParsedTransferTx, e: ExpectedTransfer): { ok
   let toCreator = 0;
   let toFounder = 0;
   let fromPayer = false;
+  const payers = new Set(Array.isArray(e.pumperWallet) ? e.pumperWallet : [e.pumperWallet]);
 
   for (const raw of tx.transaction.message.instructions) {
     const ix = raw as { program?: string; parsed?: { type?: string; info?: Record<string, unknown> } };
     if (ix.program !== "system" || ix.parsed?.type !== "transfer") continue;
     const info = ix.parsed.info as { source?: string; destination?: string; lamports?: number };
-    if (info.source !== e.pumperWallet) continue;
+    if (!info.source || !payers.has(info.source)) continue;
     fromPayer = true;
     if (info.destination === e.creatorWallet) toCreator += Number(info.lamports || 0);
     else if (info.destination === e.founderWallet) toFounder += Number(info.lamports || 0);

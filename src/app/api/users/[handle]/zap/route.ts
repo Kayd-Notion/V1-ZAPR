@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStore } from "@/lib/db";
-import { currentUser, publicUser } from "@/lib/current-user";
+import { currentUser, walletsOf, publicUser } from "@/lib/current-user";
 import { CREATOR_ZAP_SPLIT, MIN_CREATOR_ZAP_SOL, splitLamports } from "@/lib/pump-config";
 import { onchainVerifyRequired, verifyPumpTransaction } from "@/lib/verify-pump";
 import { solToLamports } from "@/lib/format";
@@ -44,7 +44,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ han
   if (onchainVerifyRequired()) {
     const v = await verifyPumpTransaction({
       signature,
-      pumperWallet: me.wallet,
+      // Paid from any wallet of the account (main or linked).
+      pumperWallet: await walletsOf(me),
       creatorWallet: target.wallet,
       amountSol: amount,
       founderBps,

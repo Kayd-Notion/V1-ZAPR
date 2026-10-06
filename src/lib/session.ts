@@ -61,6 +61,9 @@ export interface NonceData {
   nonce: string;
   wallet: string;
   issuedAt: number;
+  /** "link": a challenge to link `wallet` to the account `userId` (not a sign-in). */
+  purpose?: "link";
+  userId?: string;
 }
 
 export async function issueNonceCookie(data: NonceData): Promise<void> {
@@ -89,6 +92,8 @@ export async function readNonceCookie(): Promise<NonceData | null> {
       nonce: payload.nonce as string,
       wallet: payload.wallet as string,
       issuedAt: payload.issuedAt as number,
+      purpose: payload.purpose === "link" ? "link" : undefined,
+      userId: typeof payload.userId === "string" ? payload.userId : undefined,
     };
   } catch {
     return null;

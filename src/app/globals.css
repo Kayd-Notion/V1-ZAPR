@@ -1016,6 +1016,10 @@ a.wallet-option { color: var(--text); }
 .settings-group .sg-title { padding: 16px 20px 6px; font-size: 13px; font-weight: 700; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.04em; }
 .settings-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--border-soft); }
 .sr-ico { color: var(--text-faint); }
+.sr-badge {
+  display: inline-block; margin-left: 8px; padding: 1px 7px; border-radius: 999px; vertical-align: 1px;
+  font-size: 11px; font-weight: 600; color: var(--accent-text); background: rgba(var(--zapr-yellow-rgb), 0.12);
+}
 .settings-row .sr-text { font-size: 14.5px; }
 .settings-row .sr-text small { display: block; color: var(--text-faint); font-size: 12.5px; margin-top: 2px; }
 
@@ -1348,4 +1352,12 @@ a.act-sub:hover { color: var(--text-dim); }
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Link a wallet (Settings) */
+.lw-intro { margin: 0 0 16px; font-size: 14px; line-height: 1.5; color: var(--text-dim); }
+.lw-intro b { color: var(--text); }
+.lw-hint {
+  margin: 12px 0 0; padding: 10px 12px; border-radius: var(--radius-sm); font-size: 13px; line-height: 1.45;
+  color: var(--text-dim); background: var(--bg-elev-2); border: 1px solid var(--border-soft);
 }

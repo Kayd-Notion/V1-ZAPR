@@ -25,6 +25,20 @@ export interface User {
   banned: boolean;
 }
 
+/**
+ * Another wallet that signs in to the same account (e.g. a Google wallet linked
+ * to a Phantom account). Zaps the person receives still go to `User.wallet`.
+ */
+export interface LinkedWallet {
+  wallet: string;
+  /** Which app it came from, as the wallet named itself ("Phantom", "Privy"…). */
+  label: string;
+  createdAt: number;
+}
+
+/** linked · already on this account · on another account · too many wallets. */
+export type LinkWalletResult = "linked" | "already" | "taken" | "limit";
+
 /** How a user appears next to their content (posts, zaps, comments…). */
 export type UserRef = Pick<User, "id" | "handle" | "wallet" | "avatarUrl">;
 
@@ -264,6 +278,7 @@ export interface SearchResult {
 export interface Store {
   // Users
   getUserById(id: string): Promise<User | null>;
+  /** The account that signs in with `wallet`: its main wallet or a linked one. */
   getUserByWallet(wallet: string): Promise<User | null>;
   getUserByHandle(handle: string): Promise<User | null>;
   createUser(input: {
@@ -381,6 +396,13 @@ export interface Store {
   listHiddenPosts(limit: number): Promise<PostWithAuthor[]>;
   listBannedUsers(limit: number): Promise<User[]>;
   adminStats(): Promise<AdminStats>;
+
+  // Linked wallets (sign in to the same account; zaps still go to the main wallet)
+  /** Oldest first. */
+  listLinkedWallets(userId: string): Promise<LinkedWallet[]>;
+  /** Refuses a wallet already used by any account, or past `max` linked wallets. */
+  linkWallet(input: { userId: string; wallet: string; label: string }, max: number): Promise<LinkWalletResult>;
+  unlinkWallet(userId: string, wallet: string): Promise<boolean>;
 
   /** When the user last opened their notifications (0 = never). */
   getNotificationsSeenAt(userId: string): Promise<number>;

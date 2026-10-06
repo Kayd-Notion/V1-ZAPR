@@ -12,7 +12,8 @@ import { checkTransferTx, type ParsedTransferTx } from "./verify-pump-core";
  */
 export interface VerifyPumpArgs {
   signature: string;
-  pumperWallet: string;
+  /** The zapper's wallet, or every wallet of their account (main + linked). */
+  pumperWallet: string | string[];
   creatorWallet: string;
   amountSol: number;
   /** Platform share in bps (defaults to the post-zap split). */

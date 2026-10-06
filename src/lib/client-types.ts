@@ -18,6 +18,15 @@ export interface ClientUser {
   banned: boolean;
   /** Only on the signed-in user's own record. */
   isAdmin?: boolean;
+  /** Only on the signed-in user's own record: other wallets that sign in to this account. */
+  linkedWallets?: ClientLinkedWallet[];
+  createdAt: number;
+}
+
+export interface ClientLinkedWallet {
+  wallet: string;
+  /** The app it came from ("Phantom", "Privy" for a Google / Apple wallet…). */
+  label: string;
   createdAt: number;
 }
 

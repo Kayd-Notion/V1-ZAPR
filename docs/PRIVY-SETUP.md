@@ -46,8 +46,13 @@ puis Redeploy. Le bouton noir « Continue with Apple » apparaît.
 
 ## Bon à savoir
 
-- Une personne qui se connecte avec Google puis avec Phantom a **deux comptes ZAPR**
-  (deux wallets différents).
+- Pour avoir **un seul compte** avec Google et Phantom : se connecter avec l'un,
+  puis **Settings → Wallets → Link a wallet** → « Link Google » (ou choisir Phantom).
+  Les deux ouvrent ensuite le même compte. Le wallet du début reste celui qui reçoit
+  les zaps. Attention : si on s'est déjà inscrit séparément avec les deux, ce sont
+  deux comptes et ils ne peuvent pas être fusionnés.
+- Un App ID mal copié (il fait 25 caractères) est ignoré : les boutons Google
+  n'apparaissent pas, le reste du site marche.
 - Le wallet Google démarre **vide** : il faut lui envoyer du SOL (faucet en devnet).
 - Privy est gratuit au départ, payant au-delà d'un certain nombre d'utilisateurs actifs
   par mois (voir leurs tarifs).

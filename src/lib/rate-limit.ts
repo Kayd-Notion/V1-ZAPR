@@ -13,6 +13,7 @@ export const LIMITS = {
   report: { max: 20, windowMs: 60 * 60_000, what: "reports" },
   profile: { max: 20, windowMs: 10 * 60_000, what: "profile changes" },
   signin: { max: 10, windowMs: 10 * 60_000, what: "sign-in attempts" },
+  link: { max: 10, windowMs: 10 * 60_000, what: "wallet link attempts" },
 } as const;
 
 export type LimitName = keyof typeof LIMITS;

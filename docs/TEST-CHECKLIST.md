@@ -42,6 +42,11 @@ sur devnet (Phantom ne fait que signer).
 - [ ] **Connect** → Phantom demande de **signer un message** (gratuit) → choisir un pseudo.
 - [ ] **Settings** → **Add a picture** → Phantom demande un petit paiement (stockage
       Arweave) → la photo apparaît partout.
+- [ ] **Settings → Wallets → Link a wallet** → dans Phantom, passe sur un **autre compte**
+      (jamais utilisé sur ZAPR) → Phantom demande de signer → « Wallet linked ».
+      Le compte apparaît sous « Main wallet ». Déconnecte-toi, reconnecte-toi avec ce
+      compte : c'est **le même profil**. Puis **Unlink** (depuis le wallet principal).
+- [ ] Essaie de lier le wallet A (qui a déjà son compte) : refusé, message clair.
 
 ## 4. Poster, zapper
 

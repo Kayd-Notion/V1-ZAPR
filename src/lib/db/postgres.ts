@@ -19,6 +19,8 @@ import type {
   DeletePostResult,
   FeedQuery,
   LeaderboardQuery,
+  LinkedWallet,
+  LinkWalletResult,
   Notification,
   NotificationKind,
   PostRankEntry,
@@ -240,7 +242,11 @@ export function createPostgresStore(): Store {
     },
     async getUserByWallet(wallet) {
       const db = await getSql();
-      const rows = await db`select * from users where wallet = ${wallet} limit 1`;
+      const rows = await db`
+        select * from users where wallet = ${wallet}
+        union all
+        select u.* from user_wallets w join users u on u.id = w.user_id where w.wallet = ${wallet}
+        limit 1`;
       return rows[0] ? rowToUser(rows[0]) : null;
     },
     async getUserByHandle(handle) {
@@ -270,6 +276,37 @@ export function createPostgresStore(): Store {
         returning *`;
       if (!rows[0]) throw new Error("user not found");
       return rowToUser(rows[0]);
+    },
+
+    async listLinkedWallets(userId) {
+      const db = await getSql();
+      const rows = await db`
+        select wallet, label, created_at from user_wallets where user_id = ${userId} order by created_at, wallet`;
+      return rows.map((r): LinkedWallet => ({ wallet: r.wallet, label: r.label, createdAt: Number(r.created_at) }));
+    },
+    async linkWallet({ userId, wallet, label }, max) {
+      const db = await getSql();
+      return db.begin(async (tx): Promise<LinkWalletResult> => {
+        // One link at a time per wallet (two accounts racing for the same one).
+        await tx`select pg_advisory_xact_lock(727002, hashtext(${wallet}))`;
+        const owner = await tx`
+          select id from users where wallet = ${wallet}
+          union all
+          select user_id as id from user_wallets where wallet = ${wallet}
+          limit 1`;
+        if (owner[0]) return owner[0].id === userId ? "already" : "taken";
+        const [{ n }] = await tx`select count(*)::int as n from user_wallets where user_id = ${userId}`;
+        if (n >= max) return "limit";
+        await tx`
+          insert into user_wallets (wallet, user_id, label, created_at)
+          values (${wallet}, ${userId}, ${label}, ${Date.now()})`;
+        return "linked";
+      });
+    },
+    async unlinkWallet(userId, wallet) {
+      const db = await getSql();
+      const rows = await db`delete from user_wallets where user_id = ${userId} and wallet = ${wallet} returning wallet`;
+      return rows.length > 0;
     },
 
     async createPost({ userId, text, mediaUrl = null, mediaType = null, country = "FR", tags = [] }) {

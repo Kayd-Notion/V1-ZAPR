@@ -11,7 +11,7 @@ import {
 import type { ClientPost, ClientUser } from "@/lib/client-types";
 import { LIGHT_MODE_ENABLED } from "@/lib/brand";
 
-type ModalKind = "connect" | "composer" | "pump" | "creatorZap" | "onboard" | "report" | null;
+type ModalKind = "connect" | "composer" | "pump" | "creatorZap" | "onboard" | "report" | "link" | null;
 
 /** What the report modal is about. */
 export interface ReportTarget {
@@ -40,6 +40,8 @@ interface UIContextValue {
   openOnboard: () => void;
   reportTarget: ReportTarget | null;
   openReport: (target: ReportTarget) => void;
+  /** Settings → "Link a wallet". */
+  openLinkWallet: () => void;
   closeModal: () => void;
   // Cross-view data invalidation (feed/leaderboard re-fetch on change)
   dataVersion: number;
@@ -114,6 +116,7 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
     setReportTarget(target);
     setActiveModal("report");
   }, []);
+  const openLinkWallet = useCallback(() => setActiveModal("link"), []);
   const closeModal = useCallback(() => setActiveModal(null), []);
   const bumpData = useCallback(() => setDataVersion((v) => v + 1), []);
 
@@ -133,6 +136,7 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
       openOnboard,
       reportTarget,
       openReport,
+      openLinkWallet,
       closeModal,
       dataVersion,
       bumpData,
@@ -152,6 +156,7 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
       openOnboard,
       reportTarget,
       openReport,
+      openLinkWallet,
       closeModal,
       dataVersion,
       bumpData,

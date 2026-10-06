@@ -19,6 +19,8 @@ import { CreatorZapModal } from "./modals/CreatorZapModal";
 import { OnboardModal } from "./modals/OnboardModal";
 import { WelcomeModal } from "./modals/WelcomeModal";
 import { ReportModal } from "./modals/ReportModal";
+import { LinkWalletModal } from "./modals/LinkWalletModal";
+import { SafeBoundary } from "./SafeBoundary";
 import { SiteFooter } from "./SiteFooter";
 import { PRIVY_APP_ID } from "@/lib/social-login";
 
@@ -55,7 +57,9 @@ function isActive(href: string, pathname: string): boolean {
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { theme, toggleTheme, openComposer, openConnect, activeModal } = useUI();
-  const { user, status, requireAuth, logout } = useSession();
+  const { user, status, requireAuth, logout, walletAddress, userWallets } = useSession();
+  // The wallet in use right now (a linked one, maybe), else the account's main wallet.
+  const shownWallet = walletAddress && userWallets.includes(walletAddress) ? walletAddress : user?.wallet;
   const { unread } = useNotifications();
 
   // Visitors (wallet not connected) see every bolt of the site grey; each one
@@ -114,7 +118,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             onClick={onWalletBtn}
             title={user ? "Disconnect" : "Connect"}
           >
-            {user ? shortWallet(user.wallet) : "Connect"}
+            {user && shownWallet ? shortWallet(shownWallet) : "Connect"}
           </button>
         </div>
       </header>
@@ -193,8 +197,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {activeModal === "creatorZap" && <CreatorZapModal />}
       {activeModal === "onboard" && <OnboardModal />}
       {activeModal === "report" && <ReportModal />}
+      {activeModal === "link" && <LinkWalletModal />}
       <WelcomeModal />
-      {PrivyBridge && <PrivyBridge />}
+      {PrivyBridge && (
+        // A wrong App ID only turns Google / Apple sign-in off, never the site.
+        <SafeBoundary name="Google / Apple sign-in">
+          <PrivyBridge />
+        </SafeBoundary>
+      )}
     </>
   );
 }

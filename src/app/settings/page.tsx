@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { IconBack, IconImagePlus, IconLogOut } from "@/components/icons";
+import { IconBack, IconImagePlus, IconLink, IconLogOut } from "@/components/icons";
 import { Avatar } from "@/components/Avatar";
 import { ZaprEmpty } from "@/components/ZaprMark";
 import { useSession } from "@/context/SessionContext";
@@ -16,8 +16,10 @@ import { PRIVY_WALLET_NAME, exportSocialWallet } from "@/lib/social-login";
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { user, setUser, logout } = useSession();
-  const { theme, toggleTheme, toast, openConnect } = useUI();
+  const { user, setUser, logout, walletAddress } = useSession();
+  const { theme, toggleTheme, toast, openConnect, openLinkWallet } = useUI();
+  const [unlinking, setUnlinking] = useState<string | null>(null); // asked to confirm
+  const [unlinkBusy, setUnlinkBusy] = useState(false);
   const [bio, setBio] = useState("");
   const [handle, setHandle] = useState("");
   const [saving, setSaving] = useState(false);
@@ -224,6 +226,65 @@ export default function SettingsPage() {
       )}
 
       <div className="settings-group">
+        <div className="sg-title">Wallets</div>
+        <div className="settings-row">
+          <div className="sr-text">
+            Main wallet{walletAddress === user.wallet && <span className="sr-badge">In use</span>}
+            <small>
+              {shortWallet(user.wallet)} · receives your zaps
+            </small>
+          </div>
+        </div>
+        {(user.linkedWallets ?? []).map((w) => {
+          const inUse = walletAddress === w.wallet;
+          const confirming = unlinking === w.wallet;
+          return (
+            <div className="settings-row" key={w.wallet}>
+              <div className="sr-text">
+                {w.label === PRIVY_WALLET_NAME ? "Google / Apple wallet" : w.label || "Wallet"}
+                {inUse && <span className="sr-badge">In use</span>}
+                <small>
+                  {shortWallet(w.wallet)} · signs in to this account
+                </small>
+              </div>
+              {!inUse && (
+                <button
+                  className={`btn btn-sm${confirming ? " btn-danger" : ""}`}
+                  disabled={unlinkBusy}
+                  onClick={async () => {
+                    if (!confirming) {
+                      setUnlinking(w.wallet);
+                      return;
+                    }
+                    setUnlinkBusy(true);
+                    try {
+                      const res = await api.unlinkWallet(w.wallet);
+                      setUser(res.user);
+                      toast("Wallet unlinked: it can't sign in to this account anymore.");
+                    } catch (e) {
+                      toast(e instanceof Error ? e.message : "Couldn't unlink it.");
+                    } finally {
+                      setUnlinkBusy(false);
+                      setUnlinking(null);
+                    }
+                  }}
+                >
+                  {confirming ? "Unlink for real" : "Unlink"}
+                </button>
+              )}
+            </div>
+          );
+        })}
+        <div className="settings-row" style={{ cursor: "pointer" }} onClick={openLinkWallet}>
+          <div className="sr-text">
+            Link a wallet
+            <small>Sign in with Google or another wallet: same account, same profile.</small>
+          </div>
+          <IconLink className="sr-ico" />
+        </div>
+      </div>
+
+      <div className="settings-group">
         <div className="sg-title">About</div>
         <Link href="/how-it-works" className="settings-row">
           <div className="sr-text">How it works</div>
@@ -256,7 +317,7 @@ export default function SettingsPage() {
         <div className="settings-row" style={{ cursor: "pointer" }} onClick={() => logout()}>
           <div className="sr-text">
             Disconnect wallet
-            <small>{shortWallet(user.wallet)}</small>
+            <small>{shortWallet(walletAddress ?? user.wallet)}</small>
           </div>
           <IconLogOut className="sr-ico" />
         </div>

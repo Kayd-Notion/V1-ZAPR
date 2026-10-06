@@ -47,6 +47,10 @@ export const api: Api = {
     req("/api/auth/verify", { method: "POST", body: JSON.stringify({ wallet, signature }) }),
   me: () => req("/api/auth/me"),
   logout: () => req("/api/auth/logout", { method: "POST" }),
+  linkChallenge: (wallet) => req(`/api/wallets/challenge?wallet=${encodeURIComponent(wallet)}`),
+  linkWallet: (wallet, signature, label) =>
+    req("/api/wallets", { method: "POST", body: JSON.stringify({ wallet, signature, label }) }),
+  unlinkWallet: (wallet) => req("/api/wallets", { method: "DELETE", body: JSON.stringify({ wallet }) }),
 
   // Users
   onboard: (handle, bio) =>

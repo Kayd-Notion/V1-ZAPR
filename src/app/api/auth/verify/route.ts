@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
   }
 
   const challenge = await readNonceCookie();
-  if (!challenge || challenge.wallet !== wallet) {
+  if (!challenge || challenge.wallet !== wallet || challenge.purpose) {
     return NextResponse.json(
       { error: "Challenge expired or not found. Try again." },
       { status: 401 },
@@ -47,5 +47,5 @@ export async function POST(req: NextRequest) {
   if (!user) {
     return NextResponse.json({ needsOnboarding: true, wallet });
   }
-  return NextResponse.json({ user: selfUser(user) });
+  return NextResponse.json({ user: await selfUser(user) });
 }

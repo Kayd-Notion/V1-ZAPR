@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletReadyState } from "@solana/wallet-adapter-base";
 import type { WalletName } from "@solana/wallet-adapter-base";
@@ -18,27 +18,23 @@ import { PRIVY_WALLET_NAME, SOCIAL_PROVIDERS, startSocialLink, type SocialProvid
  * runs in SessionContext (it also has to finish after the trip to Google).
  */
 export function LinkWalletModal() {
-  const { wallets, wallet, select, connect, connected, connecting } = useWallet();
+  const { wallets, wallet, connected, connecting } = useWallet();
   const { closeModal, toast } = useUI();
-  const { user, userWallets, walletAddress, startLinking, stopLinking, retryLink, linkSigning } = useSession();
+  const { user, userWallets, walletAddress, startLinking, prepareSocialLink, stopLinking, retryLink, linkSigning, switchWallet } =
+    useSession();
   const [socialBusy, setSocialBusy] = useState<SocialProvider | null>(null);
   const [hint, setHint] = useState("");
 
-  // Linking mode while this window is open.
+  // Linking mode while this window is open (once: switching wallet inside the
+  // window must not restart it).
+  const linkingFns = useRef({ startLinking, stopLinking });
+  linkingFns.current = { startLinking, stopLinking };
   useEffect(() => {
-    startLinking();
+    linkingFns.current.startLinking();
     return () => {
-      void stopLinking();
+      void linkingFns.current.stopLinking();
     };
-  }, [startLinking, stopLinking]);
-
-  // A wallet was picked: connect it (it then gets the link message to sign).
-  const [picked, setPicked] = useState<WalletName | null>(null);
-  useEffect(() => {
-    if (!picked || wallet?.adapter.name !== picked || connected || connecting) return;
-    connect().catch((e) => toast(e instanceof Error ? e.message : "Connection refused."));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [picked, wallet]);
+  }, []);
 
   if (!user) return null;
 
@@ -61,18 +57,14 @@ export function LinkWalletModal() {
       );
       return;
     }
-    setPicked(name);
-    if (wallet?.adapter.name === name) {
-      if (!connected) connect().catch((e) => toast(e instanceof Error ? e.message : "Connection refused."));
-    } else {
-      select(name);
-    }
+    switchWallet(name); // connects it; SessionContext then asks it to sign the link message
   };
 
   const social = async (provider: SocialProvider) => {
     setSocialBusy(provider);
     const stuck = setTimeout(() => setSocialBusy(null), 15_000);
     try {
+      prepareSocialLink(); // linking goes on after the trip to Google
       await startSocialLink(provider);
     } catch (e) {
       clearTimeout(stuck);

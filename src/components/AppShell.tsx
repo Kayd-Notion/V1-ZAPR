@@ -22,7 +22,7 @@ import { ReportModal } from "./modals/ReportModal";
 import { LinkWalletModal } from "./modals/LinkWalletModal";
 import { SafeBoundary } from "./SafeBoundary";
 import { SiteFooter } from "./SiteFooter";
-import { PRIVY_APP_ID } from "@/lib/social-login";
+import { PRIVY_APP_ID, reportSocialLoginConfig } from "@/lib/social-login";
 
 // Google / Apple sign-in (Privy): only loaded when configured, never on the server.
 const PrivyBridge = PRIVY_APP_ID ? dynamic(() => import("./PrivyBridge"), { ssr: false }) : null;
@@ -61,6 +61,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   // The wallet in use right now (a linked one, maybe), else the account's main wallet.
   const shownWallet = walletAddress && userWallets.includes(walletAddress) ? walletAddress : user?.wallet;
   const { unread } = useNotifications();
+
+  // Google sign-in missing or misconfigured: say why in the browser console (F12).
+  useEffect(() => reportSocialLoginConfig(), []);
 
   // Visitors (wallet not connected) see every bolt of the site grey; each one
   // lights up on hover. While the session is loading, keep the pre-paint hint.

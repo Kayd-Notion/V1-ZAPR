@@ -271,6 +271,9 @@ src/
   db/schema.sql        schéma Postgres
 tests/                 tests unitaires (npm test) + tests sur validateur Solana local :
                        pump-send.local.mts (envoi) et zap-e2e.local.mts (vrais zaps vérifiés par le serveur)
+tests/browser/         tests dans un vrai navigateur (Chromium) : link-wallets (liaison de wallets),
+                       link-google (connexion et liaison Google avec un faux Privy, tests/mocks/,
+                       actif seulement avec ZAPR_MOCK_PRIVY=1 sur le serveur de dev)
 docs/TEST-CHECKLIST.md checklist de test pas à pas avec Phantom (devnet)
 ```
 

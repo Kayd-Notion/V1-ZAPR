@@ -33,12 +33,20 @@ interface SessionContextValue {
    */
   linking: boolean;
   startLinking: () => void;
+  /** "Link Google" was clicked: linking resumes after the trip to Google, for the Google wallet only. */
+  prepareSocialLink: () => void;
   /** Leaves linking mode; a wallet left connected but not linked is let go. */
   stopLinking: () => Promise<void>;
   /** The person picked a wallet again: try linking it even if it failed before. */
   retryLink: () => void;
   /** A wallet is being asked to sign the link message. */
   linkSigning: boolean;
+  /**
+   * Switch to another wallet app (Phantom → Google wallet…) and connect it.
+   * The current one is disconnected first: switching while it is still
+   * connected can make the wallet library drop both.
+   */
+  switchWallet: (name: WalletName) => void;
   requireAuth: (msg?: string) => boolean;
   /** Call when the user explicitly picks a wallet to sign in (never on auto-connect). */
   beginLogin: () => void;
@@ -50,7 +58,8 @@ interface SessionContextValue {
 
 const Ctx = createContext<SessionContextValue | null>(null);
 
-// Survives the trip to Google / Apple when linking their wallet.
+// Survives the trip to Google / Apple when linking their wallet. After that
+// trip only the Google wallet ("Privy") may be linked automatically.
 const LINKING_KEY = "zapr_linking";
 const LINKING_TTL_MS = 5 * 60_000;
 
@@ -70,7 +79,7 @@ function setLoggedInHint(on: boolean) {
 }
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
-  const { publicKey, connected, signMessage, disconnect, wallet, select } = useWallet();
+  const { publicKey, connected, connecting, signMessage, disconnect, connect, wallet, select } = useWallet();
   const { toast, openConnect, openOnboard, closeModal, activeModal } = useUI();
 
   const [user, setUser] = useState<ClientUser | null>(null);
@@ -83,11 +92,43 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [loginRequest, setLoginRequest] = useState(0);
 
   const walletAddress = publicKey ? publicKey.toBase58() : null;
+  // Right after a switch (Phantom → Google wallet…), one render can pair the new
+  // wallet with the previous address: the linking and account checks wait until
+  // the selected wallet itself reports that address.
+  const walletSettled = Boolean(
+    wallet?.adapter.connected && walletAddress && wallet.adapter.publicKey?.toBase58() === walletAddress,
+  );
 
   const userWallets = useMemo(
     () => (user ? [user.wallet, ...(user.linkedWallets ?? []).map((w) => w.wallet)] : []),
     [user],
   );
+
+  // --- Switching wallet app ----------------------------------------------------
+  const [switchTarget, setSwitchTarget] = useState<WalletName | null>(null);
+  const switchDisconnecting = useRef(false);
+  const switchWallet = useCallback((name: WalletName) => {
+    switchDisconnecting.current = false;
+    setSwitchTarget(name);
+  }, []);
+  useEffect(() => {
+    if (!switchTarget) return;
+    if (wallet?.adapter.name === switchTarget) {
+      setSwitchTarget(null);
+      if (!wallet.adapter.connected && !connecting) {
+        connect().catch((e) => toast(e instanceof Error && e.message ? e.message : "Connection refused."));
+      }
+      return;
+    }
+    if (wallet && (connected || connecting)) {
+      if (!switchDisconnecting.current) {
+        switchDisconnecting.current = true;
+        disconnect().catch(() => {});
+      }
+      return; // runs again once it is disconnected
+    }
+    select(switchTarget);
+  }, [switchTarget, wallet, connected, connecting, select, connect, disconnect, toast]);
 
   // --- Linking ---------------------------------------------------------------
   const [linking, setLinking] = useState(false);
@@ -98,6 +139,9 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const linkPrev = useRef<WalletName | null>(null); // wallet in use before linking
   const linkTried = useRef<string | null>(null);
   const linkInFlight = useRef(false);
+  /** "any": the Link window is open. "google": back from Google, only the Google wallet is linked. */
+  const linkScope = useRef<"any" | "google">("any");
+  const socialAsked = useRef(false); // "Link Google" was clicked
   // Latest values for callbacks that run after awaits.
   const latest = useRef({ walletAddress, userWallets, wallet, connected, activeModal });
   latest.current = { walletAddress, userWallets, wallet, connected, activeModal };
@@ -108,10 +152,18 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       const raw = sessionStorage.getItem(LINKING_KEY);
       if (!raw) return;
       const saved = JSON.parse(raw) as { at: number; prev: string | null };
-      if (Date.now() - saved.at < LINKING_TTL_MS) {
+      const left = LINKING_TTL_MS - (Date.now() - saved.at);
+      if (left > 0) {
         linkingRef.current = true;
+        linkScope.current = "google";
+        socialAsked.current = true;
         linkPrev.current = saved.prev as WalletName | null;
         setLinking(true);
+        // Google sign-in cancelled or never finished: stop waiting for it.
+        const t = setTimeout(() => {
+          if (linkScope.current === "google") void stopLinkingRef.current();
+        }, left);
+        return () => clearTimeout(t);
       } else {
         sessionStorage.removeItem(LINKING_KEY);
       }
@@ -122,9 +174,16 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 
   const startLinking = useCallback(() => {
     linkingRef.current = true;
+    linkScope.current = "any";
+    socialAsked.current = false;
     linkTried.current = null;
     linkPrev.current = latest.current.wallet?.adapter.name ?? null;
     setLinking(true);
+  }, []);
+
+  const prepareSocialLink = useCallback(() => {
+    socialAsked.current = true;
+    linkTried.current = null;
     try {
       sessionStorage.setItem(LINKING_KEY, JSON.stringify({ at: Date.now(), prev: linkPrev.current }));
     } catch {
@@ -134,6 +193,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 
   const endLinking = useCallback(() => {
     linkingRef.current = false;
+    linkScope.current = "any";
+    socialAsked.current = false;
     setLinking(false);
     try {
       sessionStorage.removeItem(LINKING_KEY);
@@ -153,14 +214,17 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       // A Google wallet that couldn't be linked: end that Google session too.
       if (current?.adapter.name === PRIVY_WALLET_NAME) await socialLogout();
       const prev = linkPrev.current;
-      if (prev && prev !== current?.adapter.name) select(prev); // back to the wallet used before
+      if (prev && prev !== current?.adapter.name) switchWallet(prev); // back to the wallet used before
       else await disconnect();
     } catch {
       /* ignore */
     } finally {
       restoring.current = false;
     }
-  }, [endLinking, select, disconnect]);
+  }, [endLinking, switchWallet, disconnect]);
+
+  const stopLinkingRef = useRef(stopLinking);
+  stopLinkingRef.current = stopLinking;
 
   const retryLink = useCallback(() => {
     linkTried.current = null;
@@ -250,8 +314,20 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 
   // Linking: a wallet that isn't on the account yet signs the link message.
   useEffect(() => {
-    if (!linking || status !== "authed" || !user || !connected || !walletAddress) return;
-    if (userWallets.includes(walletAddress) || linkInFlight.current || linkTried.current === walletAddress) return;
+    if (!linking || status !== "authed" || !user || !connected || !walletAddress || !walletSettled) return;
+    const isGoogle = wallet?.adapter.name === PRIVY_WALLET_NAME;
+    // Back from Google: only the Google wallet (never a Phantom account switch).
+    if (linkScope.current === "google" && !isGoogle) return;
+    if (userWallets.includes(walletAddress)) {
+      // "Link Google" for a Google wallet that is already on this account.
+      if (isGoogle && socialAsked.current) {
+        endLinking();
+        if (latest.current.activeModal === "link") closeModal();
+        toast("Your Google wallet is already on this account.");
+      }
+      return;
+    }
+    if (linkInFlight.current || linkTried.current === walletAddress) return;
     linkTried.current = walletAddress;
     linkInFlight.current = true;
     setLinkSigning(true);
@@ -264,7 +340,11 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         setUser(res.user);
         endLinking();
         if (latest.current.activeModal === "link") closeModal();
-        toast(`Wallet linked: it now signs in to @${res.user.handle}.`);
+        toast(
+          res.already
+            ? "This wallet is already on your account."
+            : `Wallet linked: it now signs in to @${res.user.handle}.`,
+        );
       } catch (e) {
         toast(e instanceof Error ? e.message : "Couldn't link this wallet.");
         // Not in the Link window (back from Google): give up and go back to the previous wallet.
@@ -274,7 +354,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         setLinkSigning(false);
       }
     })();
-  }, [linking, status, user, connected, walletAddress, userWallets, signMessage, endLinking, stopLinking, closeModal, toast]);
+  }, [linking, status, user, connected, walletAddress, walletSettled, wallet, userWallets, signMessage, endLinking, stopLinking, closeModal, toast]);
 
   // The account selected in the wallet is not the one signed in to ZAPR (the
   // user switched accounts in Phantom, or reopened the site on another one):
@@ -283,9 +363,10 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   // sign in with the current account (no signature popup by itself).
   // Wallets linked to the account are fine, and so is any wallet while linking.
   useEffect(() => {
-    if (status !== "authed" || !user || !connected || !walletAddress) return;
+    if (status !== "authed" || !user || !connected || !walletAddress || !walletSettled) return;
     if (authInFlight.current || userWallets.includes(walletAddress)) return;
-    if (linking || linkingRef.current || restoring.current) return;
+    if (restoring.current) return;
+    if ((linking || linkingRef.current) && (linkScope.current === "any" || wallet?.adapter.name === PRIVY_WALLET_NAME)) return;
     let cancelled = false;
     (async () => {
       try {
@@ -305,7 +386,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [status, user, userWallets, linking, connected, walletAddress, openConnect]);
+  }, [status, user, userWallets, linking, connected, walletAddress, walletSettled, wallet, openConnect]);
 
   const completeOnboarding = useCallback(
     async (handle: string, bio?: string) => {
@@ -365,9 +446,11 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       userWallets,
       linking,
       startLinking,
+      prepareSocialLink,
       stopLinking,
       retryLink,
       linkSigning,
+      switchWallet,
       requireAuth,
       beginLogin,
       completeOnboarding,
@@ -375,7 +458,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       refreshUser,
       setUser,
     }),
-    [user, status, walletAddress, connected, userWallets, linking, startLinking, stopLinking, retryLink, linkSigning, requireAuth, beginLogin, completeOnboarding, logout, refreshUser],
+    [user, status, walletAddress, connected, userWallets, linking, startLinking, prepareSocialLink, stopLinking, retryLink, linkSigning, switchWallet, requireAuth, beginLogin, completeOnboarding, logout, refreshUser],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

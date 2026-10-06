@@ -11,6 +11,7 @@ import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { buildSeed } from "./seed";
 import { expiresAt } from "../lifespan";
+import { WALLET_IN_USE } from "./types";
 import type {
   AdminStats,
   Activity,
@@ -317,6 +318,9 @@ export function createMemoryStore(): Store {
     },
     async createUser({ handle, wallet, bio = "", country = "FR" }) {
       const d = await load();
+      if (d.users.some((u) => u.wallet === wallet) || d.linkedWallets.some((w) => w.wallet === wallet)) {
+        throw new Error(WALLET_IN_USE);
+      }
       const user: User = {
         id: randomUUID(),
         handle,

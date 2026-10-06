@@ -241,7 +241,7 @@ export default function SettingsPage() {
           return (
             <div className="settings-row" key={w.wallet}>
               <div className="sr-text">
-                {w.label === PRIVY_WALLET_NAME ? "Google / Apple wallet" : w.label || "Wallet"}
+                {w.label === PRIVY_WALLET_NAME ? "Google wallet" : w.label || "Wallet"}
                 {inUse && <span className="sr-badge">In use</span>}
                 <small>
                   {shortWallet(w.wallet)} · signs in to this account
@@ -310,7 +310,7 @@ export default function SettingsPage() {
           >
             <div className="sr-text">
               Export my wallet
-              <small>Your wallet was created with Google / Apple. Copy its private key to use it in Phantom.</small>
+              <small>Your wallet was created with Google. Copy its private key to use it in Phantom.</small>
             </div>
           </div>
         )}

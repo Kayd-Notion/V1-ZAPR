@@ -36,6 +36,9 @@ export interface LinkedWallet {
   createdAt: number;
 }
 
+/** createUser's error when the wallet is already an account or a linked wallet. */
+export const WALLET_IN_USE = "wallet already in use";
+
 /** linked · already on this account · on another account · too many wallets. */
 export type LinkWalletResult = "linked" | "already" | "taken" | "limit";
 

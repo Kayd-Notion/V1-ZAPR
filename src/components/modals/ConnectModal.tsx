@@ -61,9 +61,9 @@ const RETURNING_KEY = "zapr_returning";
  * "open in the app" on a phone).
  */
 export function ConnectModal() {
-  const { wallets, select, connect, connecting, connected, wallet } = useWallet();
+  const { wallets, connecting } = useWallet();
   const { connectMessage, closeModal, toast } = useUI();
-  const { beginLogin } = useSession();
+  const { beginLogin, switchWallet } = useSession();
   const [view, setView] = useState<"main" | "more">("main");
   const [returning, setReturning] = useState(false);
   const [touch, setTouch] = useState(false);
@@ -95,14 +95,6 @@ export function ConnectModal() {
     setTouch(window.matchMedia?.("(pointer: coarse)").matches ?? false);
   }, []);
 
-  // Auto-connect once a wallet is selected (we drive our own UI).
-  useEffect(() => {
-    if (wallet && !connected && !connecting) {
-      connect().catch((e) => toast(e instanceof Error ? e.message : "Connection refused."));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wallet]);
-
   // Wallets actually available in this browser (Wallet Standard / injected).
   const detected = wallets.filter(
     (w) => w.readyState === WalletReadyState.Installed || w.readyState === WalletReadyState.Loadable,
@@ -112,12 +104,7 @@ export function ConnectModal() {
 
   const pick = (name: WalletName) => {
     beginLogin();
-    if (wallet?.adapter.name === name) {
-      // Already selected: select() is a no-op, so connect directly.
-      if (!connected) connect().catch((e) => toast(e instanceof Error ? e.message : "Connection refused."));
-    } else {
-      select(name);
-    }
+    switchWallet(name); // selects and connects it (the previous one is let go first)
   };
 
   const site = typeof window === "undefined" ? "" : window.location.href;
@@ -170,7 +157,7 @@ export function ConnectModal() {
                       <span className="wo-letter">{w.adapter.name[0]}</span>
                     )}
                     <span className="wo-name">
-                      {w.adapter.name === PRIVY_WALLET_NAME ? "Your Google / Apple wallet" : w.adapter.name}
+                      {w.adapter.name === PRIVY_WALLET_NAME ? "Your Google wallet" : w.adapter.name}
                     </span>
                     <span className="wo-badge">
                       <i /> Detected

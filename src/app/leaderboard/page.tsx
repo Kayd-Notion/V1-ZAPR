@@ -231,7 +231,7 @@ export default function LeaderboardPage() {
                 <IconZap />
                 {fmtSol(total)}
               </span>
-              <small>{short ? `SOL received · ${short}` : "SOL received"}</small>
+              <small>{short ? `SOL zapped · ${short}` : "SOL zapped"}</small>
             </div>
           </div>
         ))

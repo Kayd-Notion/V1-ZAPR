@@ -31,9 +31,11 @@ passage mainnet, relecture juridique des pages légales (+ adresse de contact),
 suppression de compte en libre-service. Pistes ensuite : bot Telegram, app
 mobile, serveur dédié.
 
-Décisions encore ouvertes : montants rapides (aujourd'hui 0.01 · 0.05 · 0.1 ·
-0.5 · 1), classements à 100 % du SOL zappé ou à la part créateur (actuel),
-auto-zap dans les classements (compte aujourd'hui), niveaux de créateur.
+Décisions prises (octobre 2026) : les classements comptent **100 %** du montant
+de chaque zap ; un **auto-zap** (depuis n'importe quel wallet du compte) reste
+possible et prolonge le post, mais **ne compte pas** dans les classements ;
+montants rapides inchangés (0.01 · 0.05 · 0.1 · 0.5 · 1). Reportés : niveaux de
+créateur, fusion de comptes, choix du wallet de réception, connexion Apple.
 
 ## Tester en ligne, sans rien installer
 
@@ -161,9 +163,12 @@ textes, messages d'erreur du serveur, nombres (`98.40`), durées (`3d left`,
 - **Profil**, **Wallet** (solde devnet + airdrop), **Paramètres** (pseudo, bio,
   confidentialité), **Explorer** (ouvert par la loupe en haut à gauche),
   **Classements** : deux onglets, **Posts** (les posts les plus zappés) et
-  **Creators** (les créateurs les plus zappés : leur part des zaps sur leurs
-  posts + leur part des zaps reçus directement) ; période All time / 24h /
-  7 days / 30 days, monde ou par pays ; thème sombre.
+  **Creators** (les créateurs les plus zappés : zaps sur leurs posts + zaps
+  reçus directement), chaque zap compté à **100 %** de son montant, auto-zaps
+  exclus (`src/lib/ranking.ts`, calculé depuis l'historique des zaps, sans
+  migration) ; période All time / 24h / 7 days / 30 days, monde ou par pays ;
+  thème sombre. La page /admin affiche un « Rankings check » (cohérence des
+  données).
 
 **Puissance du zap (durée de vie d'un post).** Un post naît avec **24 h**. Chaque
 zap s'ajoute au total du post ; chaque fois que le total franchit un palier, le
@@ -184,7 +189,8 @@ de payer. Tous les chiffres : `src/lib/lifespan-config.ts`.
 
 Règles des zaps, vérifiées **dans l'interface et côté serveur** :
 
-1. **Auto-zap autorisé** (badge « self-zap »), compte normalement.
+1. **Auto-zap autorisé** (badge « self-zap ») : il prolonge le post comme les
+   autres, mais **ne compte pas** dans les classements.
 2. **Post expiré** : il disparaît immédiatement de partout et ne peut plus
    recevoir de nouveau zap. Seul un zap déjà en cours de signature au moment
    de l'expiration est encore enregistré (l'argent est parti) ; s'il atteint un

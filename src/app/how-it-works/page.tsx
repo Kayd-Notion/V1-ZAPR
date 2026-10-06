@@ -162,9 +162,9 @@ export default function HowItWorksPage() {
         <IconCrown /> Leaderboards
       </h2>
       <p className="hiw-p">
-        <b>Posts</b>: the most zapped live posts. <b>Creators</b>: the creators who received the most SOL (their share
-        of zaps on their posts, plus direct zaps). Filter by period (all time, 24h, 7 days, 30 days), worldwide or by
-        country.
+        <b>Posts</b>: the most zapped live posts. <b>Creators</b>: the most zapped creators (zaps on their posts plus
+        direct zaps). Each zap counts for its full amount, and zapping yourself never counts. Filter by period (all
+        time, 24h, 7 days, 30 days), worldwide or by country.
       </p>
 
       <h2 className="hiw-h2">
@@ -200,8 +200,9 @@ export default function HowItWorksPage() {
         <details>
           <summary>Can I zap my own post?</summary>
           <p>
-            Yes. It shows with a &ldquo;self-zap&rdquo; badge and counts like any other zap. You get the creator share
-            back, so you really pay the platform share plus fees.
+            Yes. It shows with a &ldquo;self-zap&rdquo; badge and extends your post&apos;s life like any other zap, but it
+            doesn&apos;t count in the leaderboards (from any of your wallets). You get the creator share back, so you
+            really pay the platform share plus fees.
           </p>
         </details>
         <details>

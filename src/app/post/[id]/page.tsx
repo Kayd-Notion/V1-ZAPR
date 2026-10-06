@@ -282,7 +282,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                   <div className="pr-name">
                     {name}
                     {pp.isSelfPump && (
-                      <span className="self-pump-tag" title="The creator zapped their own post">
+                      <span className="self-pump-tag" title="The creator zapped their own post: it extends its life but doesn't count in the leaderboards">
                         self-zap
                       </span>
                     )}

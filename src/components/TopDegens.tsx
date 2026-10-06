@@ -15,7 +15,7 @@ const PERIODS: { key: LeaderboardPeriod; label: string }[] = [
   { key: "all", label: "All" },
 ];
 
-/** Home side panel: creators who received the most zaps (pump.fun "Top traders"). */
+/** Home side panel: the most zapped creators (pump.fun "Top traders"). */
 export function TopDegens() {
   const { dataVersion } = useUI();
   const [period, setPeriod] = useState<LeaderboardPeriod>("all");

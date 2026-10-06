@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { IconBan, IconCheck, IconEyeOff, IconFlag, IconShield, IconTrash, IconZap } from "@/components/icons";
+import { IconAlert, IconBan, IconCheck, IconEyeOff, IconFlag, IconShield, IconTrash, IconZap } from "@/components/icons";
 import { Avatar } from "@/components/Avatar";
 import { ZaprLoader } from "@/components/ZaprMark";
 import NotFound from "../not-found";
@@ -86,6 +86,17 @@ export default function AdminPage() {
         <Stat value={`${fmtSol(s.platformRevenue)}`} label="Platform revenue (SOL)" accent />
         <Stat value={s.openReports} label="Open reports" warn={s.openReports > 0} />
       </div>
+
+      <p className={`admin-check${s.unattributedZaps || s.postsOutOfSync ? " warn" : ""}`}>
+        {s.unattributedZaps || s.postsOutOfSync ? <IconAlert /> : <IconCheck />}
+        <span>
+          <b>Rankings check:</b>{" "}
+          {s.unattributedZaps || s.postsOutOfSync
+            ? `${s.unattributedZaps} zap(s) without a creator, ${s.postsOutOfSync} live post(s) whose total doesn't match its zaps. Leaderboards use the zap log; tell the developer.`
+            : "every zap is tied to its creator and every live post's total matches its zaps."}{" "}
+          Leaderboards count 100 % of each zap; {s.selfZaps} self-zap{s.selfZaps === 1 ? "" : "s"} left out.
+        </span>
+      </p>
 
       <div className="section-title">
         <IconFlag /> Reports ({data.reports.length})

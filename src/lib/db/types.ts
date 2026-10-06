@@ -196,6 +196,12 @@ export interface AdminStats {
   solZapped24h: number;
   newUsers24h: number;
   openReports: number;
+  /** Rankings check (read-only): zaps to yourself, left out of the leaderboards. */
+  selfZaps: number;
+  /** Rankings check: post zaps that can't be tied to a creator (should be 0). */
+  unattributedZaps: number;
+  /** Rankings check: live posts whose total differs from their zap log (should be 0). */
+  postsOutOfSync: number;
 }
 
 export interface NotificationCursor {

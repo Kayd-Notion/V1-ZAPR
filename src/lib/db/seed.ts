@@ -140,6 +140,16 @@ export function buildSeed(now: number = Date.now()): {
   addPump("p16", "u5", 9.0, 478);
   addPump("p16", "u2", 6.0, 400);
   addPump("p17", "u1", 9.0, 1078);
+  // The rest of each post's total, so every total matches its zap log (the
+  // leaderboards are computed from the log). Given by another user, halfway
+  // through the post's life so far.
+  for (const post of posts) {
+    const logged = pumps.filter((pm) => pm.postId === post.id).reduce((t, pm) => t + pm.amount, 0);
+    const rest = Math.round((post.pumped - logged) * 1e9) / 1e9;
+    if (rest <= 0) continue;
+    const giver = users.find((u) => u.id !== post.userId)!;
+    addPump(post.id, giver.id, rest, (now - post.createdAt) / H / 2);
+  }
 
   return { users, posts, comments, pumps };
 }

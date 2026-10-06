@@ -1,4 +1,4 @@
-// Free follows ("Following" feed) and creator zaps (90/10, counted in the Creators leaderboard).
+// Free follows ("Following" feed) and creator zaps (90/10, counted in full in the Creators leaderboard).
 // Runs the demo (file) store on the seed data, in a throwaway data directory.
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -98,17 +98,17 @@ test("creator zaps update totals, count in the Creators board, and never touch p
     postsBefore.map((p) => [p.id, p.pumped]),
   );
 
-  // Creators board = share of post zaps + share of direct zaps (90%).
+  // Creators board = full amount (100 %) of post zaps + direct zaps.
   const near = (a: number, b: number) => Math.abs(a - b) < 1e-9;
-  assert.ok(near(await boardTotal("u2"), u2Before + 0.45), "u2 gains the creator share of the direct zap");
-  assert.ok(near(await boardTotal("u3"), u3Before + 0.09));
+  assert.ok(near(await boardTotal("u2"), u2Before + 0.5), "u2 gains the full amount of the direct zap");
+  assert.ok(near(await boardTotal("u3"), u3Before + 0.1));
   // A window starting right before the direct zaps holds exactly them.
   const recent = await store.leaderboardCreators({ kind: "creators", scope: "world", limit: 10, since: t0 });
   assert.deepEqual(
     recent.map((r) => [r.user.id, r.total]),
     [
-      ["u2", 0.45],
-      ["u3", 0.09],
+      ["u2", 0.5],
+      ["u3", 0.1],
     ],
   );
   // A window that starts after the zaps is empty.

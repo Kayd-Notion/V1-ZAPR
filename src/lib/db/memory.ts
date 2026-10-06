@@ -12,6 +12,7 @@ import { randomUUID } from "node:crypto";
 import { buildSeed } from "./seed";
 import { expiresAt } from "../lifespan";
 import { WALLET_IN_USE } from "./types";
+import { isSelfZap } from "../ranking";
 import type {
   AdminStats,
   Activity,
@@ -128,6 +129,11 @@ function backfillPumpSnapshots(d: DbShape): boolean {
     changed = true;
   }
   return changed;
+}
+
+/** Sums of SOL amounts, rounded to the lamport (no float noise in totals and cursors). */
+function lamportRound(sol: number): number {
+  return Math.round(sol * 1e9) / 1e9;
 }
 
 /** Order: total desc, then id asc (stable tie-break shared with the cursor). */
@@ -727,6 +733,15 @@ export function createMemoryStore(): Store {
         zaps24h: zaps.filter((z) => z.createdAt >= day).length,
         solZapped24h: sum(zaps.filter((z) => z.createdAt >= day)),
         openReports: open.size,
+        selfZaps:
+          d.pumps.filter((p) => isSelfZap(p.pumperUserId, p.creatorUserId)).length +
+          d.creatorZaps.filter((z) => isSelfZap(z.zapperUserId, z.creatorUserId)).length,
+        unattributedZaps: d.pumps.filter((p) => !p.creatorUserId).length,
+        postsOutOfSync: d.posts.filter((p) => {
+          if (!isAlive(p, now)) return false;
+          const logged = d.pumps.filter((pm) => pm.postId === p.id).reduce((t, pm) => t + pm.amount, 0);
+          return Math.abs(logged - p.pumped) > 1e-6;
+        }).length,
       };
     },
 
@@ -741,30 +756,22 @@ export function createMemoryStore(): Store {
     },
 
     async leaderboardPosts(q: LeaderboardQuery) {
+      // Most zapped live posts: the full amount of every zap (100 %), summed
+      // from the zap log over the window (all time = since 0). Zaps by the
+      // post's own author (any of their wallets) don't count.
       const d = await load();
       const byCountry = q.scope === "country" && q.country ? q.country : null;
-      let rows: { id: string; total: number; creatorUserId: string | null }[];
-
       const now = Date.now();
-      const alive = new Set(d.posts.filter((p) => isAlive(p, now) && isVisible(d, p)).map((p) => p.id));
-      if (q.since === undefined) {
-        // All time: cumulative total kept on the post.
-        rows = d.posts
-          .filter((p) => alive.has(p.id))
-          .filter((p) => !byCountry || p.country === byCountry)
-          .map((p) => ({ id: p.id, total: p.pumped, creatorUserId: p.userId }));
-      } else {
-        // Period: sum the per-pump log over the window, live posts only.
-        const sums = new Map<string, { total: number; creatorUserId: string | null }>();
-        for (const pm of d.pumps) {
-          if (pm.createdAt < q.since || !alive.has(pm.postId)) continue;
-          if (byCountry && pm.postCountry !== byCountry) continue;
-          const cur = sums.get(pm.postId) ?? { total: 0, creatorUserId: pm.creatorUserId ?? null };
-          cur.total += pm.amount;
-          sums.set(pm.postId, cur);
-        }
-        rows = [...sums].map(([id, v]) => ({ id, ...v }));
+      const since = q.since ?? 0;
+      const live = new Map(d.posts.filter((p) => isAlive(p, now) && isVisible(d, p)).map((p) => [p.id, p]));
+      const sums = new Map<string, number>();
+      for (const pm of d.pumps) {
+        const post = live.get(pm.postId);
+        if (!post || pm.createdAt < since || isSelfZap(pm.pumperUserId, post.userId)) continue;
+        if (byCountry && post.country !== byCountry) continue;
+        sums.set(pm.postId, (sums.get(pm.postId) ?? 0) + pm.amount);
       }
+      let rows = [...sums].map(([id, raw]) => ({ id, total: lamportRound(raw), creatorUserId: live.get(id)!.userId }));
 
       rows = rows
         .filter((r) => afterCursor(r.total, r.id, q.cursor))
@@ -785,24 +792,26 @@ export function createMemoryStore(): Store {
       });
     },
     async leaderboardCreators(q: LeaderboardQuery) {
-      // Most zapped creators: share of the zaps on their posts + share of the
-      // zaps sent to them directly. All time: post-zap running total plus the
-      // direct-zap log; a period sums both logs over the window.
+      // Most zapped creators: the full amount (100 %) of the zaps on their
+      // posts plus the zaps sent to them directly, from both logs over the
+      // window (all time = since 0). Zaps to yourself don't count.
       const d = await load();
       const byCountry = q.scope === "country" && q.country ? q.country : null;
+      const since = q.since ?? 0;
       const sums = new Map<string, number>();
       const add = (id: string, sol: number) => sums.set(id, (sums.get(id) ?? 0) + sol);
-      if (q.since === undefined) {
-        for (const u of d.users) add(u.id, u.received);
-        for (const z of d.creatorZaps) add(z.creatorUserId, z.creatorAmount);
-      } else {
-        for (const pm of d.pumps) if (pm.createdAt >= q.since && pm.creatorUserId) add(pm.creatorUserId, pm.creatorAmount);
-        for (const z of d.creatorZaps) if (z.createdAt >= q.since) add(z.creatorUserId, z.creatorAmount);
+      for (const pm of d.pumps) {
+        if (pm.createdAt < since || !pm.creatorUserId || isSelfZap(pm.pumperUserId, pm.creatorUserId)) continue;
+        add(pm.creatorUserId, pm.amount);
+      }
+      for (const z of d.creatorZaps) {
+        if (z.createdAt < since || isSelfZap(z.zapperUserId, z.creatorUserId)) continue;
+        add(z.creatorUserId, z.amount);
       }
       const rows: { id: string; total: number; user: User }[] = [];
       for (const [id, raw] of sums) {
         const user = findUser(d, id);
-        const total = Math.round(raw * 1e9) / 1e9; // lamport precision, no float noise
+        const total = lamportRound(raw);
         if (user && !user.banned && total > 0) rows.push({ id, total, user });
       }
       return rows

@@ -768,7 +768,14 @@ export function createPostgresStore(): Store {
             + (select count(*) from creator_zaps where created_at >= ${day})::int as zaps_24h,
           coalesce((select sum(amount::numeric) from pumps where created_at >= ${day}), 0)
             + coalesce((select sum(amount::numeric) from creator_zaps where created_at >= ${day}), 0) as sol_24h,
-          (select count(distinct (target_type, target_id)) from reports where status = 'open')::int as open_reports`;
+          (select count(distinct (target_type, target_id)) from reports where status = 'open')::int as open_reports,
+          (select count(*) from pumps where pumper_user_id = creator_user_id)::int
+            + (select count(*) from creator_zaps where zapper_user_id = creator_user_id)::int as self_zaps,
+          (select count(*) from pumps where creator_user_id is null)::int as unattributed_zaps,
+          (select count(*) from posts p
+             where p.expires_at > ${now}
+               and abs(p.pumped::numeric - coalesce((select sum(pm.amount::numeric) from pumps pm where pm.post_id = p.id), 0)) > 0.000001
+          )::int as posts_out_of_sync`;
       return {
         users: r.users,
         bannedUsers: r.banned_users,
@@ -781,6 +788,9 @@ export function createPostgresStore(): Store {
         solZapped24h: Number(r.sol_24h),
         newUsers24h: r.new_users_24h,
         openReports: r.open_reports,
+        selfZaps: r.self_zaps,
+        unattributedZaps: r.unattributed_zaps,
+        postsOutOfSync: r.posts_out_of_sync,
       };
     },
 
@@ -795,91 +805,68 @@ export function createPostgresStore(): Store {
     },
 
     async leaderboardPosts(q: LeaderboardQuery) {
+      // Most zapped live posts: the full amount of every zap (100 %), summed
+      // from the zap log over the window (all time = since 0). Zaps by the
+      // post's own author (any of their wallets: zaps are recorded per
+      // account) don't count (lib/ranking.ts). Sums use numeric so totals are
+      // exact and identical across pages (stable keyset).
       const db = await getSql();
       if (!cursorIsUsable(q.cursor)) return [];
       const country = q.scope === "country" && q.country ? q.country : null;
       const c = q.cursor;
-
-      if (q.since === undefined) {
-        // All time: cumulative total on the post (double; its shortest decimal
-        // string round-trips exactly, so the keyset equality is safe).
-        const rows = await db`
-          select p.*, p.id as rank_post_id, p.pumped as rank_total,
-                 u.id as author_id, u.handle as author_handle, u.wallet as author_wallet, u.bio as author_bio, u.avatar_url as author_avatar
-          from posts p join users u on u.id = p.user_id
-          where p.expires_at > ${Date.now()} and not p.hidden and not u.banned
-            ${country ? db`and p.country = ${country}` : db``}
-            ${c ? db`and (p.pumped < ${c.total}::float8 or (p.pumped = ${c.total}::float8 and p.id > ${c.id}::uuid))` : db``}
-          order by p.pumped desc, p.id asc
-          limit ${q.limit}`;
-        return rows.map(rowToPostRank);
-      }
-
-      // Period: sum the per-pump log over the window, grouped by post, for posts
-      // that are still alive (expired posts appear nowhere). Sums use numeric so
-      // totals are exact and identical across pages (stable keyset).
       const rows = await db`
         with agg as (
-          select pm.post_id, pm.creator_user_id, sum(pm.amount::numeric) as total
+          select pm.post_id, sum(pm.amount::numeric) as total
           from pumps pm
-          where pm.created_at >= ${q.since}
-            ${country ? db`and pm.post_country = ${country}` : db``}
-          group by pm.post_id, pm.creator_user_id
+          join posts p on p.id = pm.post_id
+          where pm.created_at >= ${q.since ?? 0}
+            and pm.pumper_user_id <> p.user_id
+            and p.expires_at > ${Date.now()} and not p.hidden
+            ${country ? db`and p.country = ${country}` : db``}
+          group by pm.post_id
         )
         select p.*, agg.post_id as rank_post_id, agg.total::text as rank_total,
                u.id as author_id, u.handle as author_handle, u.wallet as author_wallet, u.bio as author_bio, u.avatar_url as author_avatar
         from agg
         join posts p on p.id = agg.post_id
         join users u on u.id = p.user_id
-        where p.expires_at > ${Date.now()} and not p.hidden and not u.banned
+        where not u.banned
           ${c ? db`and (agg.total < ${c.total}::numeric or (agg.total = ${c.total}::numeric and agg.post_id > ${c.id}::uuid))` : db``}
         order by agg.total desc, agg.post_id asc
         limit ${q.limit}`;
       return rows.map(rowToPostRank);
     },
     async leaderboardCreators(q: LeaderboardQuery) {
-      // Most zapped creators: everything a creator received — their share of
-      // the zaps on their posts plus their share of the zaps sent to them
-      // directly ("Zap this creator"). All time reads the post-zap running
-      // total (users.received) plus the direct-zap log; a period sums both
-      // logs over the window. Creators who received nothing are left out.
+      // Most zapped creators: the full amount (100 %) of the zaps on their
+      // posts plus the zaps sent to them directly, from both logs over the
+      // window (all time = since 0). Zaps to yourself don't count. Creators
+      // who received nothing are left out.
       const db = await getSql();
       if (!cursorIsUsable(q.cursor)) return [];
       const country = q.scope === "country" && q.country ? q.country : null;
       const c = q.cursor;
-
-      const ranked =
-        q.since === undefined
-          ? db`
-              select u.*, (u.received::numeric + coalesce(cz.total, 0)) as rank_total
-              from users u
-              left join (
-                select creator_user_id, sum(creator_amount::numeric) as total
-                from creator_zaps
-                group by creator_user_id
-              ) cz on cz.creator_user_id = u.id`
-          : db`
-              select u.*, agg.total as rank_total
-              from (
-                select creator_user_id, sum(share) as total
-                from (
-                  select pm.creator_user_id, pm.creator_amount::numeric as share
-                  from pumps pm
-                  where pm.created_at >= ${q.since} and pm.creator_user_id is not null
-                  union all
-                  select cz.creator_user_id, cz.creator_amount::numeric
-                  from creator_zaps cz
-                  where cz.created_at >= ${q.since}
-                ) shares
-                group by creator_user_id
-              ) agg
-              join users u on u.id = agg.creator_user_id`;
+      const since = q.since ?? 0;
       const rows = await db`
-        select * from (${ranked}) r
-        where r.rank_total > 0 and not r.banned
-          ${country ? db`and r.country = ${country}` : db``}
-          ${c ? db`and (r.rank_total < ${c.total}::numeric or (r.rank_total = ${c.total}::numeric and r.id > ${c.id}::uuid))` : db``}
-        order by r.rank_total desc, r.id asc
+        select u.*, agg.total::text as rank_total
+        from (
+          select creator_user_id, sum(amount) as total
+          from (
+            select pm.creator_user_id, pm.amount::numeric as amount
+            from pumps pm
+            where pm.created_at >= ${since} and pm.creator_user_id is not null
+              and pm.pumper_user_id <> pm.creator_user_id
+            union all
+            select cz.creator_user_id, cz.amount::numeric
+            from creator_zaps cz
+            where cz.created_at >= ${since} and cz.zapper_user_id <> cz.creator_user_id
+          ) zaps
+          group by creator_user_id
+        ) agg
+        join users u on u.id = agg.creator_user_id
+        where agg.total > 0 and not u.banned
+          ${country ? db`and u.country = ${country}` : db``}
+          ${c ? db`and (agg.total < ${c.total}::numeric or (agg.total = ${c.total}::numeric and u.id > ${c.id}::uuid))` : db``}
+        order by agg.total desc, u.id asc
         limit ${q.limit}`;
       return rows.map(
         (r): CreatorRankEntry => ({

@@ -63,3 +63,12 @@ test("anti-spam counters count per key inside a window, then reset", async () =>
   await new Promise((r) => setTimeout(r, 12));
   assert.equal(await store.hitRateLimit("tiny:x", 5), 1);
 });
+
+test("on-chain verification: on for every Vercel deployment (previews too), off locally, explicit setting wins", async () => {
+  const { onchainVerifyDefault } = await import("../src/lib/verify-pump-core");
+  assert.equal(onchainVerifyDefault({ VERCEL: "1", VERCEL_ENV: "production" }), true);
+  assert.equal(onchainVerifyDefault({ VERCEL: "1", VERCEL_ENV: "preview" }), true);
+  assert.equal(onchainVerifyDefault({}), false);
+  assert.equal(onchainVerifyDefault({ VERCEL: "1", PUMP_REQUIRE_ONCHAIN_VERIFY: "false" }), false);
+  assert.equal(onchainVerifyDefault({ PUMP_REQUIRE_ONCHAIN_VERIFY: "true" }), true);
+});

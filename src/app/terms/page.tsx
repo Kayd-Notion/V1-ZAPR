@@ -3,13 +3,14 @@ import Link from "next/link";
 import { LegalPage } from "@/components/LegalPage";
 import { CREATOR_ZAP_SPLIT, resolvedSplitBps } from "@/lib/pump-config";
 import { CLUSTER } from "@/lib/solana";
+import { ContactEmail } from "@/components/ContactEmail";
 
 export const metadata: Metadata = { title: "Terms of use" };
 
 export default function TermsPage() {
   const post = resolvedSplitBps();
   return (
-    <LegalPage title="Terms of use" updated="October 4, 2026">
+    <LegalPage title="Terms of use" updated="October 6, 2026">
       <h2>1. What ZAPR is</h2>
       <p>
         ZAPR is a social network where people publish posts and send each other SOL (&ldquo;zaps&rdquo;) on the Solana
@@ -76,6 +77,11 @@ export default function TermsPage() {
       <p>
         These terms may change. The date at the top shows the latest version; using ZAPR after a change means you
         accept it.
+      </p>
+
+      <h2>8. Contact</h2>
+      <p>
+        Questions, a problem with content or your account: <ContactEmail />.
       </p>
     </LegalPage>
   );

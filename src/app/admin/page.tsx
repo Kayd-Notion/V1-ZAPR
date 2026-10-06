@@ -98,6 +98,23 @@ export default function AdminPage() {
         </span>
       </p>
 
+      {data.security && <SecurityCheck s={data.security} />}
+
+      {data.network && (
+        <p className={`admin-check${data.network.serverRpcOk === false ? " warn" : ""}`}>
+          {data.network.serverRpcOk === false ? <IconAlert /> : <IconCheck />}
+          <span>
+            <b>Network:</b> Solana {data.network.cluster} · browser RPC {data.network.browserRpc} · server RPC{" "}
+            {data.network.serverRpc}{" "}
+            {data.network.serverRpcOk === true
+              ? "(on the right network)."
+              : data.network.serverRpcOk === false
+                ? "is on ANOTHER network: zaps are paused. Fix NEXT_PUBLIC_SOLANA_RPC / SOLANA_RPC_URL in Vercel."
+                : "(couldn't be reached right now)."}
+          </span>
+        </p>
+      )}
+
       <div className="section-title">
         <IconFlag /> Reports ({data.reports.length})
       </div>
@@ -285,5 +302,25 @@ function ReportCard({
         </button>
       </div>
     </div>
+  );
+}
+
+/** Settings that must be right before real users (nothing secret is shown). */
+function SecurityCheck({ s }: { s: NonNullable<AdminOverview["security"]> }) {
+  const problems = [
+    !s.sessionSecretOk && "SESSION_SECRET is missing or shorter than 32 characters: sessions could be forged. Set it in Vercel now.",
+    !s.onchainVerifyOn && "On-chain verification is OFF: zaps are recorded without checking the blockchain.",
+    !s.founderWalletSet && "NEXT_PUBLIC_FOUNDER_WALLET isn't set: the platform share goes to a demo address.",
+    !s.cronSecretSet && "CRON_SECRET isn't set (optional): anyone can trigger the nightly clean-up.",
+  ].filter(Boolean) as string[];
+  const serious = !s.sessionSecretOk || !s.onchainVerifyOn || !s.founderWalletSet;
+  return (
+    <p className={`admin-check${serious ? " warn" : ""}`}>
+      {problems.length ? <IconAlert /> : <IconCheck />}
+      <span>
+        <b>Security check:</b>{" "}
+        {problems.length ? problems.join(" ") : "session secret, on-chain verification, platform wallet and cron secret are set."}
+      </span>
+    </p>
   );
 }

@@ -56,3 +56,11 @@ export function checkTransferTx(tx: ParsedTransferTx, e: ExpectedTransfer): { ok
   }
   return { ok: true };
 }
+
+/** The on-chain check setting (see verify-pump.ts), pure so it is tested. */
+export function onchainVerifyDefault(env: Record<string, string | undefined>): boolean {
+  const v = env.PUMP_REQUIRE_ONCHAIN_VERIFY;
+  if (v === "true") return true;
+  if (v === "false") return false;
+  return Boolean(env.VERCEL_ENV || env.VERCEL === "1");
+}

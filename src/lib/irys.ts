@@ -13,9 +13,12 @@
 import { WebUploader } from "@irys/web-upload";
 import { WebSolana } from "@irys/web-upload-solana";
 import type { MediaType } from "./db/types";
+import { IS_MAINNET } from "./solana";
 
 const IRYS_NETWORK = (process.env.NEXT_PUBLIC_IRYS_NETWORK || "devnet").trim();
-const IS_IRYS_DEVNET = IRYS_NETWORK !== "mainnet";
+// Paid Irys mainnet uploads (real SOL) only when the whole site is on mainnet:
+// a site on devnet never spends real SOL, whatever NEXT_PUBLIC_IRYS_NETWORK says.
+const IS_IRYS_DEVNET = IRYS_NETWORK !== "mainnet" || !IS_MAINNET;
 
 export const MAX_MEDIA_BYTES = 25 * 1024 * 1024; // 25 MB soft cap for MVP
 

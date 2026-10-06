@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { zapsBlockedOnMainnet } from "@/lib/network-guard";
 import { getStore } from "@/lib/db";
 import { currentUser, walletsOf } from "@/lib/current-user";
 import { resolvedSplitBps } from "@/lib/pump-config";
@@ -22,6 +23,8 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const blocked = zapsBlockedOnMainnet();
+  if (blocked) return blocked;
   const me = await currentUser();
   if (!me) {
     return NextResponse.json({ error: "Connect your wallet to send a zap." }, { status: 401 });

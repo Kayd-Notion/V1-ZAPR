@@ -65,7 +65,8 @@ dans le navigateur : Storage → ta base → **Open in Neon** → **SQL Editor**
 | `NEXT_PUBLIC_CONTACT_EMAIL` | vide, ou une adresse e-mail | bouton e-mail du Feedback + contact des pages légales |
 | `CRON_SECRET` | facultatif | protège le nettoyage quotidien (`/api/cron/purge`, appelé par Vercel Cron) |
 | `NEXT_PUBLIC_SOLANA_CLUSTER` | `devnet` (défaut) | réseau ; `mainnet-beta` bloque les zaps |
-| `NEXT_PUBLIC_SOLANA_RPC` | vide ou URL Helius/QuickNode | RPC custom |
+| `NEXT_PUBLIC_SOLANA_RPC` | vide, ou une URL `https://` devnet (Helius, QuickNode…) | RPC du navigateur (visible : clé limitée au domaine) ; voir `docs/RPC-SETUP.md` |
+| `SOLANA_RPC_URL` | vide, ou une URL `https://` devnet (type **Secret**) | RPC du serveur (vérification des zaps), jamais envoyé aux navigateurs |
 | `NEXT_PUBLIC_FOUNDER_WALLET` | adresse devnet du fondateur | reçoit les 30 % ; c'est aussi le **seul admin** (page `/admin`) |
 | `NEXT_PUBLIC_PUMP_CREATOR_BPS` / `_FOUNDER_BPS` | `7000` / `3000` | ratio des zaps de post |
 | `NEXT_PUBLIC_CREATOR_ZAP_CREATOR_BPS` | `9000` | part créateur des zaps de créateur (le reste va à la plateforme) |
@@ -202,11 +203,20 @@ Règles des zaps, vérifiées **dans l'interface et côté serveur** :
 
 **Sécurité.**
 
-- **Vérification on-chain** de chaque zap avant de l'enregistrer (production) :
+- **Vérification on-chain** de chaque zap avant de l'enregistrer (tous les
+  déploiements Vercel, production **et** préversions) :
   bon payeur, bon créateur, bonne répartition (70/30 ou 90/10), bon montant,
   transaction réussie ; une transaction ne compte qu'une fois. Si Solana met du
   temps à la montrer, le serveur réessaie (~12 s) puis répond « pending », et
   l'app réessaie à son tour (`src/lib/record-retry.ts`).
+- **Garde-fous réseau** : zaps bloqués sur mainnet dans l'interface, dans
+  l'envoi (`src/lib/pump.ts`) **et** dans toutes les routes API de zap
+  (`src/lib/network-guard.ts`) ; avant chaque zap et chaque vérification, ZAPR
+  contrôle que le RPC est bien sur le bon réseau (empreinte « genesis hash ») :
+  une URL mainnet collée par erreur met les zaps en pause au lieu de dépenser de
+  vrais SOL. La page /admin affiche le réseau, les RPC (sans clé) et un
+  « Security check » (SESSION_SECRET, vérification on-chain, wallet plateforme,
+  CRON_SECRET).
 - **Anti-spam** (`src/lib/rate-limit.ts`) : posts 8 / 10 min, commentaires
   30 / 10 min, follows 60 / 10 min, signalements 20 / h, profil 20 / 10 min,
   connexions 10 / 10 min par wallet, liaisons de wallet 10 / 10 min. Compteurs en base, **par compte ou par
@@ -288,6 +298,9 @@ docs/TEST-CHECKLIST.md checklist de test pas à pas avec Phantom (devnet), ordin
 docs/BETA-GUIDE.md     guide court en anglais pour les testeurs de la bêta
 docs/FEEDBACK-SETUP.md activer le bouton Feedback (formulaire ou e-mail)
 docs/PRIVY-SETUP.md    activer « Continue with Google » pas à pas
+docs/RPC-SETUP.md      brancher un RPC Solana payant (navigateur + serveur)
+docs/AUDIT-PREP.md     le flux de paiement expliqué pour un auditeur externe + notre relecture
+docs/LEGAL-QUESTIONS.md les questions à poser à un juriste (France / UE)
 ```
 
 Développeurs, en local :

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { zapsBlockedOnMainnet } from "@/lib/network-guard";
 import { getStore } from "@/lib/db";
 import { currentUser, suspended } from "@/lib/current-user";
 import { MIN_CREATOR_ZAP_SOL } from "@/lib/pump-config";
@@ -11,6 +12,8 @@ export const runtime = "nodejs";
  * client never builds nor signs the transaction.
  */
 export async function POST(req: NextRequest, { params }: { params: Promise<{ handle: string }> }) {
+  const blocked = zapsBlockedOnMainnet();
+  if (blocked) return blocked;
   const me = await currentUser();
   if (!me) return NextResponse.json({ error: "Connect your wallet to zap a creator.", code: "auth_required" }, { status: 401 });
   if (me.banned) return suspended();

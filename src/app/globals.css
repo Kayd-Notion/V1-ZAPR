@@ -800,11 +800,6 @@ svg.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em
 .notice-title svg.icon { color: var(--warn); }
 .field-invalid { border-color: var(--danger); }
 .field-error { color: var(--danger); font-size: 12.5px; font-weight: 600; margin-top: 6px; }
-.self-pump-tag {
-  font-size: 10.5px; font-weight: 700; color: var(--text-dim);
-  background: var(--bg-hover); border: 1px solid var(--border);
-  padding: 1px 7px; border-radius: var(--radius-pill); margin-left: 6px; vertical-align: 1px;
-}
 .split-box {
   background: var(--bg-elev-2); border: 1px solid var(--border-soft);
   border-radius: var(--radius-sm); padding: 14px; margin: 16px 0;

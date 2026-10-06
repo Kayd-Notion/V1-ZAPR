@@ -77,8 +77,7 @@ Phantom ne fait que signer.
 - [ ] **Top → Posts** : le post de B affiche **100 %** du zap de A (ex. A zappe 0.1 SOL →
       le Top montre 0.1, pas 0.07).
 - [ ] B **zappe son propre post** (auto-zap) : c'est accepté, le post vit plus longtemps,
-      un badge **self-zap** apparaît dans la liste des zappeurs… mais le **Top ne bouge
-      pas**.
+      **aucun badge** n'apparaît, et le **Top augmente** comme pour n'importe quel zap.
 - [ ] **Top → Creators** : B apparaît, avec « SOL zapped ».
 - [ ] A ouvre **Admin** : les lignes **Rankings check**, **Security check** et **Network**
       sont vertes (✓). Si l'une est rouge, fais une capture et envoie-la-moi.

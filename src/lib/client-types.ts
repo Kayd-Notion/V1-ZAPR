@@ -59,8 +59,6 @@ export interface ClientPumper {
   amount: number;
   createdAt: number;
   anonymous: boolean;
-  /** Rule 1: the creator pumped their own post ("auto-pump" badge). */
-  isSelfPump?: boolean;
   label: string;
   author: ClientUserRef | null;
 }
@@ -141,8 +139,6 @@ export interface ClientAdminStats {
   solZapped24h: number;
   newUsers24h: number;
   openReports: number;
-  /** Rankings check: self-zaps (left out of the leaderboards). */
-  selfZaps: number;
   /** Rankings check: post zaps without a creator (should be 0). */
   unattributedZaps: number;
   /** Rankings check: live posts whose total differs from their zaps (should be 0). */

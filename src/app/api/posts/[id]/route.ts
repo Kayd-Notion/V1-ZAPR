@@ -21,18 +21,15 @@ export async function GET(
   ]);
 
   // Privacy: for anonymous pumps, never leak the author — mask server-side.
-  // Rule 1: flag self-pumps (pumper = post creator) for the "auto-pump" badge.
-  // Kept visible even on anonymous pumps: it's about how the SOL moved, and
-  // hiding it would let creators mask self-pumping behind anonymity.
+  // A self-zap (the creator zapping their own post) is a zap like any other:
+  // no flag, no badge (founder's decision, October 2026).
   const pumpers = pumpersRaw.map((p, i) => {
-    const isSelfPump = p.pumperUserId === post.userId;
     if (p.anonymous) {
       return {
         id: p.id,
         amount: p.amount,
         createdAt: p.createdAt,
         anonymous: true,
-        isSelfPump,
         label: `Anonymous zapper #${i + 1}`,
         author: null as null,
       };
@@ -42,7 +39,6 @@ export async function GET(
       amount: p.amount,
       createdAt: p.createdAt,
       anonymous: false,
-      isSelfPump,
       label: p.author.handle,
       author: {
         id: p.author.id,

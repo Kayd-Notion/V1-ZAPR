@@ -33,8 +33,9 @@ suppression de compte en libre-service. Pistes ensuite : bot Telegram, app
 mobile, serveur dédié.
 
 Décisions prises (octobre 2026) : les classements comptent **100 %** du montant
-de chaque zap ; un **auto-zap** (depuis n'importe quel wallet du compte) reste
-possible et prolonge le post, mais **ne compte pas** dans les classements ;
+de chaque zap ; un **auto-zap** (zapper son propre post, depuis n'importe quel
+wallet du compte) est autorisé **sans conséquence** : il compte comme un zap
+normal (durée de vie et classements), sans badge ;
 montants rapides inchangés (0.01 · 0.05 · 0.1 · 0.5 · 1). Reportés : niveaux de
 créateur, fusion de comptes, choix du wallet de réception, connexion Apple.
 
@@ -169,8 +170,7 @@ textes, messages d'erreur du serveur, nombres (`98.40`), durées (`3d left`,
   **Classements** : deux onglets, **Posts** (les posts les plus zappés) et
   **Creators** (les créateurs les plus zappés : zaps sur leurs posts + zaps
   reçus directement), chaque zap compté à **100 %** de son montant, auto-zaps
-  exclus (`src/lib/ranking.ts`, calculé depuis l'historique des zaps, sans
-  migration) ; période All time / 24h / 7 days / 30 days, monde ou par pays ;
+  compris (calculé depuis l'historique des zaps, sans migration) ; période All time / 24h / 7 days / 30 days, monde ou par pays ;
   thème sombre. La page /admin affiche un « Rankings check » (cohérence des
   données).
 
@@ -193,8 +193,9 @@ de payer. Tous les chiffres : `src/lib/lifespan-config.ts`.
 
 Règles des zaps, vérifiées **dans l'interface et côté serveur** :
 
-1. **Auto-zap autorisé** (badge « self-zap ») : il prolonge le post comme les
-   autres, mais **ne compte pas** dans les classements.
+1. **Auto-zap autorisé, sans conséquence** : il compte comme un zap normal
+   (durée de vie et classements), sans badge. Un zap **direct** à soi-même
+   (« Zap this creator » sur son propre profil) reste refusé.
 2. **Post expiré** : il disparaît immédiatement de partout et ne peut plus
    recevoir de nouveau zap. Seul un zap déjà en cours de signature au moment
    de l'expiration est encore enregistré (l'argent est parti) ; s'il atteint un

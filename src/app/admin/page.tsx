@@ -94,7 +94,7 @@ export default function AdminPage() {
           {s.unattributedZaps || s.postsOutOfSync
             ? `${s.unattributedZaps} zap(s) without a creator, ${s.postsOutOfSync} live post(s) whose total doesn't match its zaps. Leaderboards use the zap log; tell the developer.`
             : "every zap is tied to its creator and every live post's total matches its zaps."}{" "}
-          Leaderboards count 100 % of each zap; {s.selfZaps} self-zap{s.selfZaps === 1 ? "" : "s"} left out.
+          Leaderboards count 100 % of each zap, self-zaps included.
         </span>
       </p>
 

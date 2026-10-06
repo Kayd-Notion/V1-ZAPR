@@ -75,7 +75,7 @@ Do as many as you can, in any order. The ones marked ★ matter most.
 - **Follow** someone: their posts show up in the **Following** tab.
 - **Zap a creator** directly from their profile (**Zap this creator**).
 - **Top**: the most zapped posts and creators. Each zap counts for its **full amount**.
-  Zapping your own post works and keeps it alive, but **doesn't count** in the Top.
+  Zapping your own post works like any other zap.
 - **Comment**, **share** a post, **search** (magnifier at the top).
 - **Settings**: change your username, bio and picture; try the privacy switches.
 - **Link a wallet** (Settings → Wallets): add a second wallet to your account. Both then

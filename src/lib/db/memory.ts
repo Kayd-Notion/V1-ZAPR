@@ -12,7 +12,6 @@ import { randomUUID } from "node:crypto";
 import { buildSeed } from "./seed";
 import { expiresAt } from "../lifespan";
 import { WALLET_IN_USE } from "./types";
-import { isSelfZap } from "../ranking";
 import type {
   AdminStats,
   Activity,
@@ -733,9 +732,6 @@ export function createMemoryStore(): Store {
         zaps24h: zaps.filter((z) => z.createdAt >= day).length,
         solZapped24h: sum(zaps.filter((z) => z.createdAt >= day)),
         openReports: open.size,
-        selfZaps:
-          d.pumps.filter((p) => isSelfZap(p.pumperUserId, p.creatorUserId)).length +
-          d.creatorZaps.filter((z) => isSelfZap(z.zapperUserId, z.creatorUserId)).length,
         unattributedZaps: d.pumps.filter((p) => !p.creatorUserId).length,
         postsOutOfSync: d.posts.filter((p) => {
           if (!isAlive(p, now)) return false;
@@ -756,9 +752,8 @@ export function createMemoryStore(): Store {
     },
 
     async leaderboardPosts(q: LeaderboardQuery) {
-      // Most zapped live posts: the full amount of every zap (100 %), summed
-      // from the zap log over the window (all time = since 0). Zaps by the
-      // post's own author (any of their wallets) don't count.
+      // Most zapped live posts: the full amount of every zap (100 %), self-zaps
+      // included, summed from the zap log over the window (all time = since 0).
       const d = await load();
       const byCountry = q.scope === "country" && q.country ? q.country : null;
       const now = Date.now();
@@ -767,7 +762,7 @@ export function createMemoryStore(): Store {
       const sums = new Map<string, number>();
       for (const pm of d.pumps) {
         const post = live.get(pm.postId);
-        if (!post || pm.createdAt < since || isSelfZap(pm.pumperUserId, post.userId)) continue;
+        if (!post || pm.createdAt < since) continue;
         if (byCountry && post.country !== byCountry) continue;
         sums.set(pm.postId, (sums.get(pm.postId) ?? 0) + pm.amount);
       }
@@ -793,19 +788,19 @@ export function createMemoryStore(): Store {
     },
     async leaderboardCreators(q: LeaderboardQuery) {
       // Most zapped creators: the full amount (100 %) of the zaps on their
-      // posts plus the zaps sent to them directly, from both logs over the
-      // window (all time = since 0). Zaps to yourself don't count.
+      // posts (self-zaps included) plus the zaps sent to them directly, from
+      // both logs over the window (all time = since 0).
       const d = await load();
       const byCountry = q.scope === "country" && q.country ? q.country : null;
       const since = q.since ?? 0;
       const sums = new Map<string, number>();
       const add = (id: string, sol: number) => sums.set(id, (sums.get(id) ?? 0) + sol);
       for (const pm of d.pumps) {
-        if (pm.createdAt < since || !pm.creatorUserId || isSelfZap(pm.pumperUserId, pm.creatorUserId)) continue;
+        if (pm.createdAt < since || !pm.creatorUserId) continue;
         add(pm.creatorUserId, pm.amount);
       }
       for (const z of d.creatorZaps) {
-        if (z.createdAt < since || isSelfZap(z.zapperUserId, z.creatorUserId)) continue;
+        if (z.createdAt < since) continue;
         add(z.creatorUserId, z.amount);
       }
       const rows: { id: string; total: number; user: User }[] = [];

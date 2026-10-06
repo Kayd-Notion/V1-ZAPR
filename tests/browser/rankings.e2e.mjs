@@ -1,6 +1,6 @@
 // Browser test of the leaderboard rules: a zap counts for its full amount
-// (100 %), self-zaps never count (they still extend the post's life), and the
-// /admin rankings check. Not part of `npm test`. Run against a dev server on a
+// (100 %), a self-zap counts like any other zap (no badge), and the /admin
+// rankings check. Not part of `npm test`. Run against a dev server on a
 // FRESH demo store, with on-chain checks off (the default in development):
 //
 //   ZAPR_DATA_DIR=$(mktemp -d) NEXT_PUBLIC_FOUNDER_WALLET=<printed below> npx next dev -p 3100
@@ -62,7 +62,7 @@ const post = created.body.post;
 const zap = (c, amount) =>
   c.call(`/api/posts/${post.id}/pump`, { method: "POST", body: JSON.stringify({ amount, signature: `e2e-${randomUUID()}`, anonymous: false }) });
 check((await zap(bob, 100)).status === 200, "bob zaps 100 SOL (recorded)");
-check((await zap(alice, 500)).status === 200, "alice zaps her own post 500 SOL (allowed)");
+check((await zap(alice, 500)).status === 200, "alice zaps her own post 500 SOL (allowed, like any zap)");
 const direct = await bob.call(`/api/users/${aliceUser.handle}/zap`, {
   method: "POST",
   body: JSON.stringify({ amount: 50, signature: `e2e-${randomUUID()}`, anonymous: false }),
@@ -81,35 +81,35 @@ const page = await ctx.newPage();
 const errors = [];
 page.on("pageerror", (e) => errors.push(e.message));
 
-// Posts board: 100 SOL (bob's full zap), not 600 (with the self-zap) nor 70 (creator share).
+// Posts board: 600 SOL (bob's 100 + alice's own 500, both in full), not 70 + 350 (creator shares).
 await page.goto(B + "/leaderboard", { timeout: 120000 });
 const first = page.locator(".lb-row").first();
 await first.waitFor({ timeout: 60000 });
 const firstText = (await first.innerText()).replace(/\s+/g, " ");
-check(firstText.includes(`Rank test ${tag}`) && /\b100\b/.test(firstText) && !/600/.test(firstText), `posts board: "${firstText}"`);
+check(firstText.includes(`Rank test ${tag}`) && /\b600\b/.test(firstText), `posts board: "${firstText}"`);
 
-// Creators board: 150 SOL zapped (100 + 50), no self-zap.
+// Creators board: 650 SOL zapped (100 + 500 on her post + 50 direct).
 await page.locator(".tab", { hasText: "Creators" }).first().click();
 await page.locator(".lb-row", { hasText: aliceUser.handle }).first().waitFor({ timeout: 30000 });
 const aRow = (await page.locator(".lb-row", { hasText: aliceUser.handle }).first().innerText()).replace(/\s+/g, " ");
-check(/\b150\b/.test(aRow) && aRow.includes("SOL zapped"), `creators board: "${aRow}"`);
+check(/\b650\b/.test(aRow) && aRow.includes("SOL zapped"), `creators board: "${aRow}"`);
 check((await page.locator(".lb-row").first().innerText()).includes(aliceUser.handle), "alice is first among creators");
 
-// The post itself keeps every zap (life), and the self-zap is tagged.
-const life = (await alice.call(`/api/posts/${post.id}`)).body.post;
-check(Math.abs(life.pumped - 600) < 1e-9, `the post's own total keeps the self-zap (${life.pumped} SOL: it lives longer)`);
+// The post keeps every zap (life); the self-zap shows like any zap: no badge, no flag.
+const detail = (await alice.call(`/api/posts/${post.id}`)).body;
+check(Math.abs(detail.post.pumped - 600) < 1e-9, `the post's total keeps every zap (${detail.post.pumped} SOL)`);
+check(detail.pumpers.every((pp) => !("isSelfPump" in pp)), "the API no longer flags self-zaps");
 await page.goto(B + `/post/${post.id}`);
-const tagEl = page.locator(".self-pump-tag").first();
-await tagEl.waitFor({ timeout: 60000 });
-check((await tagEl.getAttribute("title"))?.includes("doesn't count in the leaderboards"), "self-zap badge explains it isn't ranked");
+await page.locator(".pr-name").first().waitFor({ timeout: 60000 });
+check((await page.getByText("self-zap", { exact: true }).count()) === 0, "no self-zap badge on the post page");
 
 // /admin rankings check (founder only).
 await ctx.addCookies([{ name: "zapr_session", value: founder.session(), url: B }]);
 await page.goto(B + "/admin");
-const checkEl = page.locator(".admin-check");
+const checkEl = page.locator(".admin-check", { hasText: "Rankings check" });
 await checkEl.waitFor({ timeout: 60000 });
 const checkText = (await checkEl.innerText()).replace(/\s+/g, " ");
-check(checkText.includes("every zap is tied to its creator") && /[1-9]\d* self-zaps? left out/.test(checkText), `admin: "${checkText}"`);
+check(checkText.includes("every zap is tied to its creator") && checkText.includes("self-zaps included"), `admin: "${checkText}"`);
 if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/admin-check.png` });
 
 await browser.close();

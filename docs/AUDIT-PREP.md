@@ -81,9 +81,9 @@ recipient account.
 neither does.
 
 **Self-zaps:**
-- **Zapping your own post is allowed.** The creator share comes back to you. It
-  extends the post's life but is **excluded from the leaderboards**: zaps are
-  recorded per account, so this covers every linked wallet.
+- **Zapping your own post is allowed, with no special treatment** (founder's
+  decision). The creator share comes back to you; it extends the post's life and
+  counts in the leaderboards like any other zap, with no public badge.
 - **A direct creator zap to yourself is refused** by the API.
 
 ## 4. Transaction construction (browser)
@@ -223,7 +223,7 @@ by design.
 | F3 | **High if misconfigured** | `SESSION_SECRET` falls back to a public development value when unset, so sessions could be forged, including the admin's. | Shown in /admin "Security check". Recommended: refuse to start in production without it (**decision for Kayd**: it would block sign-in until the variable is set). |
 | F4 | Medium | Sessions are stateless (30 days). Logout only clears the browser's cookie; a stolen cookie stays valid. Bans and unlinks are re-checked on every request. | Add a per-user session version to revoke all sessions; shorter lifetime. |
 | F5 | Low | A recorded zap can be **any** matching transaction, even an old one or one made outside ZAPR. It isn't bound to a post (no memo) or to a time window. It can't be counted twice (unique signature). | Add a memo with the post id and a maximum age (needs a product decision). |
-| F6 | Medium (product) | Leaderboard manipulation: two accounts can zap each other. It costs the platform share (30 % / 10 %) each time. Self-zaps are excluded per account only. | Heuristics or limits if it happens; watch with /admin. |
+| F6 | Medium (product) | Leaderboard manipulation: a creator can self-zap, or two accounts can zap each other. Each time it costs the platform share (30 % / 10 %) plus fees. Self-zaps count in the leaderboards by decision. | Accepted by design; watch with /admin. Revisit if it is abused. |
 | F7 | Low | Verification trusts one RPC at `confirmed`. A malicious RPC could lie. | `finalized` and/or two RPCs on mainnet. |
 | F8 | Info | CSP keeps `'unsafe-inline'` and `'unsafe-eval'` for scripts (Next.js bootstrapping, wallet libraries). XSS protection relies on React escaping. | Nonce-based CSP. |
 | F9 | Medium | The admin is "the account of the founder wallet". Wallets linked to that account (e.g. Google via Privy) also open it, so a compromised Google account means admin access. | Don't link a social login to the founder account; or add 2FA for admin actions. |

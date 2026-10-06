@@ -769,8 +769,6 @@ export function createPostgresStore(): Store {
           coalesce((select sum(amount::numeric) from pumps where created_at >= ${day}), 0)
             + coalesce((select sum(amount::numeric) from creator_zaps where created_at >= ${day}), 0) as sol_24h,
           (select count(distinct (target_type, target_id)) from reports where status = 'open')::int as open_reports,
-          (select count(*) from pumps where pumper_user_id = creator_user_id)::int
-            + (select count(*) from creator_zaps where zapper_user_id = creator_user_id)::int as self_zaps,
           (select count(*) from pumps where creator_user_id is null)::int as unattributed_zaps,
           (select count(*) from posts p
              where p.expires_at > ${now}
@@ -788,7 +786,6 @@ export function createPostgresStore(): Store {
         solZapped24h: Number(r.sol_24h),
         newUsers24h: r.new_users_24h,
         openReports: r.open_reports,
-        selfZaps: r.self_zaps,
         unattributedZaps: r.unattributed_zaps,
         postsOutOfSync: r.posts_out_of_sync,
       };
@@ -805,11 +802,10 @@ export function createPostgresStore(): Store {
     },
 
     async leaderboardPosts(q: LeaderboardQuery) {
-      // Most zapped live posts: the full amount of every zap (100 %), summed
-      // from the zap log over the window (all time = since 0). Zaps by the
-      // post's own author (any of their wallets: zaps are recorded per
-      // account) don't count (lib/ranking.ts). Sums use numeric so totals are
-      // exact and identical across pages (stable keyset).
+      // Most zapped live posts: the full amount of every zap (100 %), self-zaps
+      // included, summed from the zap log over the window (all time = since
+      // 0). Sums use numeric so totals are exact and identical across pages
+      // (stable keyset).
       const db = await getSql();
       if (!cursorIsUsable(q.cursor)) return [];
       const country = q.scope === "country" && q.country ? q.country : null;
@@ -820,7 +816,6 @@ export function createPostgresStore(): Store {
           from pumps pm
           join posts p on p.id = pm.post_id
           where pm.created_at >= ${q.since ?? 0}
-            and pm.pumper_user_id <> p.user_id
             and p.expires_at > ${Date.now()} and not p.hidden
             ${country ? db`and p.country = ${country}` : db``}
           group by pm.post_id
@@ -838,9 +833,9 @@ export function createPostgresStore(): Store {
     },
     async leaderboardCreators(q: LeaderboardQuery) {
       // Most zapped creators: the full amount (100 %) of the zaps on their
-      // posts plus the zaps sent to them directly, from both logs over the
-      // window (all time = since 0). Zaps to yourself don't count. Creators
-      // who received nothing are left out.
+      // posts (self-zaps included) plus the zaps sent to them directly, from
+      // both logs over the window (all time = since 0). Creators who received
+      // nothing are left out.
       const db = await getSql();
       if (!cursorIsUsable(q.cursor)) return [];
       const country = q.scope === "country" && q.country ? q.country : null;
@@ -854,11 +849,10 @@ export function createPostgresStore(): Store {
             select pm.creator_user_id, pm.amount::numeric as amount
             from pumps pm
             where pm.created_at >= ${since} and pm.creator_user_id is not null
-              and pm.pumper_user_id <> pm.creator_user_id
             union all
             select cz.creator_user_id, cz.amount::numeric
             from creator_zaps cz
-            where cz.created_at >= ${since} and cz.zapper_user_id <> cz.creator_user_id
+            where cz.created_at >= ${since}
           ) zaps
           group by creator_user_id
         ) agg

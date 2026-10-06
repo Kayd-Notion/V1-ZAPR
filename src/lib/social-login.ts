@@ -10,20 +10,73 @@
 
 export type SocialProvider = "google" | "apple";
 
-/**
- * Privy app id (dashboard.privy.io). Empty = Google / Apple sign-in hidden.
- * Privy ids are 25 characters: a mistyped one is ignored (Privy would crash).
- */
-const RAW_PRIVY_APP_ID = (process.env.NEXT_PUBLIC_PRIVY_APP_ID || "").trim();
-export const PRIVY_APP_ID = /^[a-z0-9]{25}$/i.test(RAW_PRIVY_APP_ID) ? RAW_PRIVY_APP_ID : "";
+export interface PrivyConfig {
+  /** The App ID to use, or "" when Google / Apple sign-in is off. */
+  appId: string;
+  /** Buttons to show (empty when off). */
+  providers: SocialProvider[];
+  /** Why it is off or partly ignored, in plain words (for the browser console). */
+  problem: string | null;
+}
 
-/** Which buttons to show, e.g. "google" or "google,apple" (Apple needs its own setup). */
-export const SOCIAL_PROVIDERS: SocialProvider[] = PRIVY_APP_ID
-  ? (process.env.NEXT_PUBLIC_SOCIAL_LOGINS || "google")
-      .split(",")
-      .map((p) => p.trim().toLowerCase())
-      .filter((p): p is SocialProvider => p === "google" || p === "apple")
-  : [];
+/**
+ * Reads NEXT_PUBLIC_PRIVY_APP_ID and NEXT_PUBLIC_SOCIAL_LOGINS. Pure (tested).
+ * A Privy App ID is 25 letters and digits; quotes or spaces pasted around it
+ * are removed. Anything else turns Google / Apple sign-in off, never the site
+ * (Privy itself would crash on a wrong id).
+ */
+export function parsePrivyConfig(rawAppId: string | undefined, rawLogins: string | undefined): PrivyConfig {
+  const id = (rawAppId || "").trim().replace(/^["']+|["']+$/g, "").trim();
+  if (!id) {
+    return {
+      appId: "",
+      providers: [],
+      problem: "Google sign-in is off: NEXT_PUBLIC_PRIVY_APP_ID is not set (see docs/PRIVY-SETUP.md).",
+    };
+  }
+  if (!/^[a-z0-9]{25}$/i.test(id)) {
+    return {
+      appId: "",
+      providers: [],
+      problem:
+        `Google sign-in is off: NEXT_PUBLIC_PRIVY_APP_ID doesn't look like a Privy App ID ` +
+        `(expected 25 letters and digits, got ${id.length} characters). Copy it again from dashboard.privy.io ` +
+        "(see docs/PRIVY-SETUP.md), then redeploy.",
+    };
+  }
+  const asked = (rawLogins || "google").split(",").map((p) => p.trim().toLowerCase()).filter(Boolean);
+  const providers = asked.filter((p): p is SocialProvider => p === "google" || p === "apple");
+  const unknown = asked.filter((p) => p !== "google" && p !== "apple");
+  if (providers.length === 0) {
+    return {
+      appId: id,
+      providers: [],
+      problem: `Google sign-in is off: NEXT_PUBLIC_SOCIAL_LOGINS should be "google" (got "${rawLogins}").`,
+    };
+  }
+  return {
+    appId: id,
+    providers,
+    problem: unknown.length ? `NEXT_PUBLIC_SOCIAL_LOGINS: ignored "${unknown.join(", ")}" (use "google").` : null,
+  };
+}
+
+// NEXT_PUBLIC_* values are written into the code when the site is built.
+const CONFIG = parsePrivyConfig(process.env.NEXT_PUBLIC_PRIVY_APP_ID, process.env.NEXT_PUBLIC_SOCIAL_LOGINS);
+
+/** Privy app id (dashboard.privy.io). Empty = Google / Apple sign-in hidden. */
+export const PRIVY_APP_ID = CONFIG.appId;
+
+/** Which buttons to show: "google" (Apple needs its own setup, postponed). */
+export const SOCIAL_PROVIDERS: SocialProvider[] = CONFIG.providers;
+
+/** Says once in the browser console why Google sign-in is off (or partly ignored). */
+export function reportSocialLoginConfig(): void {
+  if (!CONFIG.problem) return;
+  if (CONFIG.appId) console.warn(`[ZAPR] ${CONFIG.problem}`);
+  else if (process.env.NEXT_PUBLIC_PRIVY_APP_ID) console.error(`[ZAPR] ${CONFIG.problem}`);
+  else console.info(`[ZAPR] ${CONFIG.problem}`);
+}
 
 /** Name of the Privy embedded wallet in the Wallet Standard registry. */
 export const PRIVY_WALLET_NAME = "Privy";

@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 /**
  * Security headers on every page and API answer.
  *
@@ -52,9 +53,17 @@ const nextConfig = {
       { protocol: "https", hostname: "**.arweave.net" },
     ],
   },
-  webpack(config) {
+  webpack(config, { dev }) {
     // Privy optionally imports the Farcaster mini-app SDK; ZAPR doesn't use it.
     config.resolve.alias = { ...config.resolve.alias, "@farcaster/mini-app-solana": false };
+    // Browser test only (tests/browser/link-google.e2e.mjs): a fake Privy, so the
+    // Google flows run without a Google account. Dev server + ZAPR_MOCK_PRIVY=1
+    // only; a production build never includes it.
+    if (dev && process.env.ZAPR_MOCK_PRIVY === "1") {
+      const mock = (f) => fileURLToPath(new URL(`./tests/mocks/${f}`, import.meta.url));
+      config.resolve.alias["@privy-io/react-auth/solana$"] = mock("privy-solana.ts");
+      config.resolve.alias["@privy-io/react-auth$"] = mock("privy-react-auth.tsx");
+    }
     return config;
   },
   async headers() {

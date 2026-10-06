@@ -9,6 +9,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { databaseUrl } from "./url";
 import { expiresAt } from "../lifespan";
+import { WALLET_IN_USE } from "./types";
 import type {
   AdminStats,
   Activity,
@@ -257,11 +258,22 @@ export function createPostgresStore(): Store {
     async createUser({ handle, wallet, bio = "", country = "FR" }) {
       const db = await getSql();
       const id = randomUUID();
-      const rows = await db`
-        insert into users (id, handle, wallet, bio, country, created_at)
-        values (${id}, ${handle}, ${wallet}, ${bio || "gm, new on ZAPR."}, ${country}, ${Date.now()})
-        returning *`;
-      return rowToUser(rows[0]);
+      return db.begin(async (tx) => {
+        // Same lock as linkWallet: a wallet can't become an account and a
+        // linked wallet of another account at the same time.
+        await tx`select pg_advisory_xact_lock(727002, hashtext(${wallet}))`;
+        const used = await tx`
+          select 1 from users where wallet = ${wallet}
+          union all
+          select 1 from user_wallets where wallet = ${wallet}
+          limit 1`;
+        if (used[0]) throw new Error(WALLET_IN_USE);
+        const rows = await tx`
+          insert into users (id, handle, wallet, bio, country, created_at)
+          values (${id}, ${handle}, ${wallet}, ${bio || "gm, new on ZAPR."}, ${country}, ${Date.now()})
+          returning *`;
+        return rowToUser(rows[0]);
+      });
     },
     async updateUser(id, patch) {
       const db = await getSql();

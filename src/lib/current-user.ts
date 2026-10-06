@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "./session";
 import { isAdmin } from "./admin";
 import { getStore } from "./db";
+import { sessionUser, walletsOfUser } from "./wallet-link";
 import type { User } from "./db/types";
 
 /**
@@ -10,18 +11,12 @@ import type { User } from "./db/types";
  * A session opened with a linked wallet ends once that wallet is unlinked.
  */
 export async function currentUser(): Promise<User | null> {
-  const session = await getSession();
-  if (!session?.userId) return null;
-  const user = await getStore().getUserById(session.userId);
-  if (!user) return null;
-  if (session.wallet !== user.wallet && !(await walletsOf(user)).includes(session.wallet)) return null;
-  return user;
+  return sessionUser(getStore(), await getSession());
 }
 
 /** Every wallet that signs in to this account: the main one first, then the linked ones. */
 export async function walletsOf(u: User): Promise<string[]> {
-  const linked = await getStore().listLinkedWallets(u.id);
-  return [u.wallet, ...linked.map((w) => w.wallet)];
+  return walletsOfUser(getStore(), u);
 }
 
 /** Public projection of a user (safe to expose to clients). */

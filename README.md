@@ -24,7 +24,8 @@ durée de vie par paliers avec jauge, fil + Following + Live, classements Posts 
 Creators, notifications, historique Wallet → Activity, recherche, partage avec
 aperçu, suppression, photo de profil, signalements + page Admin (masquer,
 bannir), page How it works, pages légales (brouillons), anti-spam, en-têtes de
-sécurité, nettoyage quotidien. Test pas à pas : `docs/TEST-CHECKLIST.md`.
+sécurité, nettoyage quotidien, bouton Feedback, mise en page téléphone vérifiée.
+Test pas à pas : `docs/TEST-CHECKLIST.md` ; guide des testeurs : `docs/BETA-GUIDE.md`.
 
 Hors V1 (à faire avant du vrai SOL) : programme Solana (Anchor) **audité**,
 passage mainnet, relecture juridique des pages légales (+ adresse de contact),
@@ -59,7 +60,9 @@ dans le navigateur : Storage → ta base → **Open in Neon** → **SQL Editor**
 | `SESSION_SECRET` | 32+ caractères aléatoires | signe les sessions de connexion |
 | `PUMP_REQUIRE_ONCHAIN_VERIFY` | vide (défaut), `true` ou `false` | vérification de chaque zap sur Solana : **active par défaut en production**, coupée en local et en preview |
 | `NEXT_PUBLIC_PRIVY_APP_ID` | vide, ou l'App ID Privy | active « Continue with Google / Apple » (voir `docs/PRIVY-SETUP.md`) |
-| `NEXT_PUBLIC_SOCIAL_LOGINS` | `google` (défaut) ou `google,apple` | boutons affichés quand Privy est actif |
+| `NEXT_PUBLIC_SOCIAL_LOGINS` | `google` (défaut) | boutons affichés quand Privy est actif (Apple : reporté) |
+| `NEXT_PUBLIC_FEEDBACK_URL` | vide, ou le lien `https://` d'un formulaire | bouton « Feedback » (voir `docs/FEEDBACK-SETUP.md`) |
+| `NEXT_PUBLIC_CONTACT_EMAIL` | vide, ou une adresse e-mail | bouton e-mail du Feedback + contact des pages légales |
 | `CRON_SECRET` | facultatif | protège le nettoyage quotidien (`/api/cron/purge`, appelé par Vercel Cron) |
 | `NEXT_PUBLIC_SOLANA_CLUSTER` | `devnet` (défaut) | réseau ; `mainnet-beta` bloque les zaps |
 | `NEXT_PUBLIC_SOLANA_RPC` | vide ou URL Helius/QuickNode | RPC custom |
@@ -278,9 +281,13 @@ src/
 tests/                 tests unitaires (npm test) + tests sur validateur Solana local :
                        pump-send.local.mts (envoi) et zap-e2e.local.mts (vrais zaps vérifiés par le serveur)
 tests/browser/         tests dans un vrai navigateur (Chromium) : link-wallets (liaison de wallets),
+                       rankings (classements), mobile (mise en page téléphone + Feedback),
                        link-google (connexion et liaison Google avec un faux Privy, tests/mocks/,
                        actif seulement avec ZAPR_MOCK_PRIVY=1 sur le serveur de dev)
-docs/TEST-CHECKLIST.md checklist de test pas à pas avec Phantom (devnet)
+docs/TEST-CHECKLIST.md checklist de test pas à pas avec Phantom (devnet), ordinateur et téléphone
+docs/BETA-GUIDE.md     guide court en anglais pour les testeurs de la bêta
+docs/FEEDBACK-SETUP.md activer le bouton Feedback (formulaire ou e-mail)
+docs/PRIVY-SETUP.md    activer « Continue with Google » pas à pas
 ```
 
 Développeurs, en local :

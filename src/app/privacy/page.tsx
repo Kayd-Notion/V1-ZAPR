@@ -66,6 +66,10 @@ export default function PrivacyPage() {
           the email of your Google / Apple account. You can export that wallet&apos;s key from Settings.
         </li>
         <li>A Solana RPC provider (reads balances and sends transactions; it sees your wallet address).</li>
+        <li>
+          If you send feedback: the form service or e-mail provider the ZAPR team uses receives what you write (and
+          the page details you choose to keep). ZAPR itself adds no IP address and nothing about your wallet.
+        </li>
       </ul>
 
       <h2>How long</h2>

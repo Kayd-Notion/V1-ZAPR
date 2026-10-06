@@ -101,7 +101,7 @@ export default function WalletPage() {
         </div>
         <div className="stat-box">
           <div className="sb-val">{publicKey ? "Yes" : "No"}</div>
-          <div className="sb-label">Wallet linked</div>
+          <div className="sb-label">Wallet connected</div>
         </div>
       </div>
 

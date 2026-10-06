@@ -1157,7 +1157,8 @@ a.wallet-option { color: var(--text); }
   font-size: 12.5px; color: var(--text-faint);
 }
 .site-footer nav { display: flex; flex-wrap: wrap; gap: 6px 16px; }
-.site-footer a { color: var(--text-dim); }
+.site-footer a, .site-footer .link-btn { color: var(--text-dim); }
+.site-footer .link-btn:hover { color: var(--accent-text); }
 .site-footer a:hover { color: var(--accent-text); }
 
 .vb-link { font-weight: 700; white-space: nowrap; }
@@ -1296,7 +1297,7 @@ a.act-sub:hover { color: var(--text-dim); }
 .ar-text { font-size: 13px; color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* -------- Touch targets: at least ~32px to tap ------------------------ */
-.site-footer nav a { display: inline-flex; align-items: center; min-height: 32px; }
+.site-footer nav a, .site-footer nav .link-btn { display: inline-flex; align-items: center; min-height: 32px; }
 .toggle { min-height: 32px; min-width: 44px; justify-content: center; }
 .act-meta a { padding: 8px; margin: -8px -8px -8px -2px; }
 
@@ -1349,6 +1350,16 @@ a.act-sub:hover { color: var(--text-dim); }
   .admin-row { padding: 10px 14px; }
   .suspended-banner { margin: 12px 14px; }
   .act-row { padding: 12px 14px; }
+  /* Phones: the last items can scroll clear of the + button and the bottom bar. */
+  .main { padding-bottom: 150px; }
+  /* Phones: comfortable touch targets (~36px and more). */
+  .tb-actions .btn-sm { min-height: 36px; }
+  .pa-btn { min-height: 38px; min-width: 38px; justify-content: center; }
+  .post-actions .pump-btn { min-height: 38px; }
+  .lc-zap { padding: 8px 12px; }
+  .c-report, .c-del { min-height: 34px; min-width: 34px; justify-content: center; }
+  .chip, .live-tab { min-height: 34px; }
+  .legal-nav a { display: inline-block; padding: 8px 2px; }
 }
 @media (max-width: 400px) {
   .net-badge { display: none; }
@@ -1370,3 +1381,18 @@ a.act-sub:hover { color: var(--text-dim); }
   margin: 12px 0 0; padding: 10px 12px; border-radius: var(--radius-sm); font-size: 13px; line-height: 1.45;
   color: var(--text-dim); background: var(--bg-elev-2); border: 1px solid var(--border-soft);
 }
+
+/* Feedback (footer link, Settings, error page) */
+.link-btn { padding: 0; background: none; border: 0; font: inherit; color: var(--accent-text); cursor: pointer; }
+.link-btn:hover { text-decoration: underline; }
+.error-report { margin-top: 14px; font-size: 13.5px; min-height: 32px; }
+.fb p { margin: 0 0 12px; font-size: 14px; line-height: 1.5; color: var(--text-dim); }
+.fb p b { color: var(--text); }
+.fb-details {
+  margin: 0 0 14px; padding: 10px 12px; border-radius: var(--radius-sm); white-space: pre-wrap; word-break: break-all;
+  font-family: var(--font-mono); font-size: 12px; line-height: 1.5; color: var(--text-dim);
+  background: var(--bg-elev-2); border: 1px solid var(--border-soft);
+}
+.fb-actions { display: grid; gap: 8px; }
+.fb-actions .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.fb-note { margin: 14px 0 0 !important; font-size: 12.5px !important; }

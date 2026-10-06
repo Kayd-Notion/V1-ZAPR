@@ -2,6 +2,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { ZaprEmpty } from "@/components/ZaprMark";
+import { FeedbackLink } from "@/components/FeedbackLink";
 
 /** Any page that crashes: a branded message instead of a blank screen. */
 export default function ErrorPage({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
@@ -20,6 +21,7 @@ export default function ErrorPage({ error, reset }: { error: Error & { digest?: 
           Back to the feed
         </Link>
       </div>
+      <FeedbackLink label="Report this problem" className="error-report" />
     </ZaprEmpty>
   );
 }

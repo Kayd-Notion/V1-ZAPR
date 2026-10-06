@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PrivyProvider, useExportWallet, useLoginWithOAuth, usePrivy } from "@privy-io/react-auth";
 import { useStandardWallets } from "@privy-io/react-auth/solana";
 import { getWallets } from "@wallet-standard/app";
@@ -55,19 +55,27 @@ function Bridge() {
   const { wallets, wallet, select, connect, connected, connecting } = useWallet();
   const { beginLogin } = useSession();
   const finishing = useRef(false);
+  // Re-runs the "coming back" step when no trip to Google was needed.
+  const [kick, setKick] = useState(0);
 
-  // The Connect window calls these through lib/social-login.
+  // The Connect window (and Settings → Link a wallet) call these through lib/social-login.
   useEffect(() => {
     setSocialHandlers({
       login: async (provider: SocialProvider) => {
         sessionStorage.setItem(SOCIAL_PENDING_KEY, provider);
         await initOAuth({ provider });
       },
+      link: async (provider: SocialProvider) => {
+        sessionStorage.setItem(SOCIAL_PENDING_KEY, `link:${provider}`);
+        // Still signed in to Google from an earlier visit: no need to go there again.
+        if (authenticated) setKick((n) => n + 1);
+        else await initOAuth({ provider });
+      },
       exportWallet: () => exportWallet(),
       logout: () => logout(),
     });
     return () => setSocialHandlers(null);
-  }, [initOAuth, exportWallet, logout]);
+  }, [initOAuth, exportWallet, logout, authenticated]);
 
   // 3. Make the Privy wallet visible to the wallet adapter.
   const privyWallet = authenticated ? privyWallets.find((w) => w.name === PRIVY_WALLET_NAME) : undefined;
@@ -76,7 +84,8 @@ function Bridge() {
     return getWallets().register(privyWallet);
   }, [privyWallet]);
 
-  // 4. Coming back from Google / Apple: select + connect the Privy wallet, then sign in.
+  // 4. Coming back from Google / Apple: select + connect the Privy wallet, then
+  //    sign in (or, when linking, SessionContext links it to the signed-in account).
   useEffect(() => {
     let pending: string | null = null;
     try {
@@ -89,9 +98,16 @@ function Bridge() {
     if (!adapter) return; // wallet not created / registered yet: this runs again when it is
     finishing.current = true;
     sessionStorage.removeItem(SOCIAL_PENDING_KEY);
-    beginLogin();
-    select(adapter.adapter.name);
-  }, [ready, authenticated, wallets, beginLogin, select]);
+    if (!pending.startsWith("link:")) beginLogin();
+    if (wallet?.adapter.name === PRIVY_WALLET_NAME) {
+      // Already selected (select() would be a no-op): connect right away.
+      finishing.current = false;
+      if (!connected) connect().catch(() => {});
+    } else {
+      select(adapter.adapter.name);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, authenticated, wallets, beginLogin, select, kick]);
 
   useEffect(() => {
     if (!finishing.current || wallet?.adapter.name !== PRIVY_WALLET_NAME || connected || connecting) return;

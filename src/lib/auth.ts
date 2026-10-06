@@ -33,6 +33,24 @@ export function buildSignInMessage(params: {
   ].join("\n");
 }
 
+/**
+ * What a wallet signs to be linked to an existing account (it then signs in
+ * to that account). Different from the sign-in message, so one can't be
+ * replayed as the other.
+ */
+export function buildLinkMessage(params: { wallet: string; handle: string; nonce: string; issuedAt: number }): string {
+  const { wallet, handle, nonce, issuedAt } = params;
+  return [
+    `ZAPR wants to link this wallet to the account @${handle}.`,
+    "",
+    `Wallet: ${wallet}`,
+    `Nonce: ${nonce}`,
+    `Issued at: ${new Date(issuedAt).toISOString()}`,
+    "",
+    `Once linked, this wallet signs in to @${handle}. Signing is free and does not authorize any transaction.`,
+  ].join("\n");
+}
+
 /** Basic base58 pubkey sanity check. */
 export function isValidWallet(wallet: string): boolean {
   try {

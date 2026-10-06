@@ -148,3 +148,14 @@ create table if not exists rate_limits (
   window_start  bigint not null,
   count         integer not null
 );
+
+-- Linked wallets: more wallets that sign in to the same account (e.g. a Google
+-- wallet linked to a Phantom account). The main wallet stays users.wallet and
+-- keeps receiving the zaps. A wallet belongs to one account only.
+create table if not exists user_wallets (
+  wallet      text primary key,
+  user_id     uuid not null references users(id) on delete cascade,
+  label       text not null default '',
+  created_at  bigint not null
+);
+create index if not exists user_wallets_user_idx on user_wallets (user_id, created_at);

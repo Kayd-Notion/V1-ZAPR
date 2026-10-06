@@ -5,7 +5,7 @@ export const metadata: Metadata = { title: "Privacy policy" };
 
 export default function PrivacyPage() {
   return (
-    <LegalPage title="Privacy policy" updated="October 4, 2026">
+    <LegalPage title="Privacy policy" updated="October 6, 2026">
       <h2>In short</h2>
       <ul>
         <li>No email, no password, no real name: your account is your wallet.</li>
@@ -21,7 +21,8 @@ export default function PrivacyPage() {
       <ul>
         <li>
           <b>Account</b>: your wallet&apos;s public address, username, bio, profile picture link, country code,
-          sign-up date and privacy settings.
+          sign-up date and privacy settings. If you link more wallets (Google, another wallet), their addresses
+          too: they are never shown to other people on ZAPR.
         </li>
         <li>
           <b>Activity</b>: your posts, comments, follows, reports (seen only by the ZAPR team), and the record of every zap (amount, split, date,

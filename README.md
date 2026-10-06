@@ -80,8 +80,20 @@ textes, messages d'erreur du serveur, nombres (`98.40`), durées (`3d left`,
 - **Continue with Google / Apple** (si `NEXT_PUBLIC_PRIVY_APP_ID` est posé) :
   Privy crée un wallet Solana intégré, enregistré comme un wallet standard ; ZAPR
   l'utilise comme Phantom (même signature de connexion, mêmes zaps vérifiés).
-  Export de la clé dans Settings. Privy n'est chargé que s'il est configuré.
+  Export de la clé dans Settings. Privy n'est chargé que s'il est configuré
+  (un App ID mal copié est ignoré au lieu de casser le site).
   Mise en place : `docs/PRIVY-SETUP.md`.
+- **Comptes liés** (Settings → Wallets → **Link a wallet**) : on ajoute Google
+  ou un autre wallet (Solflare, un 2e compte Phantom…) à son compte ; chacun
+  se connecte ensuite au **même compte** (même pseudo, mêmes posts). Le wallet
+  ajouté signe un message de liaison (différent du message de connexion). Le
+  **wallet principal** (celui de la création du compte) reste celui qui
+  **reçoit les zaps** ; on peut zapper depuis n'importe lequel (la vérification
+  on-chain accepte tous les wallets du compte). Jusqu'à 5 wallets liés, retirables
+  (« Unlink »), sauf le principal et celui avec lequel on est connecté ; une
+  session ouverte avec un wallet retiré se ferme. Un wallet qui a déjà son propre
+  compte ZAPR est refusé (pas de fusion de comptes en V1). Les wallets liés ne
+  sont jamais montrés aux autres. Table `user_wallets`.
 - **Mode visiteur** : le fil se lit sans wallet (bandeau « You're just watching »).
   À la première visite, une fenêtre « Welcome to ZAPR » résume le concept en
   3 lignes (une seule fois, mémorisé dans le navigateur).
@@ -188,7 +200,7 @@ Règles des zaps, vérifiées **dans l'interface et côté serveur** :
   l'app réessaie à son tour (`src/lib/record-retry.ts`).
 - **Anti-spam** (`src/lib/rate-limit.ts`) : posts 8 / 10 min, commentaires
   30 / 10 min, follows 60 / 10 min, signalements 20 / h, profil 20 / 10 min,
-  connexions 10 / 10 min par wallet. Compteurs en base, **par compte ou par
+  connexions 10 / 10 min par wallet, liaisons de wallet 10 / 10 min. Compteurs en base, **par compte ou par
   wallet, jamais par IP**.
 - **En-têtes de sécurité** (`next.config.mjs`) : CSP (scripts, styles et polices
   uniquement de ZAPR, pas d'iframe, pas de plugin), HSTS, nosniff,

@@ -43,5 +43,5 @@ export async function PATCH(req: NextRequest) {
   }
 
   const updated = await store.updateUser(me.id, patch);
-  return NextResponse.json({ user: selfUser(updated) });
+  return NextResponse.json({ user: await selfUser(updated) });
 }

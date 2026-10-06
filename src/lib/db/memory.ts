@@ -23,6 +23,7 @@ import type {
   PostRankEntry,
   FeedQuery,
   LeaderboardQuery,
+  LinkedWallet,
   Notification,
   Post,
   PostWithAuthor,
@@ -63,6 +64,7 @@ interface DbShape {
   /** userId → when they last opened their notifications (ms epoch). */
   notificationsSeenAt: Record<string, number>;
   reports: Report[];
+  linkedWallets: (LinkedWallet & { userId: string })[];
 }
 
 // On serverless/read-only filesystems (e.g. Vercel) `process.cwd()` isn't
@@ -94,6 +96,7 @@ async function load(): Promise<DbShape> {
       db.creatorZaps ??= [];
       db.notificationsSeenAt ??= {};
       db.reports ??= [];
+      db.linkedWallets ??= [];
       for (const u of db.users) {
         u.zapped ??= 0;
         u.avatarUrl ??= null;
@@ -101,7 +104,7 @@ async function load(): Promise<DbShape> {
       }
       if (backfillPumpSnapshots(db)) await persistNow(db);
     } catch {
-      db = { ...buildSeed(), follows: [], creatorZaps: [], notificationsSeenAt: {}, reports: [] };
+      db = { ...buildSeed(), follows: [], creatorZaps: [], notificationsSeenAt: {}, reports: [], linkedWallets: [] };
       await persistNow(db); // best-effort; safe if the FS is read-only
     }
     return db;
@@ -277,7 +280,35 @@ export function createMemoryStore(): Store {
     },
     async getUserByWallet(wallet) {
       const d = await load();
-      return d.users.find((u) => u.wallet === wallet) || null;
+      const main = d.users.find((u) => u.wallet === wallet);
+      if (main) return main;
+      const link = d.linkedWallets.find((w) => w.wallet === wallet);
+      return link ? findUser(d, link.userId) : null;
+    },
+    async listLinkedWallets(userId) {
+      const d = await load();
+      return d.linkedWallets
+        .filter((w) => w.userId === userId)
+        .sort((a, b) => a.createdAt - b.createdAt || (a.wallet < b.wallet ? -1 : 1))
+        .map(({ wallet, label, createdAt }) => ({ wallet, label, createdAt }));
+    },
+    async linkWallet({ userId, wallet, label }, max) {
+      const d = await load();
+      const ownerId =
+        d.users.find((u) => u.wallet === wallet)?.id ?? d.linkedWallets.find((w) => w.wallet === wallet)?.userId;
+      if (ownerId) return ownerId === userId ? "already" : "taken";
+      if (d.linkedWallets.filter((w) => w.userId === userId).length >= max) return "limit";
+      d.linkedWallets.push({ wallet, userId, label, createdAt: Date.now() });
+      persist();
+      return "linked";
+    },
+    async unlinkWallet(userId, wallet) {
+      const d = await load();
+      const before = d.linkedWallets.length;
+      d.linkedWallets = d.linkedWallets.filter((w) => !(w.userId === userId && w.wallet === wallet));
+      if (d.linkedWallets.length === before) return false;
+      persist();
+      return true;
     },
     async getUserByHandle(handle) {
       const d = await load();

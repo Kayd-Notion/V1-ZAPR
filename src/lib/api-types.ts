@@ -103,6 +103,10 @@ export interface Api {
   verify(wallet: string, signature: string): Promise<{ user?: ClientUser; needsOnboarding?: boolean; wallet?: string }>;
   me(): Promise<{ user: ClientUser | null; needsOnboarding?: boolean; wallet?: string }>;
   logout(): Promise<{ ok: boolean }>;
+  /** Linked wallets: the message another wallet signs to join this account. */
+  linkChallenge(wallet: string): Promise<{ message: string }>;
+  linkWallet(wallet: string, signature: string, label: string): Promise<{ user: ClientUser; already: boolean }>;
+  unlinkWallet(wallet: string): Promise<{ user: ClientUser }>;
 
   // Users
   onboard(handle: string, bio?: string): Promise<{ user: ClientUser }>;

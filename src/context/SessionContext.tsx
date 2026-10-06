@@ -9,8 +9,9 @@ import {
   useState,
 } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
+import type { WalletName } from "@solana/wallet-adapter-base";
 import bs58 from "bs58";
-import { socialLogout } from "@/lib/social-login";
+import { PRIVY_WALLET_NAME, socialLogout } from "@/lib/social-login";
 import { api } from "@/lib/api";
 import type { ClientUser } from "@/lib/client-types";
 import { useUI } from "./UIContext";
@@ -23,6 +24,21 @@ interface SessionContextValue {
   /** Wallet pubkey (base58) if a wallet is connected, else null. */
   walletAddress: string | null;
   walletConnected: boolean;
+  /** Every wallet that signs in to the account: the main one first, then the linked ones. */
+  userWallets: string[];
+  /**
+   * Linking mode (Settings → Link a wallet): while on, connecting a wallet
+   * that isn't on the account yet asks it to sign the link message, instead of
+   * ending the session.
+   */
+  linking: boolean;
+  startLinking: () => void;
+  /** Leaves linking mode; a wallet left connected but not linked is let go. */
+  stopLinking: () => Promise<void>;
+  /** The person picked a wallet again: try linking it even if it failed before. */
+  retryLink: () => void;
+  /** A wallet is being asked to sign the link message. */
+  linkSigning: boolean;
   requireAuth: (msg?: string) => boolean;
   /** Call when the user explicitly picks a wallet to sign in (never on auto-connect). */
   beginLogin: () => void;
@@ -33,6 +49,10 @@ interface SessionContextValue {
 }
 
 const Ctx = createContext<SessionContextValue | null>(null);
+
+// Survives the trip to Google / Apple when linking their wallet.
+const LINKING_KEY = "zapr_linking";
+const LINKING_TTL_MS = 5 * 60_000;
 
 // Non-sensitive hint (the real session is the httpOnly cookie) used to decide
 // whether the wallet may silently auto-reconnect on page load.
@@ -50,8 +70,8 @@ function setLoggedInHint(on: boolean) {
 }
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
-  const { publicKey, connected, signMessage, disconnect } = useWallet();
-  const { toast, openConnect, openOnboard, closeModal } = useUI();
+  const { publicKey, connected, signMessage, disconnect, wallet, select } = useWallet();
+  const { toast, openConnect, openOnboard, closeModal, activeModal } = useUI();
 
   const [user, setUser] = useState<ClientUser | null>(null);
   const [status, setStatus] = useState<Status>("loading");
@@ -63,6 +83,88 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [loginRequest, setLoginRequest] = useState(0);
 
   const walletAddress = publicKey ? publicKey.toBase58() : null;
+
+  const userWallets = useMemo(
+    () => (user ? [user.wallet, ...(user.linkedWallets ?? []).map((w) => w.wallet)] : []),
+    [user],
+  );
+
+  // --- Linking ---------------------------------------------------------------
+  const [linking, setLinking] = useState(false);
+  const [linkSigning, setLinkSigning] = useState(false);
+  const linkingRef = useRef(false);
+  /** Letting go of a wallet that wasn't linked: the session must not end meanwhile. */
+  const restoring = useRef(false);
+  const linkPrev = useRef<WalletName | null>(null); // wallet in use before linking
+  const linkTried = useRef<string | null>(null);
+  const linkInFlight = useRef(false);
+  // Latest values for callbacks that run after awaits.
+  const latest = useRef({ walletAddress, userWallets, wallet, connected, activeModal });
+  latest.current = { walletAddress, userWallets, wallet, connected, activeModal };
+
+  // Back from Google / Apple in the middle of linking their wallet.
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(LINKING_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw) as { at: number; prev: string | null };
+      if (Date.now() - saved.at < LINKING_TTL_MS) {
+        linkingRef.current = true;
+        linkPrev.current = saved.prev as WalletName | null;
+        setLinking(true);
+      } else {
+        sessionStorage.removeItem(LINKING_KEY);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const startLinking = useCallback(() => {
+    linkingRef.current = true;
+    linkTried.current = null;
+    linkPrev.current = latest.current.wallet?.adapter.name ?? null;
+    setLinking(true);
+    try {
+      sessionStorage.setItem(LINKING_KEY, JSON.stringify({ at: Date.now(), prev: linkPrev.current }));
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const endLinking = useCallback(() => {
+    linkingRef.current = false;
+    setLinking(false);
+    try {
+      sessionStorage.removeItem(LINKING_KEY);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const stopLinking = useCallback(async () => {
+    if (!linkingRef.current) return;
+    const { walletAddress: addr, userWallets: mine, wallet: current, connected: on } = latest.current;
+    const stray = on && addr && !mine.includes(addr);
+    if (stray) restoring.current = true;
+    endLinking();
+    if (!stray) return;
+    try {
+      // A Google wallet that couldn't be linked: end that Google session too.
+      if (current?.adapter.name === PRIVY_WALLET_NAME) await socialLogout();
+      const prev = linkPrev.current;
+      if (prev && prev !== current?.adapter.name) select(prev); // back to the wallet used before
+      else await disconnect();
+    } catch {
+      /* ignore */
+    } finally {
+      restoring.current = false;
+    }
+  }, [endLinking, select, disconnect]);
+
+  const retryLink = useCallback(() => {
+    linkTried.current = null;
+  }, []);
 
   useEffect(() => {
     if (status !== "loading") setLoggedInHint(Boolean(user));
@@ -138,22 +240,52 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     if (!loginIntent.current || status === "loading") return;
     if (!connected || !walletAddress) return;
     loginIntent.current = false;
-    if (user && user.wallet === walletAddress) {
+    if (user && userWallets.includes(walletAddress)) {
       closeModal();
       return;
     }
     authedFor.current = null;
     authenticate(walletAddress);
-  }, [loginRequest, connected, walletAddress, user, status, authenticate, closeModal]);
+  }, [loginRequest, connected, walletAddress, user, userWallets, status, authenticate, closeModal]);
+
+  // Linking: a wallet that isn't on the account yet signs the link message.
+  useEffect(() => {
+    if (!linking || status !== "authed" || !user || !connected || !walletAddress) return;
+    if (userWallets.includes(walletAddress) || linkInFlight.current || linkTried.current === walletAddress) return;
+    linkTried.current = walletAddress;
+    linkInFlight.current = true;
+    setLinkSigning(true);
+    (async () => {
+      try {
+        if (!signMessage) throw new Error("This wallet can't sign messages.");
+        const { message } = await api.linkChallenge(walletAddress);
+        const signature = bs58.encode(await signMessage(new TextEncoder().encode(message)));
+        const res = await api.linkWallet(walletAddress, signature, latest.current.wallet?.adapter.name ?? "");
+        setUser(res.user);
+        endLinking();
+        if (latest.current.activeModal === "link") closeModal();
+        toast(`Wallet linked: it now signs in to @${res.user.handle}.`);
+      } catch (e) {
+        toast(e instanceof Error ? e.message : "Couldn't link this wallet.");
+        // Not in the Link window (back from Google): give up and go back to the previous wallet.
+        if (latest.current.activeModal !== "link") void stopLinking();
+      } finally {
+        linkInFlight.current = false;
+        setLinkSigning(false);
+      }
+    })();
+  }, [linking, status, user, connected, walletAddress, userWallets, signMessage, endLinking, stopLinking, closeModal, toast]);
 
   // The account selected in the wallet is not the one signed in to ZAPR (the
   // user switched accounts in Phantom, or reopened the site on another one):
   // zaps would be signed by one wallet and recorded for another, and admin /
   // profile would belong to the old account. End the old session and ask to
   // sign in with the current account (no signature popup by itself).
+  // Wallets linked to the account are fine, and so is any wallet while linking.
   useEffect(() => {
     if (status !== "authed" || !user || !connected || !walletAddress) return;
-    if (authInFlight.current || walletAddress === user.wallet) return;
+    if (authInFlight.current || userWallets.includes(walletAddress)) return;
+    if (linking || linkingRef.current || restoring.current) return;
     let cancelled = false;
     (async () => {
       try {
@@ -173,7 +305,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [status, user, connected, walletAddress, openConnect]);
+  }, [status, user, userWallets, linking, connected, walletAddress, openConnect]);
 
   const completeOnboarding = useCallback(
     async (handle: string, bio?: string) => {
@@ -192,6 +324,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     } catch {
       /* ignore */
     }
+    endLinking();
     // Signed in with Google / Apple: end the Privy session too.
     await socialLogout();
     try {
@@ -203,7 +336,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     setStatus("anonymous");
     authedFor.current = null;
     toast("Wallet disconnected. See ya.");
-  }, [disconnect, toast]);
+  }, [disconnect, toast, endLinking]);
 
   const refreshUser = useCallback(async () => {
     try {
@@ -229,6 +362,12 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       status,
       walletAddress,
       walletConnected: connected,
+      userWallets,
+      linking,
+      startLinking,
+      stopLinking,
+      retryLink,
+      linkSigning,
       requireAuth,
       beginLogin,
       completeOnboarding,
@@ -236,7 +375,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       refreshUser,
       setUser,
     }),
-    [user, status, walletAddress, connected, requireAuth, beginLogin, completeOnboarding, logout, refreshUser],
+    [user, status, walletAddress, connected, userWallets, linking, startLinking, stopLinking, retryLink, linkSigning, requireAuth, beginLogin, completeOnboarding, logout, refreshUser],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

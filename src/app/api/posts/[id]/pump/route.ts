@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStore } from "@/lib/db";
-import { currentUser } from "@/lib/current-user";
+import { currentUser, walletsOf } from "@/lib/current-user";
 import { resolvedSplitBps } from "@/lib/pump-config";
 import { onchainVerifyRequired, verifyPumpTransaction } from "@/lib/verify-pump";
 import { solToLamports } from "@/lib/format";
@@ -63,7 +63,8 @@ export async function POST(
   if (onchainVerifyRequired()) {
     const v = await verifyPumpTransaction({
       signature,
-      pumperWallet: me.wallet,
+      // Paid from any wallet of the account (main or linked).
+      pumperWallet: await walletsOf(me),
       creatorWallet: post.author.wallet,
       amountSol: amount,
     });

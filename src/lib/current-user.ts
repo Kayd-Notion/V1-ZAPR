@@ -5,11 +5,23 @@ import { isAdmin } from "./admin";
 import { getStore } from "./db";
 import type { User } from "./db/types";
 
-/** Resolve the fully-hydrated current user from the session cookie, or null. */
+/**
+ * Resolve the fully-hydrated current user from the session cookie, or null.
+ * A session opened with a linked wallet ends once that wallet is unlinked.
+ */
 export async function currentUser(): Promise<User | null> {
   const session = await getSession();
   if (!session?.userId) return null;
-  return getStore().getUserById(session.userId);
+  const user = await getStore().getUserById(session.userId);
+  if (!user) return null;
+  if (session.wallet !== user.wallet && !(await walletsOf(user)).includes(session.wallet)) return null;
+  return user;
+}
+
+/** Every wallet that signs in to this account: the main one first, then the linked ones. */
+export async function walletsOf(u: User): Promise<string[]> {
+  const linked = await getStore().listLinkedWallets(u.id);
+  return [u.wallet, ...linked.map((w) => w.wallet)];
 }
 
 /** Public projection of a user (safe to expose to clients). */
@@ -33,9 +45,13 @@ export function publicUser(u: User) {
 
 export type PublicUser = ReturnType<typeof publicUser>;
 
-/** The signed-in user as sent to themselves: also says whether they are an admin. */
-export function selfUser(u: User) {
-  return { ...publicUser(u), isAdmin: isAdmin(u) };
+/**
+ * The signed-in user as sent to themselves: also says whether they are an
+ * admin, and lists their linked wallets (never shown to anyone else).
+ */
+export async function selfUser(u: User) {
+  const linkedWallets = await getStore().listLinkedWallets(u.id);
+  return { ...publicUser(u), isAdmin: isAdmin(u), linkedWallets };
 }
 
 /** Answer for a banned user trying to post, comment, zap, follow or report. */

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/LegalPage";
+import { ContactEmail } from "@/components/ContactEmail";
 
 export const metadata: Metadata = { title: "Privacy policy" };
 
@@ -84,9 +85,8 @@ export default function PrivacyPage() {
       <h2>Your rights</h2>
       <p>
         You can change your username, bio, picture and privacy settings in Settings, and delete your comments and your
-        posts that have no zap yet. To get
-        a copy of your data or delete your account, contact the ZAPR team (contact address to be published before the
-        public launch).
+        posts that have no zap yet. To get a copy of your data or delete your account, write to the ZAPR team:{" "}
+        <ContactEmail />.
       </p>
     </LegalPage>
   );

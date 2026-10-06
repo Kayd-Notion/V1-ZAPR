@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/LegalPage";
+import { ContactEmail } from "@/components/ContactEmail";
 import { CLUSTER, IS_MAINNET } from "@/lib/solana";
 
 export const metadata: Metadata = { title: "Risks" };
 
 export default function RisksPage() {
   return (
-    <LegalPage title="Risks" updated="October 4, 2026">
+    <LegalPage title="Risks" updated="October 6, 2026">
       <h2>Test network</h2>
       <p>
         {IS_MAINNET
@@ -49,6 +50,11 @@ export default function RisksPage() {
       <h2>Prototype software</h2>
       <p>
         ZAPR is a prototype: it can have bugs, be offline, or lose data. Rules (like post lifetime) can still change.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        A security problem or a scam to report urgently: <ContactEmail />.
       </p>
     </LegalPage>
   );

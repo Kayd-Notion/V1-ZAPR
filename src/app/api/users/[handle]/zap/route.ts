@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { zapsBlockedOnMainnet } from "@/lib/network-guard";
 import { getStore } from "@/lib/db";
 import { currentUser, walletsOf, publicUser } from "@/lib/current-user";
 import { CREATOR_ZAP_SPLIT, MIN_CREATOR_ZAP_SOL, splitLamports } from "@/lib/pump-config";
@@ -17,6 +18,8 @@ export const maxDuration = 30;
  * zapper's given total. No effect on the creator's posts.
  */
 export async function POST(req: NextRequest, { params }: { params: Promise<{ handle: string }> }) {
+  const blocked = zapsBlockedOnMainnet();
+  if (blocked) return blocked;
   const me = await currentUser();
   if (!me) return NextResponse.json({ error: "Connect your wallet to zap a creator." }, { status: 401 });
 

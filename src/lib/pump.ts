@@ -8,7 +8,7 @@ import {
 } from "@solana/web3.js";
 import { solToLamports } from "./format";
 import { splitLamports, FOUNDER_WALLET } from "./pump-config";
-import { IS_MAINNET } from "./solana";
+import { IS_MAINNET, assertRpcNetwork } from "./solana";
 
 /**
  * PUMP EXECUTION — isolated on purpose.
@@ -150,6 +150,8 @@ export async function sendPump(args: SendPumpArgs): Promise<SendPumpResult> {
     );
   }
   const { connection, sendTransaction, signTransaction } = args;
+  // The RPC must really be on the app's network (never mainnet by mistake).
+  await assertRpcNetwork(connection);
   const { transaction, quote } = await buildPumpTransaction(args);
 
   // Dry run on the app's cluster before the wallet opens: a pump that would

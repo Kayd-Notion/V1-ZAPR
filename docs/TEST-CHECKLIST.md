@@ -14,12 +14,13 @@ Dans Vercel → projet **v1zapr** → **Settings → Environment Variables**, v�
 | `DATABASE_URL` | posée par Neon | sinon les données s'effacent |
 | `SESSION_SECRET` | 32+ caractères au hasard | sécurité des connexions |
 | `NEXT_PUBLIC_FOUNDER_WALLET` | **ton** adresse Phantom | reçoit les 30 % / 10 %, et fait de toi le **seul admin** |
-| `NEXT_PUBLIC_SOLANA_RPC` | conseillé : une URL devnet Helius (gratuit) | le RPC public devnet est souvent saturé |
+| `NEXT_PUBLIC_SOLANA_RPC` | conseillé : une URL **devnet** Helius (gratuit) | le RPC public devnet est souvent saturé (voir `docs/RPC-SETUP.md`) |
+| `SOLANA_RPC_URL` | facultatif : une 2ᵉ URL devnet, type **Secret** | RPC du serveur, jamais montré aux visiteurs |
 | `NEXT_PUBLIC_FEEDBACK_URL` | le lien de ton formulaire (Tally, Google Forms…) | bouton « Feedback » (voir `docs/FEEDBACK-SETUP.md`) |
 | `NEXT_PUBLIC_CONTACT_EMAIL` | ton adresse de contact | bouton e-mail + pages légales |
 | `NEXT_PUBLIC_PRIVY_APP_ID` | l'App ID Privy | bouton Google (voir `docs/PRIVY-SETUP.md`) |
 | `CRON_SECRET` | facultatif, des caractères au hasard | protège le nettoyage quotidien |
-| `PUMP_REQUIRE_ONCHAIN_VERIFY` | ne rien mettre | la vérification on-chain est **active par défaut en production** |
+| `PUMP_REQUIRE_ONCHAIN_VERIFY` | ne rien mettre | la vérification on-chain est **active par défaut sur Vercel** (production et préversions) |
 
 Les variables `NEXT_PUBLIC_…` se mettent en type **Config** (pas « Secret »).
 Après un changement : **Deployments → ⋯ → Redeploy**.
@@ -79,8 +80,8 @@ Phantom ne fait que signer.
       un badge **self-zap** apparaît dans la liste des zappeurs… mais le **Top ne bouge
       pas**.
 - [ ] **Top → Creators** : B apparaît, avec « SOL zapped ».
-- [ ] A ouvre **Admin** : la ligne **Rankings check** est verte (« every zap is tied to
-      its creator… »). Si elle est rouge, fais une capture et envoie-la-moi.
+- [ ] A ouvre **Admin** : les lignes **Rankings check**, **Security check** et **Network**
+      sont vertes (✓). Si l'une est rouge, fais une capture et envoie-la-moi.
 
 ## 6. Créateur
 

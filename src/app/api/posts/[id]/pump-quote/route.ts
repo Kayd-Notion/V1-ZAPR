@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { zapsBlockedOnMainnet } from "@/lib/network-guard";
 import { getStore } from "@/lib/db";
 import { expiresAt } from "@/lib/lifespan";
 import { pumpRequirements } from "@/lib/pump-rules";
@@ -8,6 +9,8 @@ export const runtime = "nodejs";
 
 /** Pump rules for this post right now (rule 2 + 3), shown in the pump modal. */
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const blocked = zapsBlockedOnMainnet();
+  if (blocked) return blocked;
   const { id } = await params;
   const post = await getStore().getPost(id);
   if (!post) return NextResponse.json({ error: "Post not found.", code: "post_not_found" }, { status: 404 });

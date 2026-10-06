@@ -1,7 +1,7 @@
 import "server-only";
-import { getConnection } from "./solana";
+import { getServerConnection, serverRpcOnRightNetwork } from "./solana-server";
 import { FOUNDER_WALLET } from "./pump-config";
-import { checkTransferTx, type ParsedTransferTx } from "./verify-pump-core";
+import { checkTransferTx, onchainVerifyDefault, type ParsedTransferTx } from "./verify-pump-core";
 
 /**
  * Server-side integrity check for a client-submitted pump.
@@ -29,14 +29,13 @@ export interface VerifyResult {
 
 /**
  * Is the on-chain check on? Explicit PUMP_REQUIRE_ONCHAIN_VERIFY wins
- * ("true" / "false"); otherwise it is on in production (Vercel) and off in
- * local development and previews.
+ * ("true" / "false"); otherwise it is on for every Vercel deployment
+ * (production AND previews: a preview may share the production database, and
+ * an unchecked zap there would put fake totals in it) and off in local
+ * development.
  */
 export function onchainVerifyRequired(): boolean {
-  const v = process.env.PUMP_REQUIRE_ONCHAIN_VERIFY;
-  if (v === "true") return true;
-  if (v === "false") return false;
-  return process.env.VERCEL_ENV === "production";
+  return onchainVerifyDefault(process.env);
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -47,7 +46,12 @@ export async function verifyPumpTransaction(args: VerifyPumpArgs): Promise<Verif
 
   // A transaction the wallet just confirmed can take a moment to be readable
   // from another RPC node, and a public RPC can rate-limit: retry a few times.
-  const conn = getConnection();
+  // Never trust a transaction read from another network (e.g. a mainnet RPC
+  // pasted while the site is on devnet).
+  if ((await serverRpcOnRightNetwork()) === false) {
+    return { ok: false, reason: "ZAPR's server is connected to the wrong Solana network. Zaps are paused." };
+  }
+  const conn = getServerConnection();
   let tx: Awaited<ReturnType<typeof conn.getParsedTransaction>> = null;
   for (let attempt = 0; attempt < 5 && !tx; attempt++) {
     if (attempt) await sleep(1200 * attempt);

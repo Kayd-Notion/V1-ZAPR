@@ -93,6 +93,10 @@ export interface AdminOverview {
   reports: ClientReportGroup[];
   hiddenPosts: ClientPost[];
   bannedUsers: ClientUser[];
+  /** Which Solana RPCs are used (hosts only) and whether the server one is on the right network. */
+  network?: { cluster: string; browserRpc: string; serverRpc: string; serverRpcOk: boolean | null };
+  /** Settings check (true = OK); never contains a secret. */
+  security?: { sessionSecretOk: boolean; onchainVerifyOn: boolean; founderWalletSet: boolean; cronSecretSet: boolean };
 }
 
 export type AdminAction = "hide_post" | "unhide_post" | "delete_comment" | "ban_user" | "unban_user" | "dismiss";

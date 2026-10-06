@@ -1396,3 +1396,9 @@ a.act-sub:hover { color: var(--text-dim); }
 .fb-actions { display: grid; gap: 8px; }
 .fb-actions .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .fb-note { margin: 14px 0 0 !important; font-size: 12.5px !important; }
+
+/* A legal-page value still to fill in (contact e-mail…): impossible to miss. */
+.legal-placeholder {
+  padding: 1px 6px; border-radius: var(--radius-xs); font-weight: 700;
+  color: var(--danger); background: rgba(var(--danger-rgb), 0.12); border: 1px dashed rgba(var(--danger-rgb), 0.6);
+}

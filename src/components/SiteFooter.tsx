@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { CLUSTER } from "@/lib/solana";
+import { FeedbackLink } from "./FeedbackLink";
 
-/** Small links under every page: the guide and the legal pages. */
+/** Small links under every page: the guide, the legal pages and feedback. */
 export function SiteFooter() {
   return (
     <footer className="site-footer">
@@ -10,6 +11,7 @@ export function SiteFooter() {
         <Link href="/terms">Terms</Link>
         <Link href="/privacy">Privacy</Link>
         <Link href="/risks">Risks</Link>
+        <FeedbackLink />
       </nav>
       <span>ZAPR prototype · Solana {CLUSTER}</span>
     </footer>

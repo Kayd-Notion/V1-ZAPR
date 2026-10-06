@@ -3,7 +3,8 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { IconBack, IconImagePlus, IconLink, IconLogOut } from "@/components/icons";
+import { IconBack, IconComment, IconImagePlus, IconLink, IconLogOut } from "@/components/icons";
+import { FEEDBACK_ON } from "@/lib/contact";
 import { Avatar } from "@/components/Avatar";
 import { ZaprEmpty } from "@/components/ZaprMark";
 import { useSession } from "@/context/SessionContext";
@@ -17,7 +18,7 @@ import { PRIVY_WALLET_NAME, exportSocialWallet } from "@/lib/social-login";
 export default function SettingsPage() {
   const router = useRouter();
   const { user, setUser, logout, walletAddress } = useSession();
-  const { theme, toggleTheme, toast, openConnect, openLinkWallet } = useUI();
+  const { theme, toggleTheme, toast, openConnect, openLinkWallet, openFeedback } = useUI();
   const [unlinking, setUnlinking] = useState<string | null>(null); // asked to confirm
   const [unlinkBusy, setUnlinkBusy] = useState(false);
   const [bio, setBio] = useState("");
@@ -298,6 +299,15 @@ export default function SettingsPage() {
         <Link href="/risks" className="settings-row">
           <div className="sr-text">Risks</div>
         </Link>
+        {FEEDBACK_ON && (
+          <div className="settings-row" style={{ cursor: "pointer" }} onClick={openFeedback}>
+            <div className="sr-text">
+              Report a bug or send feedback
+              <small>Beta: tell us what&apos;s broken, confusing or missing.</small>
+            </div>
+            <IconComment className="sr-ico" />
+          </div>
+        )}
       </div>
 
       <div className="settings-group">

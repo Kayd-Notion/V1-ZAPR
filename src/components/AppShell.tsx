@@ -20,6 +20,8 @@ import { OnboardModal } from "./modals/OnboardModal";
 import { WelcomeModal } from "./modals/WelcomeModal";
 import { ReportModal } from "./modals/ReportModal";
 import { LinkWalletModal } from "./modals/LinkWalletModal";
+import { FeedbackModal } from "./modals/FeedbackModal";
+import { reportFeedbackConfig } from "@/lib/contact";
 import { SafeBoundary } from "./SafeBoundary";
 import { SiteFooter } from "./SiteFooter";
 import { PRIVY_APP_ID, reportSocialLoginConfig } from "@/lib/social-login";
@@ -63,7 +65,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { unread } = useNotifications();
 
   // Google sign-in missing or misconfigured: say why in the browser console (F12).
-  useEffect(() => reportSocialLoginConfig(), []);
+  useEffect(() => {
+    reportSocialLoginConfig();
+    reportFeedbackConfig();
+  }, []);
 
   // Visitors (wallet not connected) see every bolt of the site grey; each one
   // lights up on hover. While the session is loading, keep the pre-paint hint.
@@ -201,6 +206,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {activeModal === "onboard" && <OnboardModal />}
       {activeModal === "report" && <ReportModal />}
       {activeModal === "link" && <LinkWalletModal />}
+      {activeModal === "feedback" && <FeedbackModal />}
       <WelcomeModal />
       {PrivyBridge && (
         // A wrong App ID only turns Google / Apple sign-in off, never the site.
